@@ -70,7 +70,7 @@ def main(args):
     options = OPTIONS.copy()
     for parameter in params:
         try:
-            key, value = arg.split("=")
+            key, value = parameter.split("=")
             try:
                 options[key] = eval(value)
             except:
