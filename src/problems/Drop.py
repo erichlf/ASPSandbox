@@ -35,7 +35,6 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        #eta0 = Expression('A*exp(-(x[0]**2+x[1]**2)/(2*S**2))', A=0.65, S=5E-2)
         eta0 = Expression('A*exp(-(x[0]*x[0]+x[1]*x[1])/(2*S*S))', A=1.0, S=5E-2)
 
         return u0, eta0

@@ -45,7 +45,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        p0 = Expression('1 - x[0]')
+        p0 = Constant(0)#Expression('1 - x[0]')
 
         return u0, p0
 
@@ -54,16 +54,17 @@ class Problem(ProblemBase):
         bv = DirichletBC(V, Constant((0.0, 0.0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        bp0 = DirichletBC(Q, self.pressure_bc(Q), InflowBoundary())
-        bp1 = DirichletBC(Q, self.pressure_bc(Q),  OutflowBoundary())
+        bp0 = DirichletBC(Q, self.pressure_bc(Q,t), InflowBoundary())
+        bp1 = DirichletBC(Q, self.pressure_bc(Q,t),  OutflowBoundary())
 
         bcs = [bv, bp0, bp1]
 
         return bcs
 
-    def pressure_bc(self, Q):
+    def pressure_bc(self, Q, t):
         element = FiniteElement('CG', triangle, 1)
-        return Expression('1 - x[0]', element=element)
+        return Expression('t<0.2 ? (1 - x[0])*t/0.2 : 1 - x[0]',
+                t=t, element=element)
 
     def __str__(self):
         return 'Channel'
