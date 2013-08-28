@@ -119,7 +119,7 @@ class Solver(SolverBase):
 
             SW.update(w0, bcs, t) #build the Shallow Water Equations FE
 
-            NewtonSolver(problem.solver).solve(SWE, w.vector()) #solve our problem
+            NewtonSolver(problem.solver).solve(SW, w.vector()) #solve our problem
 
             U = w.split()[0]
             eta = w.split()[1]
