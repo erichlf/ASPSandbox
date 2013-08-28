@@ -36,6 +36,7 @@ class Problem(ProblemBase):
 
         self.F = Constant((0, 0)) #Forcing function 
         self.nu = options["nu"] #viscosity
+        self.rho = options["rho"] #density
         self.f0 = options["f0"] #reference Coriolis parameter
         self.beta = options["beta"] #beta plane parameter
         self.g = options["g"] #gravity

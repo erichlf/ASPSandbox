@@ -24,6 +24,7 @@ class NSE(NonlinearProblem):
         theta = problem.theta #time stepping method
         dt = problem.dt #time step
         nu = problem.nu #viscosity
+        rho = problem.rho #density
 
         #define trial and test function
         dw = TrialFunction(W) #direction of the Gateaux derivative
@@ -42,7 +43,7 @@ class NSE(NonlinearProblem):
         L0 = (1/dt)*inner(U - U_k,v)*dx \
             + inner(grad(U_mid)*U_mid,v)*dx \
             + nu*inner(grad(U_mid),grad(v))*dx \
-            + inner(grad(p_mid),v)*dx 
+            + (1/rho)*inner(grad(p_mid),v)*dx 
         L1 = inner(div(U_mid),q)*dx 
         L = L0 + L1
 

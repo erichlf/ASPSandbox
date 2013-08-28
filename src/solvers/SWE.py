@@ -109,7 +109,7 @@ class Solver(SolverBase):
         w0 = project(w0,W)
 
         #define the problem
-        SWE = SWE(problem, W, w, w0, t, bcs) #build the Shallow Water Equations FE
+        SW = SWE(problem, W, w, w0, t, bcs) #build the Shallow Water Equations FE
 
         # Time loop
         self.start_timing()
@@ -117,7 +117,7 @@ class Solver(SolverBase):
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(V, Q, t)
 
-            SWE.update(w0, bcs, t) #build the Shallow Water Equations FE
+            SW.update(w0, bcs, t) #build the Shallow Water Equations FE
 
             NewtonSolver(problem.solver).solve(SWE, w.vector()) #solve our problem
 
