@@ -35,17 +35,24 @@ OPTIONS = { "N": 32, #number of elements along an axis
 def usage():
 #   Print usage
     print """\
-Usage: solve solver problem  (run solver for given problem)
+Usage: solve solver problem (run solver for given problem)
 solve solver (run solver for channel flow.)
 solve problem (run NSE for problem.)
+
+Options are submitting in the form option=value
 
 Available solvers:
 %s
 
 Available problems:
 %s 
-""" % ("\n".join("  " + s for s in solvers),
-       "\n".join("  " + p for p in problems))
+
+Available options: (option = default value)
+%s
+""" % ('\n'.join('  ' + s for s in solvers),
+       '\n'.join('  ' + p for p in problems),
+       '\n'.join('  ' + key + ' = ' + str(value) \
+               for key, value in OPTIONS.iteritems()))
 
 def main(args):
 #   Parse command-line arguments and run solver.
