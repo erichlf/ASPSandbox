@@ -1,4 +1,5 @@
-#!/usr/bin/python
+__author__ = "Erich L Foster <efoster@bcamath.org>"
+__date__ = "2013-08-28"
 
 from solverbase import *
 from numpy import linspace
@@ -21,7 +22,7 @@ class InitialConditions(Expression):
         return (3,)
 
 # Class for interfacing with the Newton solver
-class LinearSWE(NonlinearProblem):
+class SWE(NonlinearProblem):
     def __init__(self, problem, W, w, w_k, t, bcs):
         NonlinearProblem.__init__(self)
         h = problem.h
@@ -108,7 +109,7 @@ class Solver(SolverBase):
         w0 = project(w0,W)
 
         #define the problem
-        SWE = LinearSWE(problem, W, w, w0, t, bcs) #build the Shallow Water Equations FE
+        SWE = SWE(problem, W, w, w0, t, bcs) #build the Shallow Water Equations FE
 
         #initialize plot
 #        viz = plot(w0.split()[1], mesh=mesh, title='Height')
@@ -136,5 +137,5 @@ class Solver(SolverBase):
         
         return U, eta
     def __str__(self):
-          return 'LinearSWE'
+          return 'SWE'
 
