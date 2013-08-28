@@ -28,8 +28,8 @@ class LinearSWE(NonlinearProblem):
         g = problem.g
         f0 = problem.f0
         beta = problem.beta
-        
-        theta = 0.5
+
+        theta = problem.theta 
         dt = problem.dt
 
         #define trial and test function
@@ -118,7 +118,7 @@ class Solver(SolverBase):
 
             SWE.update(w0, bcs, t) #build the Shallow Water Equations FE
 
-            NewtonSolver('lu').solve(SWE, w.vector()) #solve our problem
+            NewtonSolver(problem.solver).solve(SWE, w.vector()) #solve our problem
 
             U = w.split()[0]
             eta = w.split()[1]

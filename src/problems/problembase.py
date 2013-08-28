@@ -26,6 +26,7 @@ class ProblemBase:
         self.beta   = None
         self.g      = None
         self.h      = None
+        self.theta  = 0.5
         self.t      = 0
         self.T      = None
         self.dt     = None
@@ -33,6 +34,7 @@ class ProblemBase:
         self.p0     = None
         self.u      = None
         self.p      = None
+        self.solver = None
         self.output_location = ''
 
     def update_problem(self, t, u, p):

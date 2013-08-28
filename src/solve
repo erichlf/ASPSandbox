@@ -13,23 +13,24 @@ from problems import Problem, problems
 from solvers import Solver, solvers
 
 # Default options
-OPTIONS = {"N": 32, #number of elements along an axis
-           "dt": 0.01, #time-step
-           "T": 1.0, #final-time
-           "nu": 1.0E-3, #viscosity
-           "g": 9.81, #gravity
-           "h": 1.63, #fluid depth
-           "f0": 6.16E-5, #reference Coriolis paramter
-           "beta": 2.07E-11, #beta plane parameter 
-           "save_solution": True,
-           "save_frequency": 1,
-           "plot_solution": False,
-           "max_steps": None,
-           "debug": False,
-           "check_mem_usage": False,
-           "newton_solver_absolute_tolerance": 1e-25,
-           "newton_solver_relative_tolerance": 1e-12,
-           "newton_solver_monitor_convergence": False}
+OPTIONS = { "N": 32, #number of elements along an axis
+            "dt": 0.01, #time-step
+            "T": 1.0, #final-time
+            "nu": 1.0E-3, #viscosity
+            "g": 9.81, #gravity
+            "h": 1.63, #fluid depth
+            "f0": 6.16E-5, #reference Coriolis paramter
+            "beta": 2.07E-11, #beta plane parameter 
+            "theta": 0.5, #theta for the theta time-stepping method
+            "save_solution": True,
+            "save_frequency": 1,
+            "plot_solution": False,
+            "debug": False,
+            "check_mem_usage": False,
+            "newton_solver_absolute_tolerance": 1e-25,
+            "newton_solver_relative_tolerance": 1e-12,
+            "newton_solver_monitor_convergence": False,
+            "linear_solver": 'lu'}
 
 def usage():
 #   Print usage

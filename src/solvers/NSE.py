@@ -21,7 +21,7 @@ class NSE(NonlinearProblem):
     def __init__(self, problem, W, w, w_k, t, bcs):
         NonlinearProblem.__init__(self)
 
-        theta = 0.5 #time stepping method
+        theta = problem.theta #time stepping method
         dt = problem.dt #time step
         nu = problem.nu #viscosity
 
@@ -108,7 +108,7 @@ class Solver(SolverBase):
             bcs = problem.boundary_conditions(V, Q, t)
 
             NS.update(w0, bcs, t)
-            NewtonSolver("lu").solve(NS, w.vector())
+            NewtonSolver(problem.solver).solve(NS, w.vector())
 
             U = w.split()[0]
             p = w.split()[1]
