@@ -11,17 +11,17 @@ from numpy import array
 # Inflow boundary
 class InflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return x[0] < DOLFIN_EPS
+        return on_boundary and x[0] < DOLFIN_EPS
 
 # Outflow boundary
 class OutflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return x[0] > 1 - DOLFIN_EPS
+        return on_boundary and x[0] > 1 - DOLFIN_EPS
 
 # No-slip boundary
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return x[1] < DOLFIN_EPS or x[1] > 1.0 - DOLFIN_EPS
+        return on_boundary and (x[1] < DOLFIN_EPS or x[1] > 1.0 - DOLFIN_EPS)
 
 # Problem definition
 class Problem(ProblemBase):
