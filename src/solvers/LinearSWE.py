@@ -108,9 +108,6 @@ class Solver(SolverBase):
         #define the problem
         SWE = LinearSWE(problem, W, w, w0, t, bcs) #build the Shallow Water Equations FE
 
-        #initialize plot
-#        viz = plot(w0.split()[1], mesh=mesh, title='Height')
-
         # Time loop
         self.start_timing()
         for t in t_range:
@@ -129,10 +126,8 @@ class Solver(SolverBase):
             #set the solution for the previous time step
             w0.vector()[:] = w.vector() 
 
-            # Plot solution and mesh
-#            viz.plot(w0.split()[1]) 
-        
         return U, eta
+
     def __str__(self):
           return 'LinearSWE'
 
