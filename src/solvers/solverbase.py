@@ -111,6 +111,7 @@ class SolverBase:
         s = 'Time step %d finished in %g seconds, %g%% done (t = %g, T = %g).' \
             % (self._timestep, timestep_cputime, 100.0*(t / problem.T), t, problem.T)
         sys.stdout.flush()
+        sys.stdout.write('\033[K')
         sys.stdout.write(s + '\r')
 
         # Increase time step and record current time

@@ -99,7 +99,7 @@ def main(args):
     # Set debug level
     set_log_active(options["debug"])
 
-    print('Solving %s for %s flow.' % (solver_name,problem_name))
+    sys.stdout.write('Solving %s for %s flow.\r' % (solver_name,problem_name))
     # Create problem and solver
     problem = Problem(problem_name, options)
     solver = Solver(solver_name, options)
@@ -113,8 +113,10 @@ def main(args):
 
     # Compute number of degrees of freedom
     #num_dofs = u.vector().size() + p.vector().size()
-    print('\n')
-    print('Solved %s for %s flow.' % (solver_name,problem_name))
+    sys.stdout.flush()
+    sys.stdout.write('\033[K')
+    sys.stdout.write('Solved %s for the %s problem in %g seconds.\n' %
+            (solver_name,problem_name,wct))
 
     return 0
 
