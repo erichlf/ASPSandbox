@@ -1,0 +1,113 @@
+#!/usr/bin/python
+__author__ = "Erich L Foster <efoster@bcamath.org>"
+__date__ = "2013-08-27"
+#
+#   adapted from ns in nsbench originally developed by
+#   Anders Logg <logg@simula.no>
+#
+
+import sys, commands, time
+
+from dolfin import set_log_active, parameters, list_timings, NewtonSolver
+from problems import Problem, problems 
+from solvers import Solver, solvers
+
+# Default options
+OPTIONS = {"N": 32, #number of elements along an axis
+           "dt": 0.01, #time-step
+           "T": 1.0, #final-time
+           "nu": 1.0E-3, #viscosity
+           "g": 9.81, #gravity
+           "h": 1.63, #fluid depth
+           "f0": 6.16E-5, #reference Coriolis paramter
+           "beta": 2.07E-11, #beta plane parameter 
+           "save_solution": True,
+           "save_frequency": 1,
+           "plot_solution": False,
+           "max_steps": None,
+           "debug": False,
+           "check_mem_usage": False,
+           "newton_solver_absolute_tolerance": 1e-25,
+           "newton_solver_relative_tolerance": 1e-12,
+           "newton_solver_monitor_convergence": False}
+
+def usage():
+#   Print usage
+    print """\
+Usage: solve solver problem  (run solver for given problem)
+solve solver (run solver for channel flow.)
+solve problem (run NSE for problem.)
+
+Available solvers:
+%s
+
+Available problems:
+%s 
+""" % ("\n".join("  " + s for s in solvers),
+       "\n".join("  " + p for p in problems))
+
+def main(args):
+#   Parse command-line arguments and run solver.
+
+    # Extract arguments (note: don't change the order here!)
+    params = [arg for arg in args if "=" in arg]
+    args = [arg for arg in args if not "=" in arg]
+
+    # Decide list of problems and solvers based on command-line arguments
+    if len(args) < 1:
+        usage()
+        return 1
+    elif len(args) == 1 and args[0] in problems:
+        solver_name = 'SWE'
+        problem_name = args
+    elif len(args) == 1 and args[0] in solvers:
+        solver_name = args
+        problem_name = 'Drop'
+    elif len(args) == 2 and args[0] in solvers and args[1] in problems:
+      solver_name, problem_name = args[:2]
+
+    # Get options
+    options = OPTIONS.copy()
+    for parameter in params:
+        try:
+            key, value = arg.split("=")
+            try:
+                options[key] = eval(value)
+            except:
+                options[key] = str(value)
+        except:
+            print 'Warning: Unhandled command-line argument', parameter 
+
+    # Set global DOLFIN parameters
+    parameters['form_compiler']['cpp_optimize'] = True
+    nonLinearSolver = NewtonSolver('lu')
+    prm = nonLinearSolver.parameters
+    prm['convergence_criterion'] = 'incremental' 
+    prm['absolute_tolerance'] = options["newton_solver_absolute_tolerance"]
+    prm['relative_tolerance'] = options["newton_solver_relative_tolerance"]
+    prm['report'] = options["newton_solver_monitor_convergence"]
+
+    # Set debug level
+    set_log_active(options["debug"])
+
+    print('Solving %s for %s flow.' % (solver_name,problem_name))
+    # Create problem and solver
+    problem = Problem(problem_name, options)
+    solver = Solver(solver_name, options)
+
+    # Solve problem with solver
+    wct = time.time()
+    u, p = solver.solve(problem)
+
+    # Compute elapsed time
+    wct = time.time() - wct
+
+    # Compute number of degrees of freedom
+    #num_dofs = u.vector().size() + p.vector().size()
+    print('\n')
+    print('Solved %s for %s flow.' % (solver_name,problem_name))
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
