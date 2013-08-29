@@ -22,7 +22,7 @@ class OutflowBoundary(SubDomain):
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and (x[1] < DOLFIN_EPS or x[1] > 1.0 - DOLFIN_EPS \
-                or x[0] < DOLFIN_EPS)
+                or x[0] > 1 - DOLFIN_EPS)
 
 # Problem definition
 class Problem(ProblemBase):
