@@ -127,12 +127,6 @@ class Solver(SolverBase):
         w0 = InitialConditions(problem, V, Q) 
         w0 = project(w0,W)
 
-        #solve the stokes problem first
-        ST = Stokes(problem, W, w, bcs)
-        NewtonSolver(problem.solver).solve(ST, w.vector())
-
-        w0.vector()[:] = w.vector()
-
         #create problem 
         NS = NSE(problem, W, w, w0, t, bcs) #build problem 
 
