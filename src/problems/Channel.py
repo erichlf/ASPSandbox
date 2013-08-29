@@ -21,7 +21,7 @@ class OutflowBoundary(SubDomain):
 # No-slip boundary
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and (x[1] < DOLFIN_EPS or x[1] > 1.0 - DOLFIN_EPS)
+        return on_boundary #and (x[1] < DOLFIN_EPS or x[1] > 1.0 - DOLFIN_EPS)
 
 # Problem definition
 class Problem(ProblemBase):
@@ -48,7 +48,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        p0 = Constant(0)#Expression('1 - x[0]')
+        p0 = Expression('A*exp(-(pow(x[0]-0.5,2)+pow(x[1]-0.5,2))/(2*S*S))', A=1.0, S=5E-2)
 
         return u0, p0
 
@@ -57,12 +57,12 @@ class Problem(ProblemBase):
         bv = DirichletBC(V, Constant((0.0, 0.0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        bp0 = DirichletBC(Q, self.pressure_bc(t), InflowBoundary())
-        bp1 = DirichletBC(Q, self.pressure_bc(t),  OutflowBoundary())
+        #bp0 = DirichletBC(Q, self.pressure_bc(t), InflowBoundary())
+        #bp1 = DirichletBC(Q, self.pressure_bc(t),  OutflowBoundary())
 
-        bcs = [bv, bp0, bp1]
+        #bcs = [bv, bp0, bp1]
 
-        return bcs
+        return [bv] #bcs
 
     def pressure_bc(self, t):
         return Expression('(1 - x[0])')
