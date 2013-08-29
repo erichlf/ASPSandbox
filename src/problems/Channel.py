@@ -59,7 +59,7 @@ class Problem(ProblemBase):
         noslip = DirichletBC(V, Constant((0.0, 0.0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        inflow = DirichletBC(V, (1E-11,0), InflowBoundary())
+        inflow = DirichletBC(V, Constant((1E-11,0)), InflowBoundary())
         outflow = DirichletBC(Q, 0,  OutflowBoundary())
 
         bcs = [noslip, inflow, outflow]
