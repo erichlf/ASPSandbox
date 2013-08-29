@@ -47,9 +47,9 @@ class LinearSWE(NonlinearProblem):
         U_mid = (1.0-theta)*U_k + theta*U
 
         #weak form of the equations
-        L0 = (1/dt)*(eta - eta_k)*chi*dx \
+        L0 = (1./dt)*(eta - eta_k)*chi*dx \
             + h*div(U_mid)*chi*dx 
-        L1 = (1/dt)*inner(U - U_k,v)*dx \
+        L1 = (1./dt)*inner(U - U_k,v)*dx \
             + f(f0,beta)*(U_mid[0]*v[1] - U_mid[1]*v[0])*dx \
             - g*eta_mid*div(v)*dx 
         L = L0 + L1
