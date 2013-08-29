@@ -49,7 +49,7 @@ class Problem(ProblemBase):
         return bcs
 
     def F(self, t):
-        return Constant(0)
+        return Constant((0,0))
 
     def __str__(self):
         return 'Drop'

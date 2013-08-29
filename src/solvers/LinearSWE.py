@@ -86,8 +86,6 @@ class Solver(SolverBase):
         t = 0
         T = problem.T
         dt = problem.dt
-        n = int(T/dt)
-        t_range = linspace(t, T, n + 1)[1:]
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', 1)
@@ -110,7 +108,9 @@ class Solver(SolverBase):
 
         # Time loop
         self.start_timing()
-        for t in t_range:
+        while t<T:
+            t += dt
+
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(V, Q, t)
 

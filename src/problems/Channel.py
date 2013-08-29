@@ -65,10 +65,10 @@ class Problem(ProblemBase):
         return bcs
 
     def pressure_bc(self, t):
-        return Expression('t<0.2 ? (1 - x[0])*t/0.2 : 1 - x[0]', t=t)
+        return Expression('t<0.2 ? (1 - x[0])*t : (1 - x[0])*0.2', t=t)
 
     def F(self, t):
-        return Constant(0)
+        return Constant((0,0))
 
     def __str__(self):
         return 'Channel'
