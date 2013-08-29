@@ -49,7 +49,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        p0 = Expression('A*exp(-(pow(x[0]-0.5,2)+pow(x[1]-0.5,2))/(2*S*S))', A=1.0, S=5E-2)
+        p0 = Constant(0)
 
         return u0, p0
 
@@ -58,15 +58,12 @@ class Problem(ProblemBase):
         bv = DirichletBC(V, Constant((0.0, 0.0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        #bp0 = DirichletBC(Q, self.pressure_bc(t), InflowBoundary())
-        bp1 = DirichletBC(Q, self.pressure_bc(t),  OutflowBoundary())
+        bp0 = DirichletBC(V, (1E-11,0), InflowBoundary())
+        bp1 = DirichletBC(Q, 0,  OutflowBoundary())
 
-        #bcs = [bv, bp0, bp1]
+        bcs = [bv, bp0, bp1]
 
-        return [bv] #bcs
-
-    def pressure_bc(self, t):
-        return Expression('(1 - x[0])')
+        return bcs
 
     def F(self, t):
         return Constant((0,0))
