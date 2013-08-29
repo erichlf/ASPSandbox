@@ -44,7 +44,7 @@ class NSE(NonlinearProblem):
             + rho*inner(grad(U_mid)*U_mid,v)*dx \
             + nu*inner(grad(U_mid),grad(v))*dx \
             - p_mid*div(v)*dx 
-        L1 = inner(div(U_mid),q)*dx 
+        L1 = -inner(div(U_mid),q)*dx #makes things symmetric 
         L = L0 + L1
 
         # Compute directional derivative about w in the direction of dw (Jacobian)
