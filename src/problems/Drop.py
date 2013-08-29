@@ -35,6 +35,8 @@ class Problem(ProblemBase):
         self.dt = options["dt"] #time-step
         self.theta = options["theta"] #theta for the theta time stepping method
         self.solver = options["linear_solver"] #what linear solver to use
+        self.Pu = options["velocity_order"] #order of velocity element
+        self.Pp = options["height_order"] #order of height/pressure element
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))

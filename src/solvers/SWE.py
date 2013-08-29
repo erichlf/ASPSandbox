@@ -91,8 +91,8 @@ class Solver(SolverBase):
         dt = problem.dt
 
         # Define function spaces
-        V = VectorFunctionSpace(mesh, 'CG', 1)
-        Q = FunctionSpace(mesh, 'CG', 1)
+        V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
+        Q = FunctionSpace(mesh, 'CG', problem.Pp)
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions

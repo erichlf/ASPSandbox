@@ -31,7 +31,9 @@ OPTIONS = { "N": 32, #number of elements along an axis
             "absolute_tolerance": 1e-25,
             "relative_tolerance": 1e-12,
             "monitor_convergence": False,
-            "linear_solver": 'lu'}
+            "linear_solver": 'lu',
+            "velocity_order": 2, #order of velocity element
+            "height_order": 1} #order of height/pressure element
 
 def usage():
 #   Print usage
