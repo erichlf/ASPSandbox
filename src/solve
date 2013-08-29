@@ -89,7 +89,7 @@ def main(args):
 
     # Set global DOLFIN parameters
     parameters['form_compiler']['cpp_optimize'] = True
-    nonLinearSolver = NewtonSolver('lu')
+    nonLinearSolver = NewtonSolver(options["linear_solver"])
     prm = nonLinearSolver.parameters
     prm['convergence_criterion'] = 'incremental' 
     prm['absolute_tolerance'] = options["absolute_tolerance"]
