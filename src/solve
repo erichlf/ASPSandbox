@@ -28,9 +28,9 @@ OPTIONS = { "N": 32, #number of elements along an axis
             "plot_solution": False,
             "debug": False,
             "check_mem_usage": False,
-            "newton_solver_absolute_tolerance": 1e-25,
-            "newton_solver_relative_tolerance": 1e-12,
-            "newton_solver_monitor_convergence": False,
+            "absolute_tolerance": 1e-25,
+            "relative_tolerance": 1e-12,
+            "monitor_convergence": False,
             "linear_solver": 'lu'}
 
 def usage():
@@ -92,14 +92,14 @@ def main(args):
     nonLinearSolver = NewtonSolver('lu')
     prm = nonLinearSolver.parameters
     prm['convergence_criterion'] = 'incremental' 
-    prm['absolute_tolerance'] = options["newton_solver_absolute_tolerance"]
-    prm['relative_tolerance'] = options["newton_solver_relative_tolerance"]
-    prm['report'] = options["newton_solver_monitor_convergence"]
+    prm['absolute_tolerance'] = options["absolute_tolerance"]
+    prm['relative_tolerance'] = options["relative_tolerance"]
+    prm['report'] = options["monitor_convergence"]
 
     # Set debug level
     set_log_active(options["debug"])
 
-    sys.stdout.write('Solving %s for %s flow.\r' % (solver_name,problem_name))
+    sys.stdout.write('Solving %s for the %s problem.\r' % (solver_name,problem_name))
     # Create problem and solver
     problem = Problem(problem_name, options)
     solver = Solver(solver_name, options)
