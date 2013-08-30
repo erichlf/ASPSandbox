@@ -96,14 +96,15 @@ class Solver(SolverBase):
         w0 = InitialConditions(problem, V, Q) 
         w0 = project(w0,W)
 
+        # Time loop
+        self.start_timing()
+
         #plot and save initial condition
         self.update(problem, t, w0.split()[0], w0.split()[1]) 
 
         #create problem 
         S = Stokes(problem, W, w, w0, t, bcs) #build problem 
 
-        # Time loop
-        self.start_timing()
         while t<T:
             t += dt
 
