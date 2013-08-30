@@ -40,10 +40,10 @@ class NSE(NonlinearProblem):
         p_mid = (1.0-theta)*p_k + theta*p
 
         #weak form of the equations
-        L0 = (rho/dt)*inner(U - U_k,v)*dx \
-            + rho*inner(grad(U_mid)*U_mid,v)*dx \
+        L0 = (1./dt)*inner(U - U_k,v)*dx \
+            + inner(grad(U_mid)*U_mid,v)*dx \
             + nu*inner(grad(U_mid),grad(v))*dx \
-            - p_mid*div(v)*dx 
+            - 1./rho*p_mid*div(v)*dx 
         L1 = -div(U_mid)*q*dx #negative makes things symmetric 
         L = L0 + L1
 

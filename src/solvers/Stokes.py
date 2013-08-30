@@ -125,4 +125,4 @@ class Solver(SolverBase):
         return U, p
 
     def __str__(self):
-          return 'NSE'
+          return 'Stokes'
