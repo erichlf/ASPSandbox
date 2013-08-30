@@ -104,7 +104,7 @@ class Solver(SolverBase):
         w0 = project(w0,W)
 
         #plot and save initial condition
-        self.update(problem, t, w0.split()[0], w0.wplit()[1]) 
+        self.update(problem, t, w0.split()[0], w0.split()[1]) 
 
         #define the problem
         SWE = LinearSWE(problem, W, w, w0, t, bcs) #build the Shallow Water Equations FE
