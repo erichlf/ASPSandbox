@@ -68,36 +68,6 @@ class NSE(NonlinearProblem):
             bcs=self.bcs)
         #self.reset_sparsity = False
 
-class Stokes(NonlinearProblem):
-    def __init__(self, problem, W, w, bcs):
-        NonlinearProblem.__init__(self)
-
-        nu = problem.nu #viscosity
-
-        #define trial and test function
-        dw = TrialFunction(W) #direction of the Gateaux derivative
-        v, q = TestFunctions(W)
-
-        U, p = split(w)
-
-        L0 = nu*inner(grad(U),grad(v))*dx \
-            - p,div(v)*dx 
-        L1 = -inner(div(U),q)*dx 
-        L = L0 + L1
-
-        # Compute directional derivative about w in the direction of dw (Jacobian)
-        a = derivative(L, w, dw)
-
-        self.L = L
-        self.a = a
-        self.bcs = bcs
-        self.reset_sparsity = True
-    def F(self, b, x):
-        assemble(self.L, tensor=b, bcs=self.bcs)
-    def J(self, A, x):
-        assemble(self.a, tensor=A, reset_sparsity=self.reset_sparsity,
-            bcs=self.bcs)
-
 class Solver(SolverBase):
 #    Incremental pressure-correction scheme.
 
@@ -126,6 +96,9 @@ class Solver(SolverBase):
         #initial condition
         w0 = InitialConditions(problem, V, Q) 
         w0 = project(w0,W)
+
+        #plot and save initial condition
+        self.update(problem, t, w0.split()[0], w0.wplit()[1]) 
 
         #create problem 
         NS = NSE(problem, W, w, w0, t, bcs) #build problem 

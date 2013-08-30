@@ -50,7 +50,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        p0 = Constant(0)
+        p0 = self.pressure_bc(V, Q)
 
         return u0, p0
 
@@ -59,12 +59,15 @@ class Problem(ProblemBase):
         noslip = DirichletBC(V, Constant((0, 0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        inflow = DirichletBC(V, Constant((1E-11,0)), InflowBoundary())
-        outflow = DirichletBC(Q, 0,  OutflowBoundary())
+        inflow = DirichletBC(Q, self.pressure_bc(V, Q), InflowBoundary())
+        outflow = DirichletBC(Q, self.pressure_bc(V,Q),  OutflowBoundary())
 
         bcs = [noslip, inflow, outflow]
 
         return bcs
+
+    def pressure_bc(self, V, Q):
+        return Expression('p*(1-x[0])',p=1E-11)
 
     def F(self, t):
         return Constant((0,0))
