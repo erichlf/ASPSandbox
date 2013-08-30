@@ -27,7 +27,6 @@ class Stokes(NonlinearProblem):
         rho = problem.rho #density
 
         #define trial and test function
-        dw = TrialFunction(W) #direction of the Gateaux derivative
         v, q = TestFunctions(W)
 
         U, p = split(w)
@@ -40,32 +39,22 @@ class Stokes(NonlinearProblem):
         p_mid = (1.0-theta)*p_k + theta*p
 
         #weak form of the equations
-        L0 = (rho/dt)*inner(U - U_k,v)*dx \
+        L0 = (1./dt)*inner(U - U_k,v)*dx \
             + nu*inner(grad(U_mid),grad(v))*dx \
-            - p_mid*div(v)*dx 
-        L1 = -inner(div(U_mid),q)*dx #negative makes things symmetric 
+            + 1./rho*inner(grad(p_mid),v)*dx 
+        L1 = inner(div(U_mid),q)*dx #negative makes things symmetric 
         L = L0 + L1
-
-        # Compute directional derivative about w in the direction of dw (Jacobian)
-        a = derivative(L, w, dw)
 
         self.t = t
         self.U_k = U_k
         self.p_k = p_k
         self.L = L
-        self.a = a
         self.bcs = bcs
         self.reset_sparsity = True
     def update(self, w_k, bcs, t):
         self.U_k, self.p_k = split(w_k)
         self.bcs = bcs
         self.t = t
-    def F(self, b, x):
-        assemble(self.L, tensor=b, bcs=self.bcs)
-    def J(self, A, x):
-        assemble(self.a, tensor=A, reset_sparsity=self.reset_sparsity,
-            bcs=self.bcs)
-        #self.reset_sparsity = False
 
 class Solver(SolverBase):
 #    Incremental pressure-correction scheme.
@@ -112,7 +101,7 @@ class Solver(SolverBase):
             bcs = problem.boundary_conditions(V, Q, t)
 
             S.update(w0, bcs, t)
-            NewtonSolver(problem.solver).solve(S, w.vector())
+            solve(S.L==0, w, bcs)
 
             U = w.split()[0]
             p = w.split()[1]

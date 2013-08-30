@@ -34,7 +34,6 @@ class LinearSWE(NonlinearProblem):
         dt = problem.dt
 
         #define trial and test function
-        dw = TrialFunction(W) #direction of the Gateaux derivative
         (v, chi) = TestFunctions(W)
 
         U, eta = split(w)
@@ -51,28 +50,20 @@ class LinearSWE(NonlinearProblem):
             + h*div(U_mid)*chi*dx 
         L1 = (1./dt)*inner(U - U_k,v)*dx \
             + f(f0,beta)*(U_mid[0]*v[1] - U_mid[1]*v[0])*dx \
-            - g*eta_mid*div(v)*dx 
+            + g*inner(grad(eta_mid),v)*dx 
         L = L0 + L1
 
         # Compute directional derivative about w in the direction of dw (Jacobian)
-        a = derivative(L, w, dw)
 
         self.U_k = U_k
         self.eta_k = U_k
         self.L = L
-        self.a = a
         self.bcs = bcs
         self.reset_sparsity = True
     def update(self, w_k, bcs, t):
         self.U_k, self.eta_k = split(w_k)
         self.bcs = bcs
         self.t = t
-    def F(self, b, x):
-        assemble(self.L, tensor=b, bcs=self.bcs)
-    def J(self, A, x):
-        assemble(self.a, tensor=A, reset_sparsity=self.reset_sparsity,
-            bcs=self.bcs)
-        #self.reset_sparsity = False
 
 class Solver(SolverBase):
 #    Incremental pressure-correction scheme.
@@ -120,7 +111,7 @@ class Solver(SolverBase):
 
             SWE.update(w0, bcs, t) #build the Shallow Water Equations FE
 
-            NewtonSolver(problem.solver).solve(SWE, w.vector()) #solve our problem
+            solve(SWE.L==0, w, bcs) #solve our problem
 
             U = w.split()[0]
             eta = w.split()[1]
