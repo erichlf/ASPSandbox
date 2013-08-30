@@ -50,7 +50,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        p0 = self.pressure_bc(V, Q, 0)
+        p0 = Constant(0)#self.pressure_bc(V, Q, 0)
 
         return u0, p0
 
