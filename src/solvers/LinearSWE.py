@@ -2,7 +2,6 @@ __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2013-08-27"
 
 from solverbase import *
-from numpy import linspace
 
 def f(f0,beta): #Coriolis parameter
     return Expression('f0 + beta*x[1]', f0=f0, beta=beta)

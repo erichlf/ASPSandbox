@@ -2,7 +2,6 @@ __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2013-08-27"
 
 from solverbase import *
-from numpy import linspace
 
 class InitialConditions(Expression):
     def __init__(self, problem, V, Q):
@@ -43,7 +42,7 @@ class NSE(NonlinearProblem):
         L0 = (1./dt)*inner(U - U_k,v)*dx \
             + inner(grad(U_mid)*U_mid,v)*dx \
             + nu*inner(grad(U_mid),grad(v))*dx \
-            - 1./rho*p_mid*div(v)*dx 
+            + 1./rho*inner(grad(p_mid),v)*dx 
         L1 = div(U_mid)*q*dx 
         L = L0 + L1
 

@@ -2,7 +2,6 @@ __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2013-08-27"
 
 from solverbase import *
-from numpy import linspace
 
 class InitialConditions(Expression):
     def __init__(self, problem, V, Q):
