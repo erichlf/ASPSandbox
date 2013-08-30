@@ -67,7 +67,7 @@ class Problem(ProblemBase):
         return bcs
 
     def pressure_bc(self, V, Q, t):
-        return Expression('p*(1-x[0])',p=1)
+        return Expression('p*(1-x[0])',p=1,t=t)
 
     def F(self, t):
         return Constant((0,0))
