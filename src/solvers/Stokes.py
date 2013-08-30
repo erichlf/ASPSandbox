@@ -17,7 +17,7 @@ class InitialConditions(Expression):
     def value_shape(self):
         return (3,)
 
-class NSE(NonlinearProblem):
+class Stokes(NonlinearProblem):
     def __init__(self, problem, W, w, w_k, t, bcs):
         NonlinearProblem.__init__(self)
 
@@ -41,7 +41,6 @@ class NSE(NonlinearProblem):
 
         #weak form of the equations
         L0 = (rho/dt)*inner(U - U_k,v)*dx \
-            + rho*inner(grad(U_mid)*U_mid,v)*dx \
             + nu*inner(grad(U_mid),grad(v))*dx \
             - p_mid*div(v)*dx 
         L1 = -inner(div(U_mid),q)*dx #negative makes things symmetric 
@@ -67,36 +66,6 @@ class NSE(NonlinearProblem):
         assemble(self.a, tensor=A, reset_sparsity=self.reset_sparsity,
             bcs=self.bcs)
         #self.reset_sparsity = False
-
-class Stokes(NonlinearProblem):
-    def __init__(self, problem, W, w, bcs):
-        NonlinearProblem.__init__(self)
-
-        nu = problem.nu #viscosity
-
-        #define trial and test function
-        dw = TrialFunction(W) #direction of the Gateaux derivative
-        v, q = TestFunctions(W)
-
-        U, p = split(w)
-
-        L0 = nu*inner(grad(U),grad(v))*dx \
-            - p,div(v)*dx 
-        L1 = -inner(div(U),q)*dx 
-        L = L0 + L1
-
-        # Compute directional derivative about w in the direction of dw (Jacobian)
-        a = derivative(L, w, dw)
-
-        self.L = L
-        self.a = a
-        self.bcs = bcs
-        self.reset_sparsity = True
-    def F(self, b, x):
-        assemble(self.L, tensor=b, bcs=self.bcs)
-    def J(self, A, x):
-        assemble(self.a, tensor=A, reset_sparsity=self.reset_sparsity,
-            bcs=self.bcs)
 
 class Solver(SolverBase):
 #    Incremental pressure-correction scheme.
@@ -128,7 +97,7 @@ class Solver(SolverBase):
         w0 = project(w0,W)
 
         #create problem 
-        NS = NSE(problem, W, w, w0, t, bcs) #build problem 
+        S = Stokes(problem, W, w, w0, t, bcs) #build problem 
 
         # Time loop
         self.start_timing()
@@ -138,8 +107,8 @@ class Solver(SolverBase):
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(V, Q, t)
 
-            NS.update(w0, bcs, t)
-            NewtonSolver(problem.solver).solve(NS, w.vector())
+            S.update(w0, bcs, t)
+            NewtonSolver(problem.solver).solve(S, w.vector())
 
             U = w.split()[0]
             p = w.split()[1]
