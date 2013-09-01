@@ -67,6 +67,9 @@ class Solver(SolverBase):
         t = 0
         T = problem.T
         dt = problem.dt
+        theta = problem.theta #time stepping method
+        nu = problem.nu #viscosity
+        rho = problem.rho #density
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
@@ -76,41 +79,66 @@ class Solver(SolverBase):
         # Get boundary conditions
         bcs = problem.boundary_conditions(V, Q, t)
 
+        #define trial and test function
+        v, q = TestFunctions(W)
+        U, p = TrialFunctions(W)
+
         w = Function(W)
-        w0 = Function(W)
-        U, p = split(w)
+        w_ = Function(W)
 
         #initial condition
-        w0 = InitialConditions(problem, V, Q) 
-        w0 = project(w0,W)
+        w = InitialConditions(problem, V, Q) 
+        w = project(w,W)
+
+        w_ = InitialConditions(problem, V, Q) 
+        w_ = project(w_,W)
+
+        U_, p_ = split(w_)
+
+        #U_(k+theta)
+        U_mid = (1.0-theta)*U_ + theta*U
+
+        #p_(k+theta)
+        p_mid = (1.0-theta)*p_ + theta*p
+
+        #weak form of the equations
+        F0 = (1./dt)*inner(U - U_,v)*dx \
+            + nu*inner(grad(U_mid),grad(v))*dx \
+            + 1./rho*inner(grad(p_mid),v)*dx 
+        F1 = div(U_mid)*q*dx 
+        F = F0 + F1
+        a = lhs(F)
+        L = rhs(F)
 
         # Time loop
         self.start_timing()
 
         #plot and save initial condition
-        self.update(problem, t, w0.split()[0], w0.split()[1]) 
-
-        #create problem 
-        S = Stokes(problem, W, w, w0, t, bcs) #build problem 
+        self.update(problem, t, w_.split()[0], w_.split()[1]) 
 
         while t<T:
             t += dt
 
+            w_.vector()[:] = w.vector()
+
+            U_ = w_.split()[0]
+            p_ = w_.split()[1]
+
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(V, Q, t)
 
-            S.update(w0, bcs, t)
-            solve(S.L==0, w, bcs)
-
-            U = w.split()[0]
-            p = w.split()[1]
+            A = assemble(a)
+            b = assemble(L)
+            if isinstance(bcs, list):
+                [bc.apply(A, b) for bc in bcs]
+            else :
+                bcs.apply(A, b)
+            solve(A, w.vector(), b)
 
             # Update
-            self.update(problem, t, U, p)
-            #set the solution for the previous time step
-            w0.vector()[:] = w.vector() 
+            self.update(problem, t, w.split()[0], w.split()[1])
         
-        return U, p
+        return U_, p_
 
     def __str__(self):
           return 'Stokes'
