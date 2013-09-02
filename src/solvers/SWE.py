@@ -51,7 +51,7 @@ class Solver(SolverBase):
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
         #define trial and test function
-        v, q = TestFunctions(W)
+        v, chi = TestFunctions(W)
 
         w = Function(W)
         w_ = Function(W)
