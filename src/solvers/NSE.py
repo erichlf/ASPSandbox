@@ -68,7 +68,7 @@ class Solver(SolverBase):
             + inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx \
             + 1./rho*inner(grad(p_theta),v)*dx 
-        F -= inner(f(t+theta),v)*dx
+        F -= inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
         F += div(U_theta)*q*dx 
 
         # Time loop
