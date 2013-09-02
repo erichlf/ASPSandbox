@@ -103,7 +103,7 @@ class Solver(SolverBase):
             # Update
             self.update(problem, t, U_, eta_)
         
-        return U_, p_
+        return U_, eta_
 
     def __str__(self):
           return 'Stokes'
