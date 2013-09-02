@@ -9,15 +9,19 @@ from problembase import *
 from numpy import array
 
 # Inflow boundary
-class InflowBoundary(SubDomain):
+class Lid(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and x[1] < DOLFIN_EPS
+        return on_boundary and near(x[1], 1.0)
 
 # No-slip boundary
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and (x[0] < DOLFIN_EPS or x[0] > 1.0 - DOLFIN_EPS \
-                or x[1] > 1.0 - DOLFIN_EPS)
+        return on_boundary and (near(x[0], 0.0) or near(x[0], 1.0) \
+                or near(x[1], 0.0))
+
+class Pressure(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and (near(x[0], 0.0) or near(x[1], 0.0))
 
 # Problem definition
 class Problem(ProblemBase):
@@ -55,9 +59,12 @@ class Problem(ProblemBase):
         noslip = DirichletBC(V, Constant((0, 0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        inflow = DirichletBC(V, Constant((1.0,0)), InflowBoundary())
+        lid = DirichletBC(V, Constant((1.0,0)), Lid())
 
-        bcs = [noslip, inflow]
+        #pressure boundary
+        pressure = DirichletBC(Q, Constant(0), Pressure())
+
+        bcs = [noslip, lid, pressure]
 
         return bcs
 

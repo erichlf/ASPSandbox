@@ -74,26 +74,26 @@ class Solver(SolverBase):
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
         Q = FunctionSpace(mesh, 'CG', problem.Pp)
-        W = MixedFunctionSpace([V, Q])
+        W = V * Q
 
         # Get boundary conditions
-        bcs = problem.boundary_conditions(V, Q, t)
+        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
         #define trial and test function
         v, q = TestFunctions(W)
-        U, p = TrialFunctions(W)
 
         w = Function(W)
         w_ = Function(W)
 
         #initial condition
         w = InitialConditions(problem, V, Q) 
-        w = project(w,W)
+        w = project(w, W)
 
         w_ = InitialConditions(problem, V, Q) 
-        w_ = project(w_,W)
+        w_ = project(w_, W)
 
-        U_, p_ = split(w_)
+        U, p = (as_vector((w[0], w[1])), w[2])
+        U_, p_ = (as_vector((w_[0], w_[1])), w_[2])
 
         #U_(k+theta)
         U_mid = (1.0-theta)*U_ + theta*U
@@ -101,14 +101,13 @@ class Solver(SolverBase):
         #p_(k+theta)
         p_mid = (1.0-theta)*p_ + theta*p
 
+        f = problem.F
         #weak form of the equations
-        F0 = (1./dt)*inner(U - U_,v)*dx \
+        F = (1./dt)*inner(U - U_,v)*dx \
             + nu*inner(grad(U_mid),grad(v))*dx \
-            + 1./rho*inner(grad(p_mid),v)*dx 
-        F1 = div(U_mid)*q*dx 
-        F = F0 + F1
-        a = lhs(F)
-        L = rhs(F)
+            + 1./rho*inner(grad(p_mid),v)*dx \
+            - inner(f(t+theta),v)*dx
+        F += div(U_mid)*q*dx 
 
         # Time loop
         self.start_timing()
@@ -119,24 +118,18 @@ class Solver(SolverBase):
         while t<T:
             t += dt
 
+            #evaluate bcs again (in case they are time-dependent)
+            bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+
+            solve(F==0, w, bcs=bcs)
+
             w_.vector()[:] = w.vector()
 
-            U_ = w_.split()[0]
+            U_ = w_.split()[0] 
             p_ = w_.split()[1]
 
-            #evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(V, Q, t)
-
-            A = assemble(a)
-            b = assemble(L)
-            if isinstance(bcs, list):
-                [bc.apply(A, b) for bc in bcs]
-            else :
-                bcs.apply(A, b)
-            solve(A, w.vector(), b)
-
             # Update
-            self.update(problem, t, w.split()[0], w.split()[1])
+            self.update(problem, t, U_, p_)
         
         return U_, p_
 

@@ -11,17 +11,17 @@ from numpy import array
 # Inflow boundary
 class InflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and x[0] < DOLFIN_EPS
+        return on_boundary and near(x[0],0.)
 
 # Outflow boundary
 class OutflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and x[0] > 1 - DOLFIN_EPS
+        return on_boundary and near(x[0],1.)
 
 # No-slip boundary
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and (x[1] < DOLFIN_EPS or x[1] > 1.0 - DOLFIN_EPS)
+        return on_boundary and (near(x[1],0.) or near(x[1], 1.))
 
 # Problem definition
 class Problem(ProblemBase):
@@ -50,24 +50,24 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        p0 = Constant(0)#self.pressure_bc(V, Q, 0)
+        p0 = self.pressure_bc(V, Q, 0)
 
         return u0, p0
 
     def boundary_conditions(self, V, Q, t):
         # Create no-slip boundary condition for velocity
-        noslip = DirichletBC(V, Constant((0, 0)), NoslipBoundary())
+        noslip = DirichletBC(V, (0, 0), NoslipBoundary())
 
         # Create boundary conditions for pressure
         inflow = DirichletBC(Q, self.pressure_bc(V, Q, t), InflowBoundary())
-        outflow = DirichletBC(Q, self.pressure_bc(V, Q, t),  OutflowBoundary())
+        outflow = DirichletBC(Q, self.pressure_bc(V, Q, t), OutflowBoundary())
 
         bcs = [noslip, inflow, outflow]
 
         return bcs
 
     def pressure_bc(self, V, Q, t):
-        return Expression('p*(1-x[0])',p=1,t=t)
+        return Expression('p*(1.-x[0])',p=1.,t=t)
 
     def F(self, t):
         return Constant((0,0))

@@ -2,7 +2,7 @@ __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2013-08-27"
 
 # List of solvers
-solvers = ['NSE', 'SteadyStokes', 'Stokes', 'LinearSWE', 'SWE', 'Chorin']
+solvers = ['NSE', 'SteadyStokes', 'Stokes', 'LinearSWE', 'SWE']
 
 # Wrapper for solver classes
 def Solver(name, options):
