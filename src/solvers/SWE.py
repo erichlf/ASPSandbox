@@ -8,13 +8,13 @@ def f(f0,beta): #Coriolis parameter
 
 class InitialConditions(Expression):
     def __init__(self, problem, V, Q):
-        self.U0, self.p0 = problem.initial_conditions(V, Q)
+        self.U0, self.eta0 = problem.initial_conditions(V, Q)
         self.U0 = project(self.U0,V)
-        self.p0 = project(self.p0,Q)
+        self.eta0 = project(self.eta0,Q)
 
     def eval(self, value, x):
         value[:2] = self.U0(x)
-        value[2] = self.p0(x)
+        value[2] = self.eta0(x)
 
     def value_shape(self):
         return (3,)
