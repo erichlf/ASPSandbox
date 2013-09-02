@@ -103,4 +103,4 @@ class Solver(SolverBase):
         return U_, eta_
 
     def __str__(self):
-          return 'Stokes'
+          return 'LinearSWE'

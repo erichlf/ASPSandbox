@@ -96,4 +96,4 @@ class Solver(SolverBase):
         return U_, p_
 
     def __str__(self):
-          return 'Stokes'
+          return 'NSE'
