@@ -6,63 +6,18 @@ from solverbase import *
 def f(f0,beta): #Coriolis parameter
     return Expression('f0 + beta*x[1]', f0=f0, beta=beta)
 
-# Class representing the initial conditions
 class InitialConditions(Expression):
     def __init__(self, problem, V, Q):
-        self.U0, self.eta0 = problem.initial_conditions(V, Q)
+        self.U0, self.p0 = problem.initial_conditions(V, Q)
         self.U0 = project(self.U0,V)
-        self.eta0 = project(self.eta0,Q)
+        self.p0 = project(self.p0,Q)
 
     def eval(self, value, x):
         value[:2] = self.U0(x)
-        value[2] = self.eta0(x)
+        value[2] = self.p0(x)
 
     def value_shape(self):
         return (3,)
-
-# Class for interfacing with the Newton solver
-class LinearSWE(NonlinearProblem):
-    def __init__(self, problem, W, w, w_k, t, bcs):
-        NonlinearProblem.__init__(self)
-        h = problem.h
-        g = problem.g
-        f0 = problem.f0
-        beta = problem.beta
-
-        theta = problem.theta 
-        dt = problem.dt
-
-        #define trial and test function
-        (v, chi) = TestFunctions(W)
-
-        U, eta = split(w)
-        U_k, eta_k = split(w_k)
-
-        # eta_(k+theta)
-        eta_mid = (1.0-theta)*eta_k + theta*eta
-
-        # U_(k+theta)
-        U_mid = (1.0-theta)*U_k + theta*U
-
-        #weak form of the equations
-        L0 = (1./dt)*(eta - eta_k)*chi*dx \
-            + h*div(U_mid)*chi*dx 
-        L1 = (1./dt)*inner(U - U_k,v)*dx \
-            + f(f0,beta)*(U_mid[0]*v[1] - U_mid[1]*v[0])*dx \
-            + g*inner(grad(eta_mid),v)*dx 
-        L = L0 + L1
-
-        # Compute directional derivative about w in the direction of dw (Jacobian)
-
-        self.U_k = U_k
-        self.eta_k = U_k
-        self.L = L
-        self.bcs = bcs
-        self.reset_sparsity = True
-    def update(self, w_k, bcs, t):
-        self.U_k, self.eta_k = split(w_k)
-        self.bcs = bcs
-        self.t = t
 
 class Solver(SolverBase):
 #    Incremental pressure-correction scheme.
@@ -71,57 +26,82 @@ class Solver(SolverBase):
         SolverBase.__init__(self, options)
 
     def solve(self, problem):
-        #get problem parameters
+        #get problem mesh 
         mesh = problem.mesh
-        t = 0
-        T = problem.T
-        dt = problem.dt
+
+        t = 0 #initial time
+        T = problem.T #final time
+        dt = problem.dt #time step
+        theta = problem.theta #time stepping method
+
+        #problem parameters
+        h = problem.h #fluid depth
+        g = problem.g #gravity
+        f0 = problem.f0 #reference Coriolis force
+        beta = problem.beta #beta plane parameter
+        nu = problem.nu #viscosity
+        rho = problem.rho #density
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
         Q = FunctionSpace(mesh, 'CG', problem.Pp)
-        W = MixedFunctionSpace([V, Q])
+        W = V * Q
 
         # Get boundary conditions
-        bcs = problem.boundary_conditions(V, Q, t)
+        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+
+        #define trial and test function
+        v, q = TestFunctions(W)
 
         w = Function(W)
-        w0 = Function(W)
-        U, p = split(w)
+        w_ = Function(W)
 
         #initial condition
-        w0 = InitialConditions(problem, V, Q) 
-        w0 = project(w0,W)
+        w = InitialConditions(problem, V, Q) 
+        w = project(w, W)
+
+        w_ = InitialConditions(problem, V, Q) 
+        w_ = project(w_, W)
+
+        U, eta = (as_vector((w[0], w[1])), w[2])
+        U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
+
+        #U_(k+theta)
+        U_theta = (1.0-theta)*U_ + theta*U
+
+        #p_(k+theta)
+        eta_theta = (1.0-theta)*eta_ + theta*eta
+
+        f = problem.F
+        #weak form of the equations
+        F = (1./dt)*(eta - eta_)*chi*dx + h*div(U_theta)*chi*dx 
+        F += (1./dt)*inner(U - U_,v)*dx \
+                + f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
+                + g*inner(grad(eta_theta),v)*dx 
 
         # Time loop
         self.start_timing()
 
         #plot and save initial condition
-        self.update(problem, t, w0.split()[0], w0.split()[1]) 
-
-        #define the problem
-        SWE = LinearSWE(problem, W, w, w0, t, bcs) #build the Shallow Water Equations FE
+        self.update(problem, t, w_.split()[0], w_.split()[1]) 
 
         while t<T:
             t += dt
 
             #evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(V, Q, t)
+            bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
-            SWE.update(w0, bcs, t) #build the Shallow Water Equations FE
+            solve(F==0, w, bcs=bcs)
 
-            solve(SWE.L==0, w, bcs) #solve our problem
+            w_.vector()[:] = w.vector()
 
-            U = w.split()[0]
-            eta = w.split()[1]
+            U_ = w_.split()[0] 
+            eta_ = w_.split()[1]
 
             # Update
-            self.update(problem, t, U, eta)
-            #set the solution for the previous time step
-            w0.vector()[:] = w.vector() 
-
-        return U, eta
+            self.update(problem, t, U_, eta_)
+        
+        return U_, p_
 
     def __str__(self):
-          return 'LinearSWE'
-
+          return 'Stokes'

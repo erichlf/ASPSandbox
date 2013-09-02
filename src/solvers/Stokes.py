@@ -32,16 +32,16 @@ class Stokes(NonlinearProblem):
         U_k, p_k = split(w_k)
 
         #U_(k+theta)
-        U_mid = (1.0-theta)*U_k + theta*U
+        U_theta = (1.0-theta)*U_k + theta*U
 
         #p_(k+theta)
-        p_mid = (1.0-theta)*p_k + theta*p
+        p_theta = (1.0-theta)*p_k + theta*p
 
         #weak form of the equations
         L0 = (1./dt)*inner(U - U_k,v)*dx \
-            + nu*inner(grad(U_mid),grad(v))*dx \
-            + 1./rho*inner(grad(p_mid),v)*dx 
-        L1 = inner(div(U_mid),q)*dx #negative makes things symmetric 
+            + nu*inner(grad(U_theta),grad(v))*dx \
+            + 1./rho*inner(grad(p_theta),v)*dx 
+        L1 = inner(div(U_theta),q)*dx #negative makes things symmetric 
         L = L0 + L1
 
         self.t = t
@@ -96,18 +96,18 @@ class Solver(SolverBase):
         U_, p_ = (as_vector((w_[0], w_[1])), w_[2])
 
         #U_(k+theta)
-        U_mid = (1.0-theta)*U_ + theta*U
+        U_theta = (1.0-theta)*U_ + theta*U
 
         #p_(k+theta)
-        p_mid = (1.0-theta)*p_ + theta*p
+        p_theta = (1.0-theta)*p_ + theta*p
 
         f = problem.F
         #weak form of the equations
         F = (1./dt)*inner(U - U_,v)*dx \
-            + nu*inner(grad(U_mid),grad(v))*dx \
-            + 1./rho*inner(grad(p_mid),v)*dx \
+            + nu*inner(grad(U_theta),grad(v))*dx \
+            + 1./rho*inner(grad(p_theta),v)*dx \
             - inner(f(t+theta),v)*dx
-        F += div(U_mid)*q*dx 
+        F += div(U_theta)*q*dx 
 
         # Time loop
         self.start_timing()
