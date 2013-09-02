@@ -72,7 +72,6 @@ class Solver(SolverBase):
         #p_(k+theta)
         eta_theta = (1.0-theta)*eta_ + theta*eta
 
-        f = problem.F
         #weak form of the equations
         F = (1./dt)*(eta - eta_)*chi*dx + h*div(U_theta)*chi*dx 
         F += (1./dt)*inner(U - U_,v)*dx \
