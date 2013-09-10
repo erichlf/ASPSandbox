@@ -7,11 +7,12 @@ def f(f0,beta): #Coriolis parameter
     return Expression('f0 + beta*x[1]', f0=f0, beta=beta)
 
 class InitialConditions(Expression):
-    def __init__(self, problem, V, Q):
+    def __init__(self, problem, V, Q, S):
         self.U0, self.eta0 = problem.initial_conditions(V, Q)
         self.U0 = project(self.U0,V)
         self.eta0 = project(self.eta0,Q)
-        self.s0 = Expression('A*exp(-(x[0]*x[0]+x[1]*x[1])/(2*S*S))', A=10, S=12.5)
+        self.s0 = Expression('A*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*S*S))', A=1, S=0.05)
+        self.s0 = project(self.s0,S)
 
     def eval(self, value, x):
         value[:2] = self.U0(x)
@@ -43,16 +44,13 @@ class Solver(SolverBase):
         beta = problem.beta #beta plane parameter
         nu = problem.nu #viscosity
         rho = problem.rho #density
-        K = 1 #diffusion coefficient
+        K = 1E-3 #diffusion coefficient
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
         Q = FunctionSpace(mesh, 'CG', problem.Pp)
         S = FunctionSpace(mesh, 'CG', problem.Pp)
-        W = V * Q * S
-
-        # Get boundary conditions
-        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+        W = MixedFunctionSpace([V, Q, S])
 
         #define trial and test function
         v, chi, r = TestFunctions(W)
@@ -61,14 +59,17 @@ class Solver(SolverBase):
         w_ = Function(W)
 
         #initial condition
-        w = InitialConditions(problem, V, Q) 
+        w = InitialConditions(problem, V, Q, S) 
         w = project(w, W)
 
-        w_ = InitialConditions(problem, V, Q) 
+        w_ = InitialConditions(problem, V, Q, S) 
         w_ = project(w_, W)
 
         U, eta, s = (as_vector((w[0], w[1])), w[2], w[3])
         U_, eta_, s_ = (as_vector((w_[0], w_[1])), w_[2], w_[3])
+
+        # Get boundary conditions
+        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
         #U_(k+theta)
         U_theta = (1.0-theta)*U_ + theta*U
@@ -88,8 +89,8 @@ class Solver(SolverBase):
             + inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx
         F += (1./dt)*(s - s_)*r*dx \
-            + inner(u,grad(s_theta))*r*dx \
-            + K*inner(grad(s),grad(r))
+            + inner(U_theta,grad(s_theta))*r*dx \
+            + K*inner(grad(s_theta),grad(r))*dx
 
         # Time loop
         self.start_timing()
