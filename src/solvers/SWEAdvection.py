@@ -11,13 +11,15 @@ class InitialConditions(Expression):
         self.U0, self.eta0 = problem.initial_conditions(V, Q)
         self.U0 = project(self.U0,V)
         self.eta0 = project(self.eta0,Q)
+        self.s0 = Expression('A*exp(-(x[0]*x[0]+x[1]*x[1])/(2*S*S))', A=10, S=12.5)
 
     def eval(self, value, x):
         value[:2] = self.U0(x)
         value[2] = self.eta0(x)
+        value[3] = self.s0(x)
 
     def value_shape(self):
-        return (3,)
+        return (4,)
 
 class Solver(SolverBase):
 #    Incremental pressure-correction scheme.
@@ -41,17 +43,19 @@ class Solver(SolverBase):
         beta = problem.beta #beta plane parameter
         nu = problem.nu #viscosity
         rho = problem.rho #density
+        K = 1 #diffusion coefficient
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
         Q = FunctionSpace(mesh, 'CG', problem.Pp)
-        W = V * Q
+        S = FunctionSpace(mesh, 'CG', problem.Pp)
+        W = V * Q * S
 
         # Get boundary conditions
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
         #define trial and test function
-        v, chi = TestFunctions(W)
+        v, chi, r = TestFunctions(W)
 
         w = Function(W)
         w_ = Function(W)
@@ -63,14 +67,17 @@ class Solver(SolverBase):
         w_ = InitialConditions(problem, V, Q) 
         w_ = project(w_, W)
 
-        U, eta = (as_vector((w[0], w[1])), w[2])
-        U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
+        U, eta, s = (as_vector((w[0], w[1])), w[2], w[3])
+        U_, eta_, s_ = (as_vector((w_[0], w_[1])), w_[2], w_[3])
 
         #U_(k+theta)
         U_theta = (1.0-theta)*U_ + theta*U
 
         #p_(k+theta)
         eta_theta = (1.0-theta)*eta_ + theta*eta
+
+        #s_(k+theta)
+        s_theta = (1.0-theta)*s_ + theta*s
 
         #weak form of the equations
         F = (1./dt)*(eta - eta_)*chi*dx \
@@ -80,12 +87,15 @@ class Solver(SolverBase):
             - g*eta_theta*div(v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx
+        F += (1./dt)*(s - s_)*r*dx \
+            + inner(u,grad(s_theta))*r*dx \
+            + K*inner(grad(s),grad(r))
 
         # Time loop
         self.start_timing()
 
         #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[1]) 
+        self.update(problem, t, w_.split()[0], w_.split()[2]) 
 
         while t<T:
             t += dt
@@ -99,11 +109,12 @@ class Solver(SolverBase):
 
             U_ = w_.split()[0] 
             eta_ = w_.split()[1]
+            s_ = w_.split()[2]
 
             # Update
-            self.update(problem, t, U_, eta_)
-        
-        return U_, eta_
+            self.update(problem, t, U_, s_)
+
+        return U_, s_
 
     def __str__(self):
-          return 'SWE'
+          return 'SWEAdvection'

@@ -18,7 +18,6 @@ class ProblemBase:
 
         # Parameters must be defined by subclass
         self.mesh    = None
-        self.F      = None
         self.bcu    = []
         self.bcp    = []
         self.nu     = None

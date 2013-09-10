@@ -32,8 +32,8 @@ class Solver(SolverBase):
         f = problem.F 
         #weak form of the equations
         F = nu*inner(grad(U),grad(v))*dx + 1./rho*inner(grad(p),v)*dx 
+        F -= inner(f(t),v)*dx
         F += div(U)*q*dx 
-        F += inner(f(t),v)*dx
 
         # Time loop
         self.start_timing()

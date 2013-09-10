@@ -24,7 +24,6 @@ class Problem(ProblemBase):
         N = options["N"]
         self.mesh = RectangleMesh(-1,-1,1,1,N, N)
 
-        self.F = Constant((0, 0)) #Forcing function 
         self.nu = options["nu"] #viscosity
         self.rho = options["rho"] #density
         self.f0 = options["f0"] #reference Coriolis parameter

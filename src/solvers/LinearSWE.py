@@ -76,7 +76,7 @@ class Solver(SolverBase):
         F = (1./dt)*(eta - eta_)*chi*dx + h*div(U_theta)*chi*dx 
         F += (1./dt)*inner(U - U_,v)*dx \
                 + f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
-                + g*inner(grad(eta_theta),v)*dx 
+                - g*eta_theta*div(v)*dx 
 
         # Time loop
         self.start_timing()
