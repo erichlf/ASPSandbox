@@ -1,5 +1,6 @@
 __author__ = "Anders Logg <logg@simula.no>"
 __date__ = "2013-08-27"
+__license__  = "GNU GPL version 3 or any later version"
 #
 #   adapted from solverbase.py in nsbench originally developed by
 #   Anders Logg <logg@simula.no>

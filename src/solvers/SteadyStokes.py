@@ -1,5 +1,6 @@
 __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2013-08-27"
+__license__  = "GNU GPL version 3 or any later version"
 
 from solverbase import *
 
