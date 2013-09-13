@@ -9,10 +9,12 @@ def f(f0,beta): #Coriolis parameter
 
 class InitialConditions(Expression):
     def __init__(self, problem, V, Q, S):
+        A = 1
+        sig = 0.05
         self.U0, self.eta0 = problem.initial_conditions(V, Q)
         self.U0 = project(self.U0,V)
         self.eta0 = project(self.eta0,Q)
-        self.s0 = Expression('A*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*S*S))', A=1, S=0.05)
+        self.s0 = Expression('A*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*sig*sig))', A=A, sig=sig)
         self.s0 = project(self.s0,S)
 
     def eval(self, value, x):
@@ -45,7 +47,7 @@ class Solver(SolverBase):
         beta = problem.beta #beta plane parameter
         nu = problem.nu #viscosity
         rho = problem.rho #density
-        K = 1E-3 #diffusion coefficient
+        D = 1E-3 #diffusion coefficient
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
@@ -91,7 +93,7 @@ class Solver(SolverBase):
             + nu*inner(grad(U_theta),grad(v))*dx
         F += (1./dt)*(s - s_)*r*dx \
             + inner(U_theta,grad(s_theta))*r*dx \
-            + K*inner(grad(s_theta),grad(r))*dx
+            + D*inner(grad(s_theta),grad(r))*dx
 
         # Time loop
         self.start_timing()
