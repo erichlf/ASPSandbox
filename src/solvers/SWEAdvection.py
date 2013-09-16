@@ -47,7 +47,7 @@ class Solver(SolverBase):
         beta = problem.beta #beta plane parameter
         nu = problem.nu #viscosity
         rho = problem.rho #density
-        D = 1E-3 #diffusion coefficient
+        D = 1E-5 #diffusion coefficient
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
