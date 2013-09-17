@@ -29,6 +29,7 @@ class Solver(SolverBase):
     def solve(self, problem):
         #get problem mesh 
         mesh = problem.mesh
+        h = CellSize(mesh) #mesh size
 
         t = 0 #initial time
         T = problem.T #final time
@@ -36,7 +37,7 @@ class Solver(SolverBase):
         theta = problem.theta #time stepping method
 
         #problem parameters
-        h = problem.h #fluid depth
+        H = problem.h #fluid depth
         g = problem.g #gravity
         f0 = problem.f0 #reference Coriolis force
         beta = problem.beta #beta plane parameter
@@ -75,12 +76,23 @@ class Solver(SolverBase):
 
         #weak form of the equations
         F = (1./dt)*(eta - eta_)*chi*dx \
-            + h*div(U_theta)*chi*dx 
+            + H*div(U_theta)*chi*dx 
         F += (1./dt)*inner(U - U_,v)*dx \
             + f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
             - g*eta_theta*div(v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx
+        if(problem.stabilize):
+          # Stabilization parameters
+          C1  = 4.0
+          C2  = 2.0
+          d1 = C1*h #Expression(cppcode_d1, element=DG)
+          d2 = C2*h #Expression(cppcode_d2, element=DG)
+
+          #add stabilization
+          F += d1*inner(grad(U_theta)*U_theta \
+              + grad(eta_theta), grad(v)*U_theta \
+              + grad(chi))*dx + d2*div(U_theta)*div(v)*dx
 
         # Time loop
         self.start_timing()

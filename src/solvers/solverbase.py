@@ -18,6 +18,8 @@ import sys
 maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
+StabileSolvers = ['NSE', 'SWE']
+
 class SolverBase:
 #   Base class for all solvers.
     def __init__(self, options):
@@ -71,6 +73,7 @@ class SolverBase:
         # Update problem 
         problem.update_problem(t, u, p)
 
+        solverName = self.__module__.split('.')[-1]
         # Store values
         self._t.append(t)
 
@@ -84,8 +87,10 @@ class SolverBase:
             if (self._timestep - 1) % frequency == 0:
                 # Create files for saving
                 if self._ufile is None:
-                    s = 'results/' + self.prefix(problem) +\
-                            'Re' + str(int(1./nu)) + \
+                    s = 'results/' + self.prefix(problem) 
+                    if(self.options["stabilize"] and solverName in StabileSolvers):
+                        s += 'Stabilized'
+                    s += 'Re' + str(int(1./nu)) + \
                             'N' + str(N) + 'K' + str(int(1./dt))  
                     self._ufile = File(s + '_u.pvd')
                 if self._pfile is None:
