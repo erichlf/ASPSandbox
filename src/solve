@@ -93,6 +93,7 @@ def main(args):
 
     # Set global DOLFIN parameters
     parameters['form_compiler']['cpp_optimize'] = True
+    parameters['allow_extrapolation'] = True;
     nonLinearSolver = NewtonSolver(options["linear_solver"])
     prm = nonLinearSolver.parameters
     prm['convergence_criterion'] = 'incremental' 

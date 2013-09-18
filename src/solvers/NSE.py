@@ -75,14 +75,13 @@ class Solver(SolverBase):
         F += div(U_theta)*q*dx 
         if(problem.stabilize):
           # Stabilization parameters
-          C1  = 4.0
-          C2  = 2.0
-          d1 = C1*h #Expression(cppcode_d1, element=DG)
-          d2 = C2*h #Expression(cppcode_d2, element=DG)
+          k1  = 1.0
+          k2  = 1.0
+          d1 = 0.5*(k1**(-2) + norm(project(U_,V))**2*h**(-2))**(-0.5) #Expression(cppcode_d1, element=DG)
+          d2 = k2*h #Expression(cppcode_d2, element=DG)
           #add stabilization
-          F += d1*inner(grad(U_theta)*U_theta \
-              + grad(p_theta), grad(v)*U_theta \
-              + grad(q))*dx + d2*div(U_theta)*div(v)*dx
+          F += d1*inner(grad(U_theta)*U_theta + grad(p_theta), \
+              grad(v)*U_theta + grad(q))*dx + d2*div(U_theta)*div(v)*dx
 
         # Time loop
         self.start_timing()
