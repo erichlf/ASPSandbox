@@ -63,7 +63,7 @@ class Solver(SolverBase):
         U_theta = (1.0-theta)*U_ + theta*U
 
         #p_(k+theta)
-        p_theta = (1.0-theta)*p_ + theta*p
+        p_theta = p#(1.0-theta)*p_ + theta*p
 
         f = problem.F
         #weak form of the equations
@@ -77,7 +77,7 @@ class Solver(SolverBase):
           # Stabilization parameters
           k1  = 1.0
           k2  = 0.0
-          d1 = 0.5*(k1**(-2) + norm(project(U_,V))**2*h**(-2))**(-0.5) 
+          d1 = 0.5*(k1**(-2) + inner(U_,U_)*h**(-2))**(-0.5) 
           d2 = k2*h 
           #add stabilization
           F += d1*inner(grad(U_theta)*U_theta + grad(p_theta), \
