@@ -84,38 +84,17 @@ class Solver(SolverBase):
             + nu*inner(grad(U_theta),grad(v))*dx
         if(problem.stabilize):
           # Stabilization parameters
-          C1  = 4.0
-          C2  = 2.0
-          d1 = C1*h #Expression(cppcode_d1, element=DG)
-          d2 = C2*h #Expression(cppcode_d2, element=DG)
+          k1  = 1.0
+          k2  = 1.0
+          d1 = 0.5*(k1**(-2) + norm(project(U_,V))**2*h**(-2))**(-0.5) 
+          d2 = k2*h 
 
           #add stabilization
           F += d1*inner(grad(U_theta)*U_theta \
               + grad(eta_theta), grad(v)*U_theta \
               + grad(chi))*dx + d2*div(U_theta)*div(v)*dx
-
-        # Time loop
-        self.start_timing()
-
-        #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[1]) 
-
-        while t<T:
-            t += dt
-
-            #evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
-
-            solve(F==0, w, bcs=bcs)
-
-            w_.vector()[:] = w.vector()
-
-            U_ = w_.split()[0] 
-            eta_ = w_.split()[1]
-
-            # Update
-            self.update(problem, t, U_, eta_)
-        
+ 
+        U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, eta_, F) 
         return U_, eta_
 
     def __str__(self):

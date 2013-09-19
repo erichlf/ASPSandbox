@@ -47,7 +47,7 @@ class Problem(ProblemBase):
 
         # Load mesh
         N = options["N"]
-        self.mesh = Mesh('data/cylinder_4.xml.gz')
+        self.mesh = Mesh('data/cylinder_0.xml.gz')
 
         self.nu = options["nu"] #viscosity
         self.rho = options["rho"] #density
@@ -71,10 +71,9 @@ class Problem(ProblemBase):
         return u0, p0
 
     def boundary_conditions(self, V, Q, t):
-
         # Create inflow boundary condition
-        self.g0 = Expression(('4*Um*(x[1]*(ymax-x[1]))*sin(pi*t/8.0)/(ymax*ymax)', '0.0'),
-                             Um=1.5, ymax=ymax, t=t)
+        self.g0 = Expression(('4*Um*(x[1]*(ymax-x[1]))/(ymax*ymax)',
+                      '0.0'), Um=1.5, ymax=ymax)
         self.b0 = InflowBoundary()
         bc0 = DirichletBC(V, self.g0, self.b0)
 

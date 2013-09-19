@@ -79,28 +79,7 @@ class Solver(SolverBase):
                 + f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
                 - g*eta_theta*div(v)*dx 
 
-        # Time loop
-        self.start_timing()
-
-        #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[1]) 
-
-        while t<T:
-            t += dt
-
-            #evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
-
-            solve(F==0, w, bcs=bcs)
-
-            w_.vector()[:] = w.vector()
-
-            U_ = w_.split()[0] 
-            eta_ = w_.split()[1]
-
-            # Update
-            self.update(problem, t, U_, eta_)
-        
+        U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, eta_, F) 
         return U_, eta_
 
     def __str__(self):

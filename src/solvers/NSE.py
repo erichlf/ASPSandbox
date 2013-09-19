@@ -83,28 +83,7 @@ class Solver(SolverBase):
           F += d1*inner(grad(U_theta)*U_theta + grad(p_theta), \
               grad(v)*U_theta + grad(q))*dx + d2*div(U_theta)*div(v)*dx
 
-        # Time loop
-        self.start_timing()
-
-        #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[1]) 
-
-        while t<T:
-            t += dt
-
-            #evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
-
-            solve(F==0, w, bcs=bcs)
-
-            w_.vector()[:] = w.vector()
-
-            U_ = w_.split()[0] 
-            p_ = w_.split()[1]
-
-            # Update
-            self.update(problem, t, U_, p_)
-        
+        U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, p_, F) 
         return U_, p_
 
     def __str__(self):
