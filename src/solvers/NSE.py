@@ -63,7 +63,7 @@ class Solver(SolverBase):
         U_theta = (1.0-theta)*U_ + theta*U
 
         #p_(k+theta)
-        p_theta = p#(1.0-theta)*p_ + theta*p
+        p_theta = (1.0-theta)*p_ + theta*p
 
         f = problem.F
         #weak form of the equations

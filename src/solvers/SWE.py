@@ -84,9 +84,9 @@ class Solver(SolverBase):
             + nu*inner(grad(U_theta),grad(v))*dx
         if(problem.stabilize):
           # Stabilization parameters
-          k1  = 1.0
+          k1  = 0.5
           k2  = 1.0
-          d1 = 0.5*(k1**(-2) + norm(project(U_,V))**2*h**(-2))**(-0.5) 
+          d1 = k1*(dt**(-2) + inner(U_,U_))**2*h**(-2))**(-0.5) 
           d2 = k2*h 
 
           #add stabilization
