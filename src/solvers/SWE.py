@@ -86,7 +86,7 @@ class Solver(SolverBase):
           # Stabilization parameters
           k1  = 0.5
           k2  = 1.0
-          d1 = k1*(dt**(-2) + inner(U_,U_))**2*h**(-2))**(-0.5) 
+          d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5) 
           d2 = k2*h 
 
           #add stabilization
