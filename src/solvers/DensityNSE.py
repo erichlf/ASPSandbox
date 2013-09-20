@@ -104,7 +104,7 @@ class Solver(SolverBase):
             F += d1*inner(grad(U_theta)*U_theta + grad(p_theta), \
                 grad(v)*U_theta + grad(q))*dx 
             F += d2*div(U_theta)*div(v)*dx 
-            F += d3*inner(U_theta*grad(rho_theta),U_theta*grad(r))*dx
+            F += d3*inner(U_theta*grad(rho_theta))*inner(U_theta*grad(r))*dx
 
         # Time loop
         self.start_timing()
