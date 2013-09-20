@@ -82,14 +82,19 @@ class Solver(SolverBase):
 
         f = problem.F
         #weak form of the equations
+        #density equation
         F = ((1./dt)*(a - a_) + inner(U_theta,grad(a_theta)))*b*dx
+        #momentum equation
         F += (1./dt)*inner(U - U_,v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
             + nu*(inner(grad(U_theta)*grad(a_theta),v) \
             + (1+a_theta)*inner(grad(U_theta),grad(v)))*dx \
             + (1+a_theta)*inner(grad(p_theta),v)*dx 
+        #load vector
         F -= inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
+        #incompressibility
         F += div(U_theta)*q*dx 
+        #stabilization
         if(problem.stabilize):
           # Stabilization parameters
           k1  = 0.5
