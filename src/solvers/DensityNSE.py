@@ -89,7 +89,7 @@ class Solver(SolverBase):
             + nu*inner(grad(U_theta),grad(v))*dx \
             + inner(grad(p_theta),v)*dx 
         #load vector
-        F -= rho_theta*inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
+        F -= inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
         #continuity
         F += div(U_theta)*q*dx 
         #stabilization
