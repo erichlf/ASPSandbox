@@ -95,8 +95,9 @@ class Solver(SolverBase):
         #stabilization
         if(problem.stabilize):
             # Stabilization parameters
-            k1  = 0.5
-            k2  = 1.0
+            k1 = 0.5
+            k2 = 1.0
+            k3 = 0.5
             d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5) 
             d2 = k2*h 
             d3 = k1*(dt**(-2) + rho_*rho_*h**(-2))**(-0.5) 
@@ -104,7 +105,7 @@ class Solver(SolverBase):
             F += d1*inner(grad(U_theta)*U_theta + grad(p_theta), \
                 grad(v)*U_theta + grad(q))*dx 
             F += d2*div(U_theta)*div(v)*dx 
-            F += d3*inner(U_theta*grad(rho_theta))*inner(U_theta*grad(r))*dx
+            F += d3*inner(U_theta,grad(rho_theta))*inner(U_theta,grad(r))*dx
 
         # Time loop
         self.start_timing()
