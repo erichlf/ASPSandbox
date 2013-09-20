@@ -90,7 +90,7 @@ class Solver(SolverBase):
             + inner(grad(p_theta),v)*dx 
         #load vector
         F -= rho_theta*inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
-        #incompressibility
+        #continuity
         F += div(U_theta)*q*dx 
         #stabilization
         if(problem.stabilize):
