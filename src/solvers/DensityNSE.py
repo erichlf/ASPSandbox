@@ -5,20 +5,19 @@ __license__  = "GNU GPL version 3 or any later version"
 from solverbase import *
 
 class InitialConditions(Expression):
-    def __init__(self, problem, V, Q, A):
-        C = 1
+    def __init__(self, problem, V, Q, R):
+        A = 1
         sig = 0.05
-        self.U0, self.eta0 = problem.initial_conditions(V, Q)
+        self.U0, self.p0 = problem.initial_conditions(V, Q)
         self.U0 = project(self.U0,V)
-        self.p0 = project(self.eta0,Q)
-        #self.a0 = Expression('C*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*sig*sig))', C=C, sig=sig)
-        self.a0 = Expression('(x[0]<0.5)?1.0:0.0')
-        self.a0 = project(self.a0,A)
+        self.p0 = project(self.p0,Q)
+        self.rho0 = Expression('A*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*sig*sig))', A=A, sig=sig)
+        self.rho0 = project(self.rho0,R)
 
     def eval(self, value, x):
         value[:2] = self.U0(x)
         value[2] = self.p0(x)
-        value[3] = self.a0(x)
+        value[3] = self.rho0(x)
 
     def value_shape(self):
         return (4,)
@@ -44,35 +43,35 @@ class Solver(SolverBase):
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
         Q = FunctionSpace(mesh, 'CG', problem.Pp)
-        A = FunctionSpace(mesh, 'CG', problem.Pp)
-        W = MixedFunctionSpace([V, Q, A])
+        R = FunctionSpace(mesh, 'CG', problem.Pp)
+        W = MixedFunctionSpace([V, Q, R])
 
         #define trial and test function
-        v, q, b = TestFunctions(W)
+        v, q, r = TestFunctions(W)
 
         w = Function(W)
         w_ = Function(W)
 
         #initial condition
-        w = InitialConditions(problem, V, Q, A) 
+        w = InitialConditions(problem, V, Q, R) 
         w = project(w, W)
 
 
         #initial condition
-        w = InitialConditions(problem, V, Q, A) 
+        w = InitialConditions(problem, V, Q, R) 
         w = project(w, W)
 
-        w_ = InitialConditions(problem, V, Q, A) 
+        w_ = InitialConditions(problem, V, Q, R) 
         w_ = project(w_, W)
 
-        U, p, a = (as_vector((w[0], w[1])), w[2], w[3])
-        U_, p_, a_ = (as_vector((w_[0], w_[1])), w_[2], w_[3])
+        U, p, rho = (as_vector((w[0], w[1])), w[2], w[3])
+        U_, p_, rho_ = (as_vector((w_[0], w_[1])), w_[2], w_[3])
 
         # Get boundary conditions
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
-        #a_(k+theta)
-        a_theta = (1.0-theta)*a_ + theta*a
+        #rho_(k+theta)
+        rho_theta = (1.0-theta)*rho_ + theta*rho
 
         #U_(k+theta)
         U_theta = (1.0-theta)*U_ + theta*U
@@ -83,15 +82,14 @@ class Solver(SolverBase):
         f = problem.F
         #weak form of the equations
         #density equation
-        F = ((1./dt)*(a - a_) + inner(U_theta,grad(a_theta)))*b*dx
+        F = ((1./dt)*(rho - rho_) + inner(U_theta,grad(rho_theta)))*r*dx
         #momentum equation
-        F += (1./dt)*inner(U - U_,v)*dx \
-            + inner(grad(U_theta)*U_theta,v)*dx \
-            + nu*(inner(grad(U_theta)*grad(a_theta),v) \
-            + (1+a_theta)*inner(grad(U_theta),grad(v)))*dx \
-            + (1+a_theta)*inner(grad(p_theta),v)*dx 
+        F += (rho_theta/dt)*inner(U - U_,v)*dx \
+            + rho_theta*inner(grad(U_theta)*U_theta,v)*dx \
+            + nu*inner(grad(U_theta),grad(v))*dx \
+            + inner(grad(p_theta),v)*dx 
         #load vector
-        F -= inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
+        F -= rho_theta*inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
         #incompressibility
         F += div(U_theta)*q*dx 
         #stabilization
@@ -123,11 +121,11 @@ class Solver(SolverBase):
 
             U_ = w_.split()[0] 
             p_ = w_.split()[1]
-            a_ = w_.split()[2]
+            rho_ = w_.split()[2]
 
             # Update
-            self.update(problem, t, U_, a_)
-        return U_, a_
+            self.update(problem, t, U_, rho_)
+        return U_, rho_
 
     def __str__(self):
           return 'DensityNSE'
