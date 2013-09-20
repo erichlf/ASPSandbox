@@ -109,6 +109,14 @@ class Solver(SolverBase):
             + 1./rho*inner(grad(p_theta),v)*dx 
         F -= inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
         F += div(U_theta)*q*dx 
+        if(problem.stabilize):
+          # Stabilization parameters
+          k1  = 1.0
+          k2  = 1.0
+          d1 = k1*h**2 
+          d2 = k2*h**2 
+          #add stabilization
+          F += d1*inner(grad(p_theta), grad(q))*dx + d2*div(U_theta)*div(v)*dx
 
         U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, p_, F) 
         return U_, p_

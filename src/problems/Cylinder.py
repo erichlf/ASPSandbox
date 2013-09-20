@@ -47,7 +47,7 @@ class Problem(ProblemBase):
 
         # Load mesh
         N = options["N"]
-        self.mesh = Mesh('data/cylinder_4.xml.gz')
+        self.mesh = Mesh('data/cylinder_0.xml.gz')
 
         self.nu = options["nu"] #viscosity
         self.rho = options["rho"] #density
