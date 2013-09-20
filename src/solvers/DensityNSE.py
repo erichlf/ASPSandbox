@@ -102,8 +102,9 @@ class Solver(SolverBase):
             d3 = k1*(dt**(-2) + rho_*rho_*h**(-2))**(-0.5) 
             #add stabilization
             F += d1*inner(grad(U_theta)*U_theta + grad(p_theta), \
-                grad(v)*U_theta + grad(q))*dx + d2*div(U_theta)*div(v)*dx \
-                d3*inner(U_theta*grad(rho_theta),U_theta*grad(r))*dx
+                grad(v)*U_theta + grad(q))*dx 
+            F += d2*div(U_theta)*div(v)*dx 
+            F += d3*inner(U_theta*grad(rho_theta),U_theta*grad(r))*dx
 
         # Time loop
         self.start_timing()
