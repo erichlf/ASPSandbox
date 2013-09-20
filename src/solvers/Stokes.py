@@ -65,6 +65,8 @@ class Solver(SolverBase):
     def solve(self, problem):
         #get problem parameters
         mesh = problem.mesh
+        h = CellSize(mesh) #mesh size
+
         t = 0
         T = problem.T
         dt = problem.dt
