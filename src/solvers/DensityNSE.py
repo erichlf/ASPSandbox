@@ -76,9 +76,6 @@ class Solver(SolverBase):
         #U_(k+theta)
         U_theta = (1.0-theta)*U_ + theta*U
 
-        #p_(k+theta)
-        p_theta = (1.0-theta)*p_ + theta*p
-
         f = problem.F
         #weak form of the equations
         #density equation
@@ -87,7 +84,7 @@ class Solver(SolverBase):
         F += (rho_theta/dt)*inner(U - U_,v)*dx \
             + rho_theta*inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx \
-            + inner(grad(p_theta),v)*dx 
+            + inner(grad(p),v)*dx 
         #load vector
         F -= inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
         #continuity
@@ -102,7 +99,7 @@ class Solver(SolverBase):
             d2 = k2*h 
             d3 = k1*(dt**(-2) + rho_*rho_*h**(-2))**(-0.5) 
             #add stabilization
-            F += d1*inner(grad(U_theta)*U_theta + grad(p_theta), \
+            F += d1*inner(grad(U_theta)*U_theta + grad(p), \
                 grad(v)*U_theta + grad(q))*dx 
             F += d2*div(U_theta)*div(v)*dx 
             F += d3*inner(U_theta,grad(rho_theta))*inner(U_theta,grad(r))*dx

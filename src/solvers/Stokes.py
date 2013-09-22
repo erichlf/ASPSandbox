@@ -101,14 +101,11 @@ class Solver(SolverBase):
         #U_(k+theta)
         U_theta = (1.0-theta)*U_ + theta*U
 
-        #p_(k+theta)
-        p_theta = (1.0-theta)*p_ + theta*p
-
         f = problem.F
         #weak form of the equations
         F = (1./dt)*inner(U - U_,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx \
-            + 1./rho*inner(grad(p_theta),v)*dx 
+            + 1./rho*inner(grad(p),v)*dx 
         F -= inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
         F += div(U_theta)*q*dx 
         if(problem.stabilize):
@@ -118,7 +115,7 @@ class Solver(SolverBase):
           d1 = k1*h**2 
           d2 = k2*h**2 
           #add stabilization
-          F += d1*inner(grad(p_theta), grad(q))*dx + d2*div(U_theta)*div(v)*dx
+          F += d1*inner(grad(p), grad(q))*dx + d2*div(U_theta)*div(v)*dx
 
         U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, p_, F) 
         return U_, p_
