@@ -77,6 +77,7 @@ class Solver(SolverBase):
         U_theta = (1.0-theta)*U_ + theta*U
 
         f = problem.F
+        f_theta = theta*f(t) + (1 - theta)*f(t+theta)
         #weak form of the equations
         #density equation
         F = ((1./dt)*(rho - rho_) + inner(U_theta,grad(rho_theta)))*r*dx
@@ -86,7 +87,7 @@ class Solver(SolverBase):
             + nu*inner(grad(U_theta),grad(v))*dx \
             + inner(grad(p),v)*dx 
         #load vector
-        F -= inner(theta*f(t) + (1. - theta)*f(t+theta),v)*dx
+        #F -= rho_theta*inner(f_theta,v)*dx
         #continuity
         F += div(U_theta)*q*dx 
         #stabilization
@@ -95,13 +96,13 @@ class Solver(SolverBase):
             k1 = 0.5
             k2 = 1.0
             k3 = 0.5
-            d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5) 
+            d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
             d2 = k2*h 
-            d3 = k1*(dt**(-2) + rho_*rho_*h**(-2))**(-0.5) 
+            d3 = k1*(dt**(-2) + rho_*rho_*h**(-2))**(-0.5)
             #add stabilization
-            F += d1*inner(grad(U_theta)*U_theta + grad(p), \
-                grad(v)*U_theta + grad(q))*dx 
-            F += d2*div(U_theta)*div(v)*dx 
+            F += d1*inner(rho_theta*(grad(U_theta)*U_theta - f_theta) + grad(p),
+                rho_theta*grad(v)*U_theta + grad(q))*dx 
+            F += d2*div(U_theta)*div(v)*dx
             F += d3*inner(U_theta,grad(rho_theta))*inner(U_theta,grad(r))*dx
 
         # Time loop
