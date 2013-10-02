@@ -109,7 +109,7 @@ class Solver(SolverBase):
             F += d1*inner(rho_theta*f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
                 + rho_theta*(grad(U_theta)*U_theta) \
                 - rho_theta*as_vector((0.0,g)) + grad(p),
-                hho_theta*f(f0,beta)*as_vector((-v[1],v[0])) \
+                rho_theta*f(f0,beta)*as_vector((-v[1],v[0])) \
                 - r*as_vector((0.0,g)) \
                 + rho_theta*grad(v)*U_theta + grad(q))*dx 
             F += d2*div(U_theta)*div(v)*dx
