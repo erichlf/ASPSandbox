@@ -94,8 +94,8 @@ class Solver(SolverBase):
           F += d1*inner(f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
               + grad(U_theta)*U_theta + g*grad(eta_theta), \
               f(f0,beta)*as_vector((-v[1],v[0])) \
-              + grad(v)*U_theta + g*grad(chi))*dx \
-              + d2*H**2*div(U_theta)*div(v)*dx
+              + grad(v)*U_theta + g*grad(chi))*dx 
+          F += d2*H**2*div(U_theta)*div(v)*dx
 
         U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, eta_, F) 
         return U_, eta_

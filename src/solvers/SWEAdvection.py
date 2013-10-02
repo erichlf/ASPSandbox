@@ -95,28 +95,24 @@ class Solver(SolverBase):
             + inner(U_theta,grad(s_theta))*r*dx \
             + D*inner(grad(s_theta),grad(r))*dx
 
-        # Time loop
-        self.start_timing()
+        if(problem.stabilize):
+          # Stabilization parameters
+          k1  = 0.5
+          k2  = 0.5
+          k3  = 0.5
+          d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+          d2 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5) 
+          d2 = k3*(dt**(-2) + s_*s_*h**(-2))**(-0.5) 
 
-        #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[2]) 
+          #add stabilization
+          F += d1*inner(f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
+              + grad(U_theta)*U_theta + g*grad(eta_theta), \
+              f(f0,beta)*as_vector((-v[1],v[0])) \
+              + grad(v)*U_theta + g*grad(chi))*dx 
+          F += d2*H**2*div(U_theta)*div(v)*dx
+          F += d3*inner(inner(U_theta,grad(s_theta)), inner(U_theta,grad(r)))*dx 
 
-        while t<T:
-            t += dt
-
-            #evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
-
-            solve(F==0, w, bcs=bcs)
-
-            w_.vector()[:] = w.vector()
-
-            U_ = w_.split()[0] 
-            eta_ = w_.split()[1]
-            s_ = w_.split()[2]
-
-            # Update
-            self.update(problem, t, U_, s_)
+        U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, eta_, F) 
 
         return U_, s_
 
