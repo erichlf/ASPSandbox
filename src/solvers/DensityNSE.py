@@ -106,8 +106,12 @@ class Solver(SolverBase):
             d2 = k2*h 
             d3 = k1*(dt**(-2) + rho_*rho_*h**(-2))**(-0.5)
             #add stabilization
-            F += d1*inner(rho_theta*(grad(U_theta)*U_theta) + grad(p),
-                rho_theta*grad(v)*U_theta + grad(q))*dx 
+            F += d1*inner(rho_theta*f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
+                + rho_theta*(grad(U_theta)*U_theta) \
+                - rho_theta*as_vector((0.0,g)) + grad(p),
+                hho_theta*f(f0,beta)*as_vector((-v[1],v[0])) \
+                - r*as_vector((0.0,g)) \
+                + rho_theta*grad(v)*U_theta + grad(q))*dx 
             F += d2*div(U_theta)*div(v)*dx
             F += d3*inner(U_theta,grad(rho_theta))*inner(U_theta,grad(r))*dx
 
