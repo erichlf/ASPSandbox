@@ -82,18 +82,21 @@ class Solver(SolverBase):
             - g*eta_theta*div(v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx
+
         if(problem.stabilize):
           # Stabilization parameters
           k1  = 0.5
-          k2  = 1.0
-          d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5) 
-          d2 = k2*h 
+          k2  = 0.5
+          d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+          d2 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5) 
 
           #add stabilization
-          F += d1*inner(grad(U_theta)*U_theta \
-              + grad(eta_theta), grad(v)*U_theta \
-              + grad(chi))*dx + d2*div(U_theta)*div(v)*dx
- 
+          F += d1*inner(f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
+              + grad(U_theta)*U_theta + g*grad(eta_theta), \
+              f(f0,beta)*as_vector((-v[1],v[0])) \
+              + grad(v)*U_theta + g*grad(chi))*dx \
+              + d2*H**2*div(U_theta)*div(v)*dx
+
         U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, eta_, F) 
         return U_, eta_
 

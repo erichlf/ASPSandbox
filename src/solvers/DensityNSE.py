@@ -4,14 +4,18 @@ __license__  = "GNU GPL version 3 or any later version"
 
 from solverbase import *
 
+def f(f0,beta): #Coriolis parameter
+    return Expression('f0 + beta*x[1]', f0=f0, beta=beta)
+
 class InitialConditions(Expression):
     def __init__(self, problem, V, Q, R):
         A = 1
         sig = 0.05
         self.U0, self.p0 = problem.initial_conditions(V, Q)
+        self.p0 = Expression('0.0')
         self.U0 = project(self.U0,V)
         self.p0 = project(self.p0,Q)
-        self.rho0 = Expression('A*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*sig*sig))', A=A, sig=sig)
+        self.rho0 = Expression('x[0]<0.5 ? 0.0 : 1.0')#'A*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*sig*sig))', A=A, sig=sig)
         self.rho0 = project(self.rho0,R)
 
     def eval(self, value, x):
@@ -38,6 +42,10 @@ class Solver(SolverBase):
         T = problem.T
         dt = problem.dt
         theta = problem.theta #time stepping method
+
+        g = problem.g #gravity
+        f0 = problem.f0 #reference Coriolis force
+        beta = problem.beta #beta plane parameter
         nu = problem.nu #viscosity
 
         # Define function spaces
@@ -76,18 +84,16 @@ class Solver(SolverBase):
         #U_(k+theta)
         U_theta = (1.0-theta)*U_ + theta*U
 
-        f = problem.F
-        f_theta = theta*f(t) + (1 - theta)*f(t+theta)
         #weak form of the equations
         #density equation
         F = ((1./dt)*(rho - rho_) + inner(U_theta,grad(rho_theta)))*r*dx
         #momentum equation
         F += (rho_theta/dt)*inner(U - U_,v)*dx \
+            + rho_theta*f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
+            - rho_theta*g*v[1]*dx \
             + rho_theta*inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx \
             + inner(grad(p),v)*dx 
-        #load vector
-        #F -= rho_theta*inner(f_theta,v)*dx
         #continuity
         F += div(U_theta)*q*dx 
         #stabilization
@@ -100,7 +106,7 @@ class Solver(SolverBase):
             d2 = k2*h 
             d3 = k1*(dt**(-2) + rho_*rho_*h**(-2))**(-0.5)
             #add stabilization
-            F += d1*inner(rho_theta*(grad(U_theta)*U_theta - f_theta) + grad(p),
+            F += d1*inner(rho_theta*(grad(U_theta)*U_theta) + grad(p),
                 rho_theta*grad(v)*U_theta + grad(q))*dx 
             F += d2*div(U_theta)*div(v)*dx
             F += d3*inner(U_theta,grad(rho_theta))*inner(U_theta,grad(r))*dx
