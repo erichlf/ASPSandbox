@@ -89,7 +89,7 @@ class Solver(SolverBase):
         #momentum equation
         F += (rho_theta/dt)*inner(U - U_,v)*dx \
             + rho_theta*f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
-            - rho_theta*g*v[1]*dx \
+            + rho_theta*g*v[1]*dx \
             + rho_theta*inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx \
             + inner(grad(p),v)*dx
@@ -107,9 +107,9 @@ class Solver(SolverBase):
             #add stabilization
             F += d1*inner(rho_theta*f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
                 + rho_theta*(grad(U_theta)*U_theta) \
-                - rho_theta*as_vector((0.0,g)) + grad(p),
+                + rho_theta*as_vector((0.0,g)) + grad(p),
                 rho_theta*f(f0,beta)*as_vector((-v[1],v[0])) \
-                - r*as_vector((0.0,g)) \
+                + r*as_vector((0.0,g)) \
                 + rho_theta*grad(v)*U_theta + grad(q))*dx
             F += d2*div(U_theta)*div(v)*dx
             F += d3*inner(U_theta,grad(rho_theta))*inner(U_theta,grad(r))*dx
