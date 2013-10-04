@@ -15,7 +15,7 @@ class InitialConditions(Expression):
         self.p0 = Expression('0.0')
         self.U0 = project(self.U0,V)
         self.p0 = project(self.p0,Q)
-        self.rho0 = Expression('x[0]<0.5 ? 0.0 : 1.0')#'A*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*sig*sig))', A=A, sig=sig)
+        self.rho0 = Expression('sin(0.25*pi*(x[0]+1.))')#x[0]<0.0 ? 0.0 : 1.0')#'A*exp(-(pow(x[0]-0.75,2)+pow(x[1]-0.75,2))/(2*sig*sig))', A=A, sig=sig)
         self.rho0 = project(self.rho0,R)
 
     def eval(self, value, x):
@@ -64,7 +64,6 @@ class Solver(SolverBase):
         w = InitialConditions(problem, V, Q, R)
         w = project(w, W)
 
-
         #initial condition
         w = InitialConditions(problem, V, Q, R)
         w = project(w, W)
@@ -90,7 +89,7 @@ class Solver(SolverBase):
         #momentum equation
         F += (rho_theta/dt)*inner(U - U_,v)*dx \
             + rho_theta*f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
-            - rho_theta*inner(as_vector((0.0,g)),v)*dx \
+            - rho_theta*g*v[1]*dx \
             + rho_theta*inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx \
             + inner(grad(p),v)*dx
@@ -109,8 +108,9 @@ class Solver(SolverBase):
             F += d1*inner(rho_theta*f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
                 + rho_theta*(grad(U_theta)*U_theta) \
                 - rho_theta*as_vector((0.0,g)) + grad(p),
-                r*f(f0,beta)*as_vector((-v[1],v[0])) \
-                - r*as_vector((0.0,g)) + r*grad(v)*U_theta + grad(q))*dx
+                rho_theta*f(f0,beta)*as_vector((-v[1],v[0])) \
+                - r*as_vector((0.0,g)) \
+                + rho_theta*grad(v)*U_theta + grad(q))*dx
             F += d2*div(U_theta)*div(v)*dx
             F += d3*inner(U_theta,grad(rho_theta))*inner(U_theta,grad(r))*dx
 
