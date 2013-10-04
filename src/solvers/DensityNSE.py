@@ -90,7 +90,7 @@ class Solver(SolverBase):
         #momentum equation
         F += (rho_theta/dt)*inner(U - U_,v)*dx \
             + rho_theta*f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
-            - rho_theta*g*v[1]*dx \
+            - rho_theta*inner(as_vector((0.0,g)),v)*dx \
             + rho_theta*inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx \
             + inner(grad(p),v)*dx
