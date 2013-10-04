@@ -61,15 +61,15 @@ class Solver(SolverBase):
         w_ = Function(W)
 
         #initial condition
-        w = InitialConditions(problem, V, Q, R) 
+        w = InitialConditions(problem, V, Q, R)
         w = project(w, W)
 
 
         #initial condition
-        w = InitialConditions(problem, V, Q, R) 
+        w = InitialConditions(problem, V, Q, R)
         w = project(w, W)
 
-        w_ = InitialConditions(problem, V, Q, R) 
+        w_ = InitialConditions(problem, V, Q, R)
         w_ = project(w_, W)
 
         U, p, rho = (as_vector((w[0], w[1])), w[2], w[3])
@@ -93,9 +93,9 @@ class Solver(SolverBase):
             - rho_theta*g*v[1]*dx \
             + rho_theta*inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx \
-            + inner(grad(p),v)*dx 
+            + inner(grad(p),v)*dx
         #continuity
-        F += div(U_theta)*q*dx 
+        F += div(U_theta)*q*dx
         #stabilization
         if(problem.stabilize):
             # Stabilization parameters
@@ -103,15 +103,14 @@ class Solver(SolverBase):
             k2 = 1.0
             k3 = 0.5
             d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
-            d2 = k2*h 
+            d2 = k2*h
             d3 = k1*(dt**(-2) + rho_*rho_*h**(-2))**(-0.5)
             #add stabilization
             F += d1*inner(rho_theta*f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
                 + rho_theta*(grad(U_theta)*U_theta) \
                 - rho_theta*as_vector((0.0,g)) + grad(p),
-                rho_theta*f(f0,beta)*as_vector((-v[1],v[0])) \
-                - r*as_vector((0.0,g)) \
-                + rho_theta*grad(v)*U_theta + grad(q))*dx 
+                r*f(f0,beta)*as_vector((-v[1],v[0])) \
+                - r*as_vector((0.0,g)) + r*grad(v)*U_theta + grad(q))*dx
             F += d2*div(U_theta)*div(v)*dx
             F += d3*inner(U_theta,grad(rho_theta))*inner(U_theta,grad(r))*dx
 
@@ -119,7 +118,7 @@ class Solver(SolverBase):
         self.start_timing()
 
         #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[2]) 
+        self.update(problem, t, w_.split()[0], w_.split()[2])
 
         while t<T:
             t += dt
@@ -131,7 +130,7 @@ class Solver(SolverBase):
 
             w_.vector()[:] = w.vector()
 
-            U_ = w_.split()[0] 
+            U_ = w_.split()[0]
             p_ = w_.split()[1]
             rho_ = w_.split()[2]
 
