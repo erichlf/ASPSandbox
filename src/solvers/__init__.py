@@ -4,7 +4,7 @@ __license__  = "GNU GPL version 3 or any later version"
 
 # List of solvers
 solvers = ['NSE', 'SteadyStokes', 'Stokes', 'LinearSWE', 'SWE', 'SWEAdvection',
-    'DensityNSE']
+    'DensityNSE', 'MovingSWE']
 
 # Wrapper for solver classes
 def Solver(name, options):
