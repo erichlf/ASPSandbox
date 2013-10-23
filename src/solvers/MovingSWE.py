@@ -11,6 +11,7 @@ class InitialConditions(Expression):
     def __init__(self, problem, V, Q):
         self.U0 = Constant((0.0,0.0))
         self.eta0 = Constant(0.0)
+        #self.U0, self.eta0 = problem.initial_conditions(V, Q)
         self.U0 = project(self.U0,V)
         self.eta0 = project(self.eta0,Q)
 
@@ -22,7 +23,7 @@ class InitialConditions(Expression):
         return (3,)
 
 def wave_object(Q,t):
-    zeta = Expression('sin(pi*x[0])*t', t=t)
+    zeta = Expression('A/sqrt(2*S*pi)*exp(-pow(x[0] - (t - 0.5),2)/(2*S))', A=200., S=0.02, t=t)
     zeta = project(zeta,Q)
 
     return zeta
@@ -34,7 +35,7 @@ class Solver(SolverBase):
         SolverBase.__init__(self, options)
 
     def solve(self, problem):
-        #get problem mesh 
+        #get problem mesh
         mesh = problem.mesh
         h = CellSize(mesh) #mesh size
 
@@ -51,8 +52,8 @@ class Solver(SolverBase):
         nu = problem.nu #viscosity
         rho = problem.rho #density
 
-        eps = 1.
-        sigma = 1.
+        eps = nu
+        sigma = nu
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
@@ -69,10 +70,10 @@ class Solver(SolverBase):
         w_ = Function(W)
 
         #initial condition
-        w = InitialConditions(problem, V, Q) 
+        w = InitialConditions(problem, V, Q)
         w = project(w, W)
 
-        w_ = InitialConditions(problem, V, Q) 
+        w_ = InitialConditions(problem, V, Q)
         w_ = project(w_, W)
 
         zeta = wave_object(Q,t)
@@ -99,26 +100,27 @@ class Solver(SolverBase):
             + 1./dt*sigma**2*H**2/3.*inner(grad(U - U_),grad(v))*dx
         F -= 1./dt**2*H/2.*inner(grad(zeta - 2.*zeta_ + zeta__),v)*dx
 
-        problem.stabilize = False
         if(problem.stabilize):
           # Stabilization parameters
           k1  = 0.5
           k2  = 0.5
           d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
-          d2 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5) 
+          d2 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
           #add stabilization
-          F += d1*inner(f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
-              + grad(U_theta)*U_theta + g*grad(eta_theta), \
-              f(f0,beta)*as_vector((-v[1],v[0])) \
-              + grad(v)*U_theta + g*grad(chi))*dx 
-          F += d2*H**2*div(U_theta)*div(v)*dx
+          F += d1*inner(eps*grad(U_theta)*U_theta + grad(eta_theta), \
+              + eps*grad(v)*U_theta + grad(chi))*dx
+          F += d2*((H + eps*eta_theta)*div(U_theta) \
+              + inner(grad(H + eps*eta_theta),U_theta)) \
+              *((H + eps*eta_theta)*div(v)
+              + inner(grad(H + eps*eta_theta),v))*dx
 
         # Time loop
         self.start_timing()
 
         #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[1]) 
+        self.update(problem, t, w_.split()[0], w_.split()[1])
+#        viz = plot(zeta, rescale=True)
 
         while t<T:
             t += dt
@@ -126,6 +128,7 @@ class Solver(SolverBase):
             zeta__ = zeta_
             zeta_ = zeta
             zeta = wave_object(Q,t)
+#            viz.update(zeta)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
@@ -134,7 +137,7 @@ class Solver(SolverBase):
 
             w_.vector()[:] = w.vector()
 
-            U_ = w_.split()[0] 
+            U_ = w_.split()[0]
             eta_ = w_.split()[1]
 
             # Update
