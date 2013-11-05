@@ -1,0 +1,70 @@
+The oceans have two important roles in the climate system:
+\begin{inparaenum}[1)]\item They store and release heat seasonally, and \item
+they transport heat around the globe by their large scale currents
+\end{inparaenum} These currents play a significant roll in climate dynamics
+by, in the case of sub-tropic gyres, transporting the warm waters of the
+tropics poleward and in the case of sub-polar gyres transporting the cold
+waters of the pole southward where they mix with the warm waters from the
+tropics.
+
+The first attempts at modelling circulation of the ocean were made after Ekman
+(1905) developed his theory of Ekman pumping \cite{Ekman1905}. Later Sverdrup
+(1947) developed a simple theory that relates the wind stress curl to ocean
+currents \cite{Sverdrup1947}, followed by the development of simple analytical
+models of wind induced ocean currents by Stommel (1948), Munk (1950), and
+Charney (1948) \cite{Stommel1948,Munk1950,Charney1948}. Then in 1963 the first
+numerical model of ocean circulation was developed by Bryan et al.
+\cite{Bryan1963}. Since the work developed by Bryan there have been many
+numerical studies of ocean circulation, however the majority of which have
+relied on the Finite Difference Method (FDM). For a more detailed review see
+Griffies et al. \cite{Griffies2000}. However, some \emph{Finite Element} ocean
+models do exist, see for example, \cite{Fix} and \cite{Myers}. In addition to
+the research stated above one can find: the QUODDY model by Ip et. al.
+\cite{Ip1995}, a 3D shallow water equations model based on linear triangular
+elements; the DGCOM model by Giraldo et al. \cite{GiraldoWWW}, a 2D shallow
+water equation model based on the discontinuous Galerkin approach.
+
+The Finite Element Method (FEM) offers some distinct advantages over the FDM:
+the FEM allows for the easy representation of coastlines; and the FDM suffers
+from an inherent rigidness of structured grids making refinement in specific
+regions difficult. On the other hand the FEM allows for the use of
+unstructured grids, which allows for grid refinement in areas for which
+dynamics of the system have been deemed important, such as narrow straits,
+islands, areas containing western boundary currents, or meso-scale eddies.
+Meso-scale eddies are present in only small portions of the oceans, however
+they contain significant portions of the oceans' kinetic energy. For this
+reason it is important to resolve meso-scale eddies, however to resolve these
+meso-scale eddies a mesh size on the order of 10km is needed. For a structured
+grid, requiring a rigid mesh size, this is not feasible on any of todays
+computers. Thus, being able to refine the mesh in particular areas allows for
+meso-scale eddies to be resolved. Other methods which allow for unstructured
+grids include techniques such as the finite volumes, finite elements, and
+spectral methods. 
+
+On the other hand, while the FEM can be used on unstructured grids, and
+therefore allows for the easy refinement of meshes, for resolving such
+features as meso-scale eddies and western boundary currents which move about
+continuously a dynamic approach to mesh refinement is necessary.  However, it
+is not known a priori where such eddies may occur and therefore an \emph{a
+posteriori adaptive mesh refinement} scheme such as the method developed by
+Bab{\v{s}}ka et al. in \cite{Babuska1978} can be used to refine a mesh in the
+areas for which it is necessary. In particular we intend to adapt the method
+developed by Hoffman et al. in \cite{Hoffman2004} to ocean models. 
+
+The scheme developed in \cite{Hoffman2004} is referred to, by the authors, as
+an \emph{Adaptive DNS/LES} where certain features of the flow are resolved in a
+\emph{Direct Numerical Simulation} (DNS), while other features are left
+unresolved and modelled by \emph{Large Eddy Simulation} (LES). In the case of
+the LES model, the residual based stabilization is used as the sub-grid model.
+This method has been shown to be very efficient at high Reynolds numbers
+($Re>10^6$) \cite{Jansson2011}. This allows one to only apply an LES model
+where the contribution of error in a desired quantity is small and therefore
+not significant to the desired quantity.
+
+However, the effects of rotation are expected to introduce new challenges and
+therefore it is unlikely one can simply apply this method without some
+adaptations. The majority of problems this method has been applied have been
+for aerodynamics and thus many of the dynamic features of concern are not
+continuously moving. Therefore, the authors haven't been concerned with mesh
+coarsening. The added feature of mesh coarsening will be essential for the
+efficient simulations of the world's oceans.

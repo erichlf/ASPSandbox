@@ -1,5 +1,24 @@
 *.py[cod]
+
+#swap files and stuff
 *.swp
+*.swo
+*.bak
+*.new
+
+#LaTeX
+*.aux
+*.bbl
+*.blg
+*.out
+*.log
+*.spl
+*.latexmain
+
+#DOLFIN specific
+ffc_form_*.h
+
+#mac crap
 .DS_Store
 
 # C extensions

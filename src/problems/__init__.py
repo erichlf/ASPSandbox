@@ -3,7 +3,7 @@ __date__ = "2013-08-27"
 __license__  = "GNU GPL version 3 or any later version"
 
 # List of problems
-problems = ['Channel', 'Drop', 'Cavity', 'Cylinder']
+problems = ['Channel', 'Drop', 'Cavity', 'Cylinder', 'Square']
 
 # Wrapper for problem classes
 def Problem(name, options):

@@ -9,9 +9,7 @@ def f(f0,beta): #Coriolis parameter
 
 class InitialConditions(Expression):
     def __init__(self, problem, V, Q):
-        self.U0 = Constant((0.0,0.0))
-        self.eta0 = Constant(0.0)
-        #self.U0, self.eta0 = problem.initial_conditions(V, Q)
+        self.U0, self.eta0 = problem.initial_conditions(V, Q)
         self.U0 = project(self.U0,V)
         self.eta0 = project(self.eta0,Q)
 
@@ -68,6 +66,9 @@ class Solver(SolverBase):
 
         w = Function(W)
         w_ = Function(W)
+        zeta = Function(Q)
+        zeta_ = Function(Q)
+        zeta__ = Function(Q)
 
         #initial condition
         w = InitialConditions(problem, V, Q)
@@ -78,7 +79,8 @@ class Solver(SolverBase):
 
         zeta = wave_object(Q,t)
         zeta_ = zeta
-        zeta__ = zeta_
+        zeta_ = project(zeta,Q)
+        zeta__ = project(zeta,Q)
 
         U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
@@ -93,12 +95,12 @@ class Solver(SolverBase):
         F = (1./dt)*(eta - eta_)*chi*dx \
             + (H + eps*eta_theta)*div(U_theta)*chi*dx \
             + inner(grad(H + eps*eta_theta),U_theta)*chi*dx
-        F += (1./dt)*(zeta - zeta_)*chi*dx
+        F += 1./dt*(zeta - zeta_)*chi*dx
         F += (1./dt)*inner(U - U_,v)*dx \
             - eta_theta*div(v)*dx \
             + eps*inner(grad(U_theta)*U_theta,v)*dx \
             + 1./dt*sigma**2*H**2/3.*inner(grad(U - U_),grad(v))*dx
-        F -= 1./dt**2*H/2.*inner(grad(zeta - 2.*zeta_ + zeta__),v)*dx
+        F -= H/2.*inner(grad(1./dt**2*(zeta - 2*zeta_ + zeta__)),v)*dx
 
         if(problem.stabilize):
           # Stabilization parameters
@@ -108,19 +110,19 @@ class Solver(SolverBase):
           d2 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
           #add stabilization
-          F += d1*inner(eps*grad(U_theta)*U_theta + grad(eta_theta), \
-              + eps*grad(v)*U_theta + grad(chi))*dx
-          F += d2*((H + eps*eta_theta)*div(U_theta) \
-              + inner(grad(H + eps*eta_theta),U_theta)) \
-              *((H + eps*eta_theta)*div(v)
-              + inner(grad(H + eps*eta_theta),v))*dx
+          F += d1*(inner(grad(H+eps*eta_theta),U_theta) \
+                  + (H + eps*eta_theta)*div(U_theta) + 1./dt*(zeta - zeta_)) \
+              *(inner(grad(H+eps*eta_theta),v) + (H + eps*eta_theta)*div(v))*dx
+          F += d2*inner(grad(eta_theta) + eps*grad(U_theta)*U_theta \
+                  + H/2.*grad(1./dt**2*(zeta - 2*zeta_ + zeta__)), \
+              grad(chi) + eps*grad(v)*U_theta)*dx
 
         # Time loop
         self.start_timing()
 
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
-#        viz = plot(zeta, rescale=True)
+        viz = plot(zeta), rescale=True)
 
         while t<T:
             t += dt
@@ -128,7 +130,7 @@ class Solver(SolverBase):
             zeta__ = zeta_
             zeta_ = zeta
             zeta = wave_object(Q,t)
-#            viz.update(zeta)
+            viz.update(zeta)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
