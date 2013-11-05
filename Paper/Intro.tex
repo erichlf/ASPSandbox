@@ -1,5 +1,5 @@
 The oceans have two important roles in the climate system:
-\begin{inparaenum}[1)]\item They store and release heat seasonally, and \item
+\begin{inparaenum}[1)]\item they store and release heat seasonally; \item
 they transport heat around the globe by their large scale currents
 \end{inparaenum} These currents play a significant roll in climate dynamics
 by, in the case of sub-tropic gyres, transporting the warm waters of the
@@ -31,20 +31,20 @@ regions difficult. On the other hand the FEM allows for the use of
 unstructured grids, which allows for grid refinement in areas for which
 dynamics of the system have been deemed important, such as narrow straits,
 islands, areas containing western boundary currents, or meso-scale eddies.
-Meso-scale eddies are present in only small portions of the oceans, however
-they contain significant portions of the oceans' kinetic energy. For this
-reason it is important to resolve meso-scale eddies, however to resolve these
-meso-scale eddies a mesh size on the order of 10km is needed. For a structured
-grid, requiring a rigid mesh size, this is not feasible on any of todays
-computers. Thus, being able to refine the mesh in particular areas allows for
-meso-scale eddies to be resolved. Other methods which allow for unstructured
-grids include techniques such as the finite volumes, finite elements, and
-spectral methods. 
+
+Meso-scale eddies are present in only small portions of the oceans, however they
+contain significant portions of the oceans' kinetic energy. For this reason it
+is important to resolve meso-scale eddies, however to resolve these features a
+mesh size on the order of 10km is needed. For a structured grid, requiring a
+rigid mesh size, this is not feasible on any of todays computers. Thus, being
+able to refine the mesh in particular areas allows for meso-scale eddies to be
+resolved. Other methods which allow for unstructured grids include techniques
+such as the finite volumes, finite elements, and spectral methods. 
 
 On the other hand, while the FEM can be used on unstructured grids, and
 therefore allows for the easy refinement of meshes, for resolving such
 features as meso-scale eddies and western boundary currents which move about
-continuously a dynamic approach to mesh refinement is necessary.  However, it
+continuously, a dynamic approach to mesh refinement is necessary.  However, it
 is not known a priori where such eddies may occur and therefore an \emph{a
 posteriori adaptive mesh refinement} scheme such as the method developed by
 Bab{\v{s}}ka et al. in \cite{Babuska1978} can be used to refine a mesh in the
