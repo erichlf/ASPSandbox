@@ -4,9 +4,6 @@ __license__  = "GNU GPL version 3 or any later version"
 
 from solverbase import *
 
-def f(f0,beta): #Coriolis parameter
-    return Expression('f0 + beta*x[1]', f0=f0, beta=beta)
-
 class InitialConditions(Expression):
     def __init__(self, problem, V, Q):
         self.U0, self.eta0 = problem.initial_conditions(V, Q)
@@ -66,21 +63,17 @@ class Solver(SolverBase):
 
         w = Function(W)
         w_ = Function(W)
-        zeta = Function(Q)
-        zeta_ = Function(Q)
-        zeta__ = Function(Q)
 
         #initial condition
-        w = InitialConditions(problem, V, Q)
-        w = project(w, W)
+        w = InitialConditions(problem, V, Q)#V, Q)
+        #w = project(w, W)
 
-        w_ = InitialConditions(problem, V, Q)
-        w_ = project(w_, W)
+        w_ = InitialConditions(problem, W.sub(0), W.sub(1))#V, Q)
+        #w_ = project(w_, W)
 
-        zeta = wave_object(Q,t)
-        zeta_ = zeta
-        zeta_ = project(zeta,Q)
-        zeta__ = project(zeta,Q)
+        zeta = wave_object(W.sub(1),t)
+        zeta_ = project(zeta,W.sub(1))
+        zeta__ = project(zeta,W.sub(1))
 
         U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
@@ -122,15 +115,17 @@ class Solver(SolverBase):
 
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
-        viz = plot(zeta), rescale=True)
+        #zt = project(1./dt*(zeta - zeta_),Q)
+        #viz = plot(zt, rescale=True)
 
         while t<T:
             t += dt
             #update the wave generator
-            zeta__ = zeta_
-            zeta_ = zeta
-            zeta = wave_object(Q,t)
-            viz.update(zeta)
+            zeta__.assign(zeta_)
+            zeta_.assign(zeta)
+            zeta = wave_object(W.sub(1),t)
+            #zt = project(1./dt*(zeta - zeta_),Q)
+            #viz.update(zt)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)

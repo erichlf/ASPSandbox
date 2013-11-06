@@ -111,6 +111,7 @@ class SolverBase:
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
+                interactive()
 
         # Check memory usage
         if self.options["check_mem_usage"]:
