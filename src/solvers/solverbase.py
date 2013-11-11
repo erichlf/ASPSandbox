@@ -111,7 +111,6 @@ class SolverBase:
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
-                interactive()
 
         # Check memory usage
         if self.options["check_mem_usage"]:
@@ -150,5 +149,47 @@ class SolverBase:
 
             # Update
             self.update(problem, t, U_, p_)
-        
+
         return U_, p_
+
+    def W_project(self,f1,f2,W):
+        #This function will project an expressions into W
+        e1, e2 = TestFunctions(W)
+        w = TestFunction(W)
+
+        u = Function(W)
+
+        A = inner(u,w)*dx - inner(f1,e1)*dx - f2*e2*dx
+
+        solve(A == 0, u)
+
+        return u
+
+    def V_project(self,f1,W):
+        #This function will project an expression into W.sub(1)
+
+        #filler function
+        f2 = Expression('0.0')
+
+        f1 = self.W_project(f1,f2,W)
+        f1 = f1.split()[0]
+
+        return f1
+
+    def Q_project(self,f2,W):
+        #This function will project an expression into W.sub(1)
+
+        #filler function
+        f1 = Expression(('0.0','0.0'))
+
+        f2 = self.W_project(f1,f2,W)
+        f2 = f2.split()[1]
+
+        return f2
+
+    def InitialConditions(self,problem,W):
+        #project the given initial condition into W
+        U0, p0 = problem.initial_conditions(W.sub(0),W.sub(1))
+        W0 = self.W_project(U0,p0,W)
+
+        return W0

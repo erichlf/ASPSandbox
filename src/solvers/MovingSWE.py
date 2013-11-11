@@ -4,63 +4,27 @@ __license__  = "GNU GPL version 3 or any later version"
 
 from solverbase import *
 
-class InitialConditions(Expression):
-    def __init__(self, problem, V, Q):
-        self.U0, self.eta0 = problem.initial_conditions(V, Q)
-        self.U0 = project(self.U0,V)
-        self.eta0 = project(self.eta0,Q)
-
-    def eval(self, value, x):
-        value[:2] = self.U0(x)
-        value[2] = self.eta0(x)
-
-    def value_shape(self):
-        return (3,)
-
-def Q_project(f2,W):
-    #This function will project everything an expresion into W.sub(1)
-    e1, e2 = TestFunctions(W)
-    v = TestFunction(W)
-
-    w = Function(W)
-
-    #filler expression
-    f1 = Expression(('0.0','0.0'))
-
-    A = inner(w,v)*dx - inner(f1,e1)*dx - f2*e2*dx
-
-    solve(A == 0, w)
-    f2 = w.split()[1]
-
-    return f2
-
-def get_params(problem,W):
-    H = problem.h #fluid depth
-    eps = problem.nu
-    sigma = problem.nu
-
-    H = Q_project(H,W)
-    eps = Q_project(eps,W)
-    sigma = Q_project(sigma,W)
-    
-    return H, eps, sigma
-
-def wave_object(W,t):
-    """ Since we are using a mixed space we have to project by solving a
-        system. Then we can extract zeta from the solution to the system.
-    """
-    zeta = Expression('A/sqrt(2*S*pi)*exp(-pow(x[0] - (t - 0.5),2)/(2*S))',
-            A=200., S=0.02, t=t)
-
-    zeta = Q_projecti(zeta,W)
-
-    return zeta
-
 class Solver(SolverBase):
 #    Incremental pressure-correction scheme.
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
+
+    def wave_object(self,W,t):
+
+        """
+            Here we create a moving object under water to create a wave.
+            Since we are using a mixed space we have to project by solving
+            a system. Then we can extract zeta from the solution to the
+            system.
+        """
+
+        zeta = Expression('A/sqrt(2*S*pi)*exp(-pow(x[0] - (t - 0.5),2)/(2*S))',
+                A=200., S=0.02, t=t)
+
+        zeta = self.Q_project(zeta,W)
+
+        return zeta
 
     def solve(self, problem):
         #get problem mesh
@@ -72,22 +36,24 @@ class Solver(SolverBase):
         dt = problem.dt #time step
         theta = problem.theta #time stepping method
 
+        #parameters
+        H = problem.h
+        eps = problem.nu
+        sigma = problem.nu
+
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
         Q = FunctionSpace(mesh, 'CG', problem.Pp)
-        W = V * Q
+        W = MixedFunctionSpace([V, Q])
 
         #problem parameters
-        H, eps, sigma = get_params(problem, W)
+        #H, eps, sigma = get_params(problem, W)
 
         # Get boundary conditions
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
         #define trial and test function
         v, chi = TestFunctions(W)
-
-        H = project(H, W)
-        eps = project(eps, W)
 
         w = Function(W)
         w_ = Function(W)
@@ -97,13 +63,11 @@ class Solver(SolverBase):
         zeta__ = Function(Q)
 
         #initial condition
-        w = InitialConditions(problem, V, Q)
-        #w = project(w, W)
+        w = self.InitialConditions(problem, W))
 
-        w_ = InitialConditions(problem, V, Q)
-        #w_ = project(w_, W)
+        w_ = self.InitialConditions(problem, W)
 
-        zeta = wave_object(W,t)
+        zeta = self.wave_object(W,t)
         zeta_.assign(zeta)
         zeta__.assign(zeta)
 
@@ -147,17 +111,13 @@ class Solver(SolverBase):
 
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
-        #zt = project(1./dt*(zeta - zeta_),Q)
-        #viz = plot(zt, rescale=True)
 
         while t<T:
             t += dt
             #update the wave generator
             zeta__.assign(zeta_)
             zeta_.assign(zeta)
-            zeta = wave_object(W,t)
-            #zt = project(1./dt*(zeta - zeta_),Q)
-            #viz.update(zt)
+            zeta = self.wave_object(W,t)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)

@@ -4,19 +4,6 @@ __license__  = "GNU GPL version 3 or any later version"
 
 from solverbase import *
 
-class InitialConditions(Expression):
-    def __init__(self, problem, V, Q):
-        self.U0, self.p0 = problem.initial_conditions(V, Q)
-        self.U0 = project(self.U0,V)
-        self.p0 = project(self.p0,Q)
-
-    def eval(self, value, x):
-        value[:2] = self.U0(x)
-        value[2] = self.p0(x)
-
-    def value_shape(self):
-        return (3,)
-
 class Solver(SolverBase):
 #    Incremental pressure-correction scheme.
 
@@ -38,7 +25,7 @@ class Solver(SolverBase):
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
         Q = FunctionSpace(mesh, 'CG', problem.Pp)
-        W = V * Q
+        W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
@@ -50,11 +37,9 @@ class Solver(SolverBase):
         w_ = Function(W)
 
         #initial condition
-        w = InitialConditions(problem, V, Q) 
-        w = project(w, W)
+        w = self.InitialConditions(problem, W)
 
-        w_ = InitialConditions(problem, V, Q) 
-        w_ = project(w_, W)
+        w_ = self.InitialConditions(problem, W)
 
         U, p = (as_vector((w[0], w[1])), w[2])
         U_, p_ = (as_vector((w_[0], w_[1])), w_[2])
