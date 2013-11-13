@@ -11,7 +11,6 @@ class Solver(SolverBase):
         SolverBase.__init__(self, options)
 
     def wave_object(self,W,t):
-
         """
             Here we create a moving object under water to create a wave.
             Since we are using a mixed space we have to project by solving
@@ -19,8 +18,12 @@ class Solver(SolverBase):
             system.
         """
 
-        zeta = Expression('A/sqrt(2*S*pi)*exp(-pow(x[0] - (t - 0.5),2)/(2*S))',
-                A=200., S=0.02, t=t)
+        #zeta = Expression('A/sqrt(2*S*pi)*exp(-pow(x[0] - (t - 0.5),2)/(2*S))',
+        #L is the length on half the domain
+        #P is the amplitude
+        #U is the speed of the moving object
+        zeta0 = 'x[0]>-(0.5*L+U*t) ? (x[0]<(0.5*L-U*t) ? 0.5*P*(1+cos(2*pi/L*(x[0]+U*t))) : 0.0) : 0.0'
+        zeta = Expression(zeta0, P=0.2, U=0.1, L=0.5,t=t)
 
         zeta = self.Q_project(zeta,W)
 
@@ -46,31 +49,31 @@ class Solver(SolverBase):
         Q = FunctionSpace(mesh, 'CG', problem.Pp)
         W = MixedFunctionSpace([V, Q])
 
-        #problem parameters
-        #H, eps, sigma = get_params(problem, W)
-
         # Get boundary conditions
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
         #define trial and test function
         v, chi = TestFunctions(W)
 
+        #initialize w as a function in W
         w = Function(W)
         w_ = Function(W)
 
-        zeta = Function(Q)
-        zeta_ = Function(Q)
-        zeta__ = Function(Q)
+        #initialize zetas as functions in Q
+        zeta = w.split()[1]
+        zeta_ = w.split()[1]
+        zeta__ = w.split()[1]
 
         #initial condition
-        w = self.InitialConditions(problem, W))
-
+        w = self.InitialConditions(problem, W)
         w_ = self.InitialConditions(problem, W)
 
+        #assign zetas as the wave object
         zeta = self.wave_object(W,t)
         zeta_.assign(zeta)
         zeta__.assign(zeta)
 
+        #initialize U and eta as functions in V and Q, respectively
         U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
@@ -80,16 +83,19 @@ class Solver(SolverBase):
         #p_(k+theta)
         eta_theta = (1.0-theta)*eta_ + theta*eta
 
+        zeta_t = 1./dt*(zeta - zeta_)
+        zeta_tt = 1./dt**2*(zeta - 2*zeta_ + zeta__)
+
         #weak form of the equations
         F = (1./dt)*(eta - eta_)*chi*dx \
             + (H + eps*eta_theta)*div(U_theta)*chi*dx \
             + inner(grad(H + eps*eta_theta),U_theta)*chi*dx
-        F += 1./dt*(zeta - zeta_)*chi*dx
+        F += zeta_t*chi*dx
         F += (1./dt)*inner(U - U_,v)*dx \
             - eta_theta*div(v)*dx \
             + eps*inner(grad(U_theta)*U_theta,v)*dx \
             + 1./dt*sigma**2*H**2/3.*inner(grad(U - U_),grad(v))*dx
-        F -= H/2.*inner(grad(1./dt**2*(zeta - 2*zeta_ + zeta__)),v)*dx
+        F -= H/2.*inner(grad(zeta_tt),v)*dx
 
         if(problem.stabilize):
           # Stabilization parameters
@@ -100,10 +106,11 @@ class Solver(SolverBase):
 
           #add stabilization
           F += d1*(inner(grad(H+eps*eta_theta),U_theta) \
-                  + (H + eps*eta_theta)*div(U_theta) + 1./dt*(zeta - zeta_)) \
-              *(inner(grad(H+eps*eta_theta),v) + (H + eps*eta_theta)*div(v))*dx
+                  + (H + eps*eta_theta)*div(U_theta) + zeta_t) \
+              *(inner(grad(H+eps*eta_theta),v) \
+                  + (H + eps*eta_theta)*div(v))*dx
           F += d2*inner(grad(eta_theta) + eps*grad(U_theta)*U_theta \
-                  + H/2.*grad(1./dt**2*(zeta - 2*zeta_ + zeta__)), \
+                  + H/2.*grad(zeta_tt), \
               grad(chi) + eps*grad(v)*U_theta)*dx
 
         # Time loop
@@ -111,6 +118,7 @@ class Solver(SolverBase):
 
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
+        viz = plot(zeta, rescale=True)
 
         while t<T:
             t += dt
@@ -131,6 +139,7 @@ class Solver(SolverBase):
 
             # Update
             self.update(problem, t, U_, eta_)
+            viz.update(zeta)
 
         return U_, eta_
 
