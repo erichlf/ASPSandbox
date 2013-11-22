@@ -18,10 +18,19 @@ class Solver(SolverBase):
         mesh = problem.mesh
         h = CellSize(mesh) #mesh size
 
+        #if we want a linear version then make a coefficient zero for the
+        #terms which only occur in the non-linear from of SWE
+        if(self.options['linear']):
+            linear = 0
+        else:
+            linear = 1
+
         t = 0 #initial time
         T = problem.T #final time
-        dt = problem.dt #time step
-        theta = problem.theta #time stepping method
+        dt = self.options['dt'] #time step
+        theta = self.options['theta'] #time stepping method
+        Pu = self.options["velocity_order"] #order of velocity element
+        Pp = self.options["height_order"] #order of height/pressure element
 
         #problem parameters
         H = problem.h #fluid depth
@@ -32,8 +41,8 @@ class Solver(SolverBase):
         rho = problem.rho #density
 
         # Define function spaces
-        V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
-        Q = FunctionSpace(mesh, 'CG', problem.Pp)
+        V = VectorFunctionSpace(mesh, 'CG', Pu)
+        Q = FunctionSpace(mesh, 'CG', Pp)
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
@@ -46,9 +55,8 @@ class Solver(SolverBase):
         w_ = Function(W)
 
         #initial condition
-        w = self.InitialConditions(problem, W) 
-
-        w_ = self.InitialConditions(problem, W) 
+        w = self.InitialConditions(problem, W)
+        w_ = self.InitialConditions(problem, W)
 
         U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
@@ -64,11 +72,12 @@ class Solver(SolverBase):
             + H*div(U_theta)*chi*dx 
         F += (1./dt)*inner(U - U_,v)*dx \
             + f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
-            - g*eta_theta*div(v)*dx \
-            + inner(grad(U_theta)*U_theta,v)*dx \
-            + nu*inner(grad(U_theta),grad(v))*dx
+            - g*eta_theta*div(v)*dx
+        #add the terms for the non-linear SWE
+        F += linear*(inner(grad(U_theta)*U_theta,v)*dx \
+            + nu*inner(grad(U_theta),grad(v))*dx)
 
-        if(problem.stabilize):
+        if(self.options['stabilize']):
           # Stabilization parameters
           k1  = 0.5
           k2  = 0.5
@@ -77,9 +86,11 @@ class Solver(SolverBase):
 
           #add stabilization
           F += d1*inner(f(f0,beta)*as_vector((-U_theta[1],U_theta[0])) \
-              + grad(U_theta)*U_theta + g*grad(eta_theta), \
+              + g*grad(eta_theta) \
+              + linear*grad(U_theta)*U_theta, 
               f(f0,beta)*as_vector((-v[1],v[0])) \
-              + grad(v)*U_theta + g*grad(chi))*dx 
+              + g*grad(chi) \
+              + linear*grad(v)*U_theta)*dx 
           F += d2*H**2*div(U_theta)*div(v)*dx
 
         U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, eta_, F) 

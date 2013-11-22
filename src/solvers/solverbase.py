@@ -18,7 +18,8 @@ import sys
 maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
-StabileSolvers = ['NSE', 'SWE']
+StabileSolvers = ['NSE', 'SWE', 'MovingSWE']
+LinearSolvers = ['SWE']
 
 class SolverBase:
 #   Base class for all solvers.
@@ -59,9 +60,14 @@ class SolverBase:
 
     def prefix(self, problem):
         #Return file prefix for output files
-        p = problem.__module__.split('.')[-1].lower()
-        s = self.__module__.split('.')[-1].lower()
-        return problem.output_location + p + "_" + s
+        p = problem.__module__.split('.')[-1]
+        s = self.__module__.split('.')[-1]
+        if(self.options["linear"] and s in LinearSolvers):
+            s = 'Linear' + s
+        if(self.options["stabilize"] and s in StabileSolvers):
+            s += 'Stabilized'
+
+        return problem.output_location + p + s
 
     def update(self, problem, t, u, p):
         #Update problem at time t
@@ -73,7 +79,6 @@ class SolverBase:
         # Update problem 
         problem.update_problem(t, u, p)
 
-        solverName = self.__module__.split('.')[-1]
         # Store values
         self._t.append(t)
 
@@ -88,8 +93,6 @@ class SolverBase:
                 # Create files for saving
                 if self._ufile is None:
                     s = 'results/' + self.prefix(problem) 
-                    if(self.options["stabilize"] and solverName in StabileSolvers):
-                        s += 'Stabilized'
                     s += 'Re' + str(int(1./nu)) + \
                             'N' + str(N) + 'K' + str(int(1./dt))  
                     self._ufile = File(s + '_u.pvd')

@@ -35,7 +35,9 @@ OPTIONS = { "N": 32, #number of elements along an axis
             "linear_solver": 'lu',
             "velocity_order": 1, #order of velocity element
             "height_order": 1, #order of height/pressure element
-            "stabilize": True}
+            "stabilize": True, #stabilize?
+            "linear": False #use the linear version?
+            }
 
 def usage():
 #   Print usage
