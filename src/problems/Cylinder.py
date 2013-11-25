@@ -56,12 +56,6 @@ class Problem(ProblemBase):
         self.g = options["g"] #gravity
         self.h = options["h"] #fluid depth
         self.T = options["T"] #final time
-        self.dt = options["dt"] #time-step
-        self.theta = options["theta"] #theta for the theta time stepping method
-        self.solver = options["linear_solver"] #what linear solver to use
-        self.Pu = options["velocity_order"] #order of velocity element
-        self.Pp = options["height_order"] #order of height/pressure element
-        self.stabilize = options["stabilize"] #should we stabilize the solver 
 
     def initial_conditions(self, V, Q):
 

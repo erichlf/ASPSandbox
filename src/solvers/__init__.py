@@ -3,7 +3,7 @@ __date__ = "2013-08-27"
 __license__  = "GNU GPL version 3 or any later version"
 
 # List of solvers
-solvers = ['NSE', 'SteadyStokes', 'Stokes', 'LinearSWE', 'SWE', 'SWEAdvection',
+solvers = ['NSE', 'SteadyStokes', 'Stokes', 'SWE', 'SWEAdvection',
     'DensityNSE', 'MovingSWE']
 
 # Wrapper for solver classes

@@ -147,8 +147,7 @@ class SolverBase:
 
             w_.vector()[:] = w.vector()
 
-            U_ = w_.split()[0] 
-            p_ = w_.split()[1]
+            U_, p_ = w_.split()
 
             # Update
             self.update(problem, t, U_, p_)

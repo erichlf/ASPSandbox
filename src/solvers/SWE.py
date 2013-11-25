@@ -55,7 +55,7 @@ class Solver(SolverBase):
         w_ = Function(W)
 
         #initial condition
-        w = self.InitialConditions(problem, W)
+        #w = self.InitialConditions(problem, W)
         w_ = self.InitialConditions(problem, W)
 
         U, eta = (as_vector((w[0], w[1])), w[2])
