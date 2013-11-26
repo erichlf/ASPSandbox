@@ -74,12 +74,15 @@ def main(args):
         return 1
     elif len(args) == 1 and args[0] in problems:
         solver_name = 'SWE'
-        problem_name = args
+        problem_name = args[0]
     elif len(args) == 1 and args[0] in solvers:
-        solver_name = args
+        solver_name = args[0]
         problem_name = 'Drop'
     elif len(args) == 2 and args[0] in solvers and args[1] in problems:
       solver_name, problem_name = args[:2]
+    else:
+        usage()
+        return 1
 
     # Get options
     options = OPTIONS.copy()

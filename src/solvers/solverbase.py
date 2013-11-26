@@ -76,7 +76,7 @@ class SolverBase:
         timestep_cputime = time() - self._time
         self._cputime += timestep_cputime
 
-        # Update problem 
+        # Update problem
         problem.update_problem(t, u, p)
 
         # Store values
@@ -88,13 +88,20 @@ class SolverBase:
             frequency = self.options["save_frequency"]
             N = self.options["N"]
             nu = self.options["nu"]
+            if(nu==0):
+                invNu = 0
+            else:
+                invNu = int(1./nu)
             dt = self.options["dt"]
             if (self._timestep - 1) % frequency == 0:
                 # Create files for saving
                 if self._ufile is None:
-                    s = 'results/' + self.prefix(problem) 
-                    s += 'Re' + str(int(1./nu)) + \
-                            'N' + str(N) + 'K' + str(int(1./dt))  
+                    s = 'results/' + self.prefix(problem)
+                    if(self.options['linear']):
+                        s += 'N' + str(N) + 'K' + str(int(1./dt))
+                    else:
+                        s += 'Re' + str(invNu) + \
+                                'N' + str(N) + 'K' + str(int(1./dt))
                     self._ufile = File(s + '_u.pvd')
                 if self._pfile is None:
                     self._pfile = File(s + '_p.pvd')
@@ -102,12 +109,12 @@ class SolverBase:
                 self._pfile << p
 
         # Plot solution
-        if self.options["plot_solution"]: 
+        if self.options["plot_solution"]:
             if self.vizU is None:
                 regex = re.compile('SWE')
                 # Plot velocity and pressure
                 self.vizU = plot(u, title='Velocity', rescale=True)
-                if regex.search(self.prefix(problem)) is None: 
+                if regex.search(self.prefix(problem)) is None:
                     self.vizP = plot(p, title='Pressure', rescale=True)
                 else :
                     self.vizP = plot(p, title='Height', rescale=True)
@@ -135,7 +142,7 @@ class SolverBase:
         self.start_timing()
 
         #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[1]) 
+        self.update(problem, t, w_.split()[0], w_.split()[1])
 
         while t<T:
             t += dt
