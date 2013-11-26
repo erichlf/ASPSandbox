@@ -63,9 +63,11 @@ class SolverBase:
         p = problem.__module__.split('.')[-1]
         s = self.__module__.split('.')[-1]
         if(self.options["linear"] and s in LinearSolvers):
+            if(self.options["stabilize"] and s in StabileSolvers):
+                s += 'Stabilized'
             s = 'Linear' + s
-        if(self.options["stabilize"] and s in StabileSolvers):
-            s += 'Stabilized'
+        elif(self.options["stabilize"] and s in StabileSolvers):
+                s += 'Stabilized'
 
         return problem.output_location + p + s
 
