@@ -54,9 +54,77 @@ class SolverBase:
 #       and stopped when the end-time is reached.
         self._time = time()
 
-    def solve(self, problem, dt, plot_solution=True):
-#       Solve problem
-        raise NotImplementedError
+    def solve(self, problem):
+        #get problem mesh 
+        mesh = problem.mesh
+        h = CellSize(mesh) #mesh size
+
+        #problem parameters
+        self.H = problem.h
+        self.f0 = problem.f0
+        self.beta = problem.beta
+        self.g = problem.g
+        self.nu = problem.nu
+        self.rho = problem.rho
+
+        #if we want a linear version then make a coefficient zero for the
+        #terms which only occur in the non-linear from of SWE
+        if(self.options['linear']):
+            self.NonLinear = 0
+        else:
+            self.NonLinear = 1
+
+        t = 0 #initial time
+        T = problem.T #final time
+        dt = self.options['dt'] #time step
+        theta = self.options['theta'] #time stepping method
+        Pu = self.options["velocity_order"] #order of velocity element
+        Pp = self.options["height_order"] #order of height/pressure element
+
+        # Define function spaces
+        V = VectorFunctionSpace(mesh, 'CG', Pu)
+        Q = FunctionSpace(mesh, 'CG', Pp)
+        W = MixedFunctionSpace([V, Q])
+
+        # Get boundary conditions
+        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+
+        #define trial and test function
+        v, chi = TestFunctions(W)
+
+        w = Function(W)
+        w_ = Function(W)
+
+        #initial condition
+        #w = self.InitialConditions(problem, W)
+        w_ = self.InitialConditions(problem, W)
+
+        U, eta = (as_vector((w[0], w[1])), w[2])
+        U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
+
+        #U_(k+theta)
+        U_theta = (1.0-theta)*U_ + theta*U
+
+        #p_(k+theta)
+        eta_theta = (1.0-theta)*eta_ + theta*eta
+
+        F = self.weak_residual(U, U_, eta, eta_, v, chi)
+
+        if(self.options['stabilize']):
+          # Stabilization parameters
+          k1  = 0.5
+          k2  = 0.5
+          d1 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5) 
+          d2 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+
+          #add stabilization
+          R1, R2 = self.strong_residual(U_theta,U_theta,eta_theta)
+          Rv1, Rv2 = self.strong_residual(U_theta,v,chi)
+          F += d1*R1*Rv1*dx + d2*inner(R2,Rv2)*dx
+
+        U_, p_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, eta_, F) 
+        return U_, eta_
+
 
     def prefix(self, problem):
         #Return file prefix for output files
