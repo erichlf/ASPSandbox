@@ -60,10 +60,10 @@ class SolverBase:
         h = CellSize(mesh) #mesh size
 
         #problem parameters
-        self.Fr = self.options['Fr']
-        self.Th = self.options['Th']
-        self.Re = self.options['Re']
-        self.Ro = self.options['Ro']
+        self.Fr = self.options['Fr'] #Froude Number
+        self.Th = self.options['Th'] #Ratio of wave height to depth
+        self.Re = self.options['Re'] #Reynolds Number
+        self.Ro = self.options['Ro'] #Rossby Number
 
         #if we want a linear version then make a coefficient zero for the
         #terms which only occur in the non-linear from of SWE
@@ -74,7 +74,7 @@ class SolverBase:
 
         t = 0 #initial time
         T = problem.T #final time
-        dt = self.options['dt'] #time step
+        self.dt = self.options['dt'] #time step
         theta = self.options['theta'] #time stepping method
         Pu = self.options['velocity_order'] #order of velocity element
         Pp = self.options['height_order'] #order of height/pressure element
@@ -194,7 +194,7 @@ class SolverBase:
         if self.options['save_solution']:
             # Save velocity and pressure
             frequency = self.options['save_frequency']
-            dt = self.options['dt']
+            dt = self.dt
             N = self.options['N']
             if (self._timestep - 1) % frequency == 0:
                 # Create files for saving

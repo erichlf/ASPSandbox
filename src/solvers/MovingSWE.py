@@ -10,6 +10,14 @@ class Solver(SolverBase):
     def __init__(self, options):
         SolverBase.__init__(self, options)
 
+        self.Re = options['Re']
+        self.Ro = options['Ro']
+        self.Fr = options['Fr']
+        self.Th = options['Th']
+
+        self.dt = options['dt']
+        self.theta = options['theta']
+
     def wave_object(self,W,t):
         """
             Here we create a moving object under water to create a wave.
@@ -36,17 +44,20 @@ class Solver(SolverBase):
 
         t = 0 #initial time
         T = problem.T #final time
-        dt = problem.dt #time step
-        theta = problem.theta #time stepping method
+        dt = self.dt #time step
+        theta = self.theta #time stepping method
+
+        Pu = self.options['velocity_order']
+        Pp = self.options['height_order']
 
         #parameters
-        H = problem.h
-        eps = problem.nu
-        sigma = problem.nu
+        H = self.Th
+        eps = 1./self.Re
+        sigma = 1./self.Re
 
         # Define function spaces
-        V = VectorFunctionSpace(mesh, 'CG', problem.Pu)
-        Q = FunctionSpace(mesh, 'CG', problem.Pp)
+        V = VectorFunctionSpace(mesh, 'CG', Pu)
+        Q = FunctionSpace(mesh, 'CG', Pp)
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
@@ -97,7 +108,7 @@ class Solver(SolverBase):
             + 1./dt*sigma**2*H**2/3.*inner(grad(U - U_),grad(v))*dx
         F -= H/2.*inner(grad(zeta_tt),v)*dx
 
-        if(problem.stabilize):
+        if(self.options['stabilize']):
           # Stabilization parameters
           k1  = 0.5
           k2  = 0.5
@@ -118,7 +129,8 @@ class Solver(SolverBase):
 
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
-        viz = plot(zeta, rescale=True)
+        if(self.options['plot_solution']):
+            viz = plot(zeta, rescale=True)
 
         while t<T:
             t += dt
@@ -139,7 +151,8 @@ class Solver(SolverBase):
 
             # Update
             self.update(problem, t, U_, eta_)
-            viz.update(zeta)
+            if(self.options['plot_solution']):
+                viz.update(zeta)
 
         return U_, eta_
 
