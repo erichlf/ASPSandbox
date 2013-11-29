@@ -8,17 +8,15 @@ def f(f0,beta): #Coriolis parameter
     return Expression('f0 + beta*x[1]', f0=f0, beta=beta)
 
 class Solver(SolverBase):
-#    Incremental pressure-correction scheme.
-
     def __init__(self, options):
         SolverBase.__init__(self, options)
 
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,eta):
-        H = self.H
+        H = 1#self.H
         f0 = self.f0
         beta = self.beta
-        g = self.g
+        g = 1.#self.g
         nu = self.nu
         rho = self.rho
 

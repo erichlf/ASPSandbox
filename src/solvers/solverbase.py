@@ -112,10 +112,10 @@ class SolverBase:
 
         if(self.options['stabilize']):
           # Stabilization parameters
-          k1  = 0.5
+          k1  = 1.0
           k2  = 0.5
-          d1 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5) 
-          d2 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+          d1 = k1*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5) 
+          d2 = k2*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
 
           #add stabilization
           R1, R2 = self.strong_residual(U_theta,U_theta,eta_theta)
