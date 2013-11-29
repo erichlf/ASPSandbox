@@ -25,14 +25,6 @@ class Problem(ProblemBase):
         N = options["N"]
         self.mesh = RectangleMesh(-1,-1,1,1,N, N)
 
-        self.nu = options["nu"] #viscosity
-        self.rho = options["rho"] #density
-        self.f0 = options["f0"] #reference Coriolis parameter
-        self.beta = options["beta"] #beta plane parameter
-        self.g = options["g"] #gravity
-        self.h = options["h"] #fluid depth
-        self.T = options["T"] #final time
-
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
         eta0 = Expression('A*exp(-(x[0]*x[0]+x[1]*x[1])/(2*S*S))', A=1.0, S=5E-2)

@@ -60,12 +60,10 @@ class SolverBase:
         h = CellSize(mesh) #mesh size
 
         #problem parameters
-        self.H = problem.h
-        self.f0 = problem.f0
-        self.beta = problem.beta
-        self.g = problem.g
-        self.nu = problem.nu
-        self.rho = problem.rho
+        self.Fr = self.options['Fr']
+        self.Th = self.options['Th']
+        self.Re = self.options['Re']
+        self.Ro = self.options['Ro']
 
         #if we want a linear version then make a coefficient zero for the
         #terms which only occur in the non-linear from of SWE
@@ -78,8 +76,8 @@ class SolverBase:
         T = problem.T #final time
         dt = self.options['dt'] #time step
         theta = self.options['theta'] #time stepping method
-        Pu = self.options["velocity_order"] #order of velocity element
-        Pp = self.options["height_order"] #order of height/pressure element
+        Pu = self.options['velocity_order'] #order of velocity element
+        Pp = self.options['height_order'] #order of height/pressure element
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', Pu)
@@ -112,8 +110,12 @@ class SolverBase:
 
         if(self.options['stabilize']):
           # Stabilization parameters
-          k1  = 1.0
-          k2  = 0.5
+          if(self.Fr is None):
+              k1  = 1.0
+              k2  = 0.5
+          else:
+              k1  = 1.0*self.Th
+              k2  = 0.5*self.Fr**(2.)
           d1 = k1*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5) 
           d2 = k2*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
 
@@ -153,14 +155,27 @@ class SolverBase:
         #Return file prefix for output files
         p = problem.__module__.split('.')[-1]
         s = self.__module__.split('.')[-1]
-        if(self.options["linear"] and s in LinearSolvers):
-            if(self.options["stabilize"] and s in StabileSolvers):
+        if(self.options['linear'] and s in LinearSolvers):
+            if(self.options['stabilize'] and s in StabileSolvers):
                 s += 'Stabilized'
             s = 'Linear' + s
-        elif(self.options["stabilize"] and s in StabileSolvers):
+        elif(self.options['stabilize'] and s in StabileSolvers):
                 s += 'Stabilized'
 
         return problem.output_location + p + s
+
+    def suffix(self):
+        #Return file suffix for output files
+        if(not self.options['linear']):
+            s = 'Re' + str(int(self.Re))
+        if(self.Fr is not None):
+            s += 'Fr' + str(int(1./self.Fr))
+        if(self.Ro is not None):
+            s += 'Ro' + str(int(1./self.Ro))
+        if(self.Th is not None):
+            s += 'Th' + str(int(1./self.Th))
+
+        return s
 
     def update(self, problem, t, u, p):
         #Update problem at time t
@@ -176,33 +191,28 @@ class SolverBase:
         self._t.append(t)
 
         # Save solution
-        if self.options["save_solution"]:
+        if self.options['save_solution']:
             # Save velocity and pressure
-            frequency = self.options["save_frequency"]
-            N = self.options["N"]
-            nu = self.options["nu"]
-            if(nu==0):
-                invNu = 0
-            else:
-                invNu = int(1./nu)
-            dt = self.options["dt"]
+            frequency = self.options['save_frequency']
+            dt = self.options['dt']
+            N = self.options['N']
             if (self._timestep - 1) % frequency == 0:
                 # Create files for saving
                 if self._ufile is None:
-                    s = 'results/' + self.prefix(problem)
-                    if(self.options['linear']):
-                        s += 'N' + str(N) + 'K' + str(int(1./dt))
-                    else:
-                        s += 'Re' + str(invNu) + \
-                                'N' + str(N) + 'K' + str(int(1./dt))
+                    s = 'results/' + self.prefix(problem) \
+                            + self.suffix() \
+                            + 'N' + str(N) \
+                            + 'K' + str(int(1./dt))
                     self._ufile = File(s + '_u.pvd')
                 if self._pfile is None:
                     self._pfile = File(s + '_p.pvd')
                 self._ufile << u
                 self._pfile << p
+        else:
+            self.options['plot_solution'] = True
 
         # Plot solution
-        if self.options["plot_solution"]:
+        if self.options['plot_solution']:
             if self.vizU is None:
                 regex = re.compile('SWE')
                 # Plot velocity and pressure
@@ -216,7 +226,7 @@ class SolverBase:
                 self.vizP.plot(p)
 
         # Check memory usage
-        if self.options["check_mem_usage"]:
+        if self.options['check_mem_usage']:
             print 'Memory usage is:' , self.getMyMemoryUsage()
 
         # Print progress

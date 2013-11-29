@@ -49,14 +49,6 @@ class Problem(ProblemBase):
         N = options["N"]
         self.mesh = Mesh('data/cylinder_4.xml.gz')
 
-        self.nu = options["nu"] #viscosity
-        self.rho = options["rho"] #density
-        self.f0 = options["f0"] #reference Coriolis parameter
-        self.beta = options["beta"] #beta plane parameter
-        self.g = options["g"] #gravity
-        self.h = options["h"] #fluid depth
-        self.T = options["T"] #final time
-
     def initial_conditions(self, V, Q):
 
         u0 = Constant((0, 0))

@@ -17,12 +17,11 @@ from solvers import Solver, solvers
 OPTIONS = { "N": 32, #number of elements along an axis
             "dt": 0.01, #time-step
             "T": 1.0, #final-time
-            "nu": 1.0, #viscosity
-            "rho": 1.0, #density
-            "g": 9.81, #gravity
-            "h": 1.63, #fluid depth
-            "f0": 6.16E-5, #reference Coriolis paramter
-            "beta": 2.07E-11, #beta plane parameter 
+            "Re": 100, #Reynolds Number
+            #The Rossby and Froude values are from Majda p61
+            "Ro": 0.1, #Rossby Number
+            "Fr": 0.03, #Froude Number
+            "Th": 1.0, #N0/H0 Mean wave height to water depth ratio
             "theta": 0.5, #theta for the theta time-stepping method
             "save_solution": True,
             "save_frequency": 1,

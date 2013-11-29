@@ -13,30 +13,30 @@ class Solver(SolverBase):
 
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,eta):
-        H = 1#self.H
-        f0 = self.f0
-        beta = self.beta
-        g = 1.#self.g
-        nu = self.nu
-        rho = self.rho
+        #get problem parameters
+        Fr = self.Fr
+        Th = self.Th
+        Ro = self.Ro
+        Re = self.Re
 
         NonLinear = self.NonLinear
 
-        R1 = H*div(U)
+        #assume H is constant, so it doesn't show up in
+        #non-dimensional form
+        R1 = 1./Th*div(U)
         R2 = NonLinear*grad(u)*U \
-            + f(f0,beta)*as_vector((-U[1],U[0])) \
-            + g*grad(eta)
+            + 1./Ro*as_vector((-U[1],U[0])) \
+            + Fr**(-2.)*Th*grad(eta)
 
         return R1, R2
 
     #weak residual for cG(1)cG(1)
     def weak_residual(self,U,U_,eta,eta_,v,chi):
-        H = self.H
-        f0 = self.f0
-        beta = self.beta
-        g = self.g
-        nu = self.nu
-        rho = self.rho
+        #get problem parameters
+        Fr = self.Fr
+        Th = self.Th
+        Ro = self.Ro
+        Re = self.Re
 
         NonLinear = self.NonLinear
 
@@ -50,14 +50,16 @@ class Solver(SolverBase):
         eta_theta = (1.0-theta)*eta_ + theta*eta
 
         #weak form of the equations
+        #assume H is constant, so it doesn't show up in
+        #non-dimensional form
         r = (1./dt)*(eta - eta_)*chi*dx \
-            + H*div(U_theta)*chi*dx 
+            + 1./Th*div(U_theta)*chi*dx 
         r += (1./dt)*inner(U - U_,v)*dx \
-            + f(f0,beta)*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
-            - g*eta_theta*div(v)*dx
+            + 1./Ro*(U_theta[0]*v[1] - U_theta[1]*v[0])*dx \
+            - Fr**(-2.)*Th*eta_theta*div(v)*dx
         #add the terms for the non-linear SWE
         r += NonLinear*(inner(grad(U_theta)*U_theta,v)*dx \
-            + nu*inner(grad(U_theta),grad(v))*dx)
+            + 1./Re*inner(grad(U_theta),grad(v))*dx)
 
         return r
 

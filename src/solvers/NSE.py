@@ -12,9 +12,6 @@ class Solver(SolverBase):
 
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,p):
-        nu = self.nu
-        rho = self.rho #density
-
         R1 = div(U)
         R2 = grad(u)*U + grad(p)
 
@@ -22,8 +19,11 @@ class Solver(SolverBase):
 
     #weak residual for cG(1)cG(1)
     def weak_residual(self,U,U_,p,p_,v,q):
-        nu = self.nu
-        rho = self.rho #density
+        Re = self.Re #Reynolds Number
+        #set un-needed parameters to zero so file is named correctly
+        self.Fr = None
+        self.Th = None
+        self.Ro = None
 
         theta = self.options['theta'] #time stepping method
         dt = self.options["dt"]
@@ -39,7 +39,7 @@ class Solver(SolverBase):
         r += (1./dt)*inner(U - U_,v)*dx \
             - p_theta*div(v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
-            + nu*inner(grad(U_theta),grad(v))*dx
+            + 1./Re*inner(grad(U_theta),grad(v))*dx
 
         return r
 
