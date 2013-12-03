@@ -21,25 +21,35 @@ However, it is well known that certain FE pairs allow for the existence of
 spurious computational modes. A similar issue exists for the FDM, and thus the
 choice of an appropriate Arakawa grid is usually discussed when developing a
 FDM. Such grids aren't generally considered in the FE community, however, Hanert
-\cite{Hanert2004} has shown that a similar consideration can be taken into
+et al \cite{Hanert2002} has shown that a similar consideration can be taken into
 account. The more common approach is to use a FE which is of differing order,
 such as Taylor-Hood FE pairs. For instance, it is well known that an equal order
 FE pair implementation of the Navier-Stokes equations results in spurious
 pressure modes, but a use of Taylor-Hood FE pairs does not. The explanation of
-this comes from the cellebration LBB condition \cite{Johnson2009}
+this comes from the cellebrated LBB condition \cite{Johnson2009}
 \textcolor{red}{Cite more authors here}. For the rotating Shallow Water
-Equations we see a similar issue where a standard equal order FE results in
-spurious height modes, while Taylor-Hood elements do not \cite{Hanert2004}
-\textcolor{red}{Cite more authors here}.
+Equations (SWE) we see a similar issue where a standard equal order FE results
+in spurious elevation modes (see \cite{Hanert2002,Hanert2006,Le-Roux2005}) ,
+while Taylor-Hood elements do not \cite{Hanert2004}. 
 
 In this paper we present a least squares stabilization of a piecewise linear
-equal order FE pair applied to the SWE, based on the G2 (or General Galerkin)
-method, using the finite element cG(1)cG(1). This method uses piecewise linears
-in space and piecewise constants in time, and will be discussed in more detail
-in a later section. The addition of stabilizing terms prevent the well known
-spurious elevation modes associated with equal order FE discretizations of
-the SWE (see \cite{Hanert2002,Hanert2006,Le-Roux2005}).
+equal order FE pair applied to the SWE. The SWE, have been widely used to access
+various finite difference and finite element discretizations, which were
+intended for OGCMs (see \cite{Batten1981,Hanert2004,Le-Roux1998,Walters1984}.
+The FE discretization we use in this paper is based on the G2 (or General
+Galerkin) method, using the finite element cG(1)cG(1). This method uses
+piecewise linears in space and piecewise constants in time, and will be
+discussed in more detail in a later section. High-order finite elements, which
+are computationally expensive have little benefit when modelling rapidly
+propagating gravity waves \cite{Le-Roux1998}, and so it makes sense to
+explore low-order finite element schemes. However, as stated above equal
+order pairings of velocity-elevation FEs result in spurious elevation modes,
+thus, the addition of stabilizing terms are used prevent these spurious elevation modes. 
+
+\textcolor{red}{Maybe we should look into whether this discretization is mass
+conserving, since we intend to use it for long time integration.}
 
 The outline of this paper is as follows: first we recall the rotating shallow
 water equations for the ocean, we then discuss the basics of the G2 finite
-element. We conclude the paper by demonstrating the code on some test cases.
+element and then the stabilization of the cG(1)cG(1) discretization of the SWE.
+Finally, We conclude the paper by demonstrating the code on some test cases.
