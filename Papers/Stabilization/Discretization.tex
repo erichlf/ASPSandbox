@@ -1,0 +1,14 @@
+Given $\mathbf{u} \in V=H^1_0(\Omega)$ and $\eta \in Q=H^1(\Omega)$ and
+test functions $\mathbf{v} \in V$ and $\chi \in Q$ then the The weak form of the
+SWE equations \eqref{eqn:SWE} with boundary condition \eqref{eqn:BCs}, written
+in weak residual form, is given by
+\begin{equation}
+  \begin{split}
+    r_1(\mathbf{u},\eta) &= (\mathbf{u}_t, \mathbf{v}) + f(\mathbf{k} \times
+        \mathbf{u}, \mathbf{v}) - g (\eta, \nabla\cdot \mathbf{v})\\
+    r_2(\mathbf{u},\eta) &= (\eta_t, \chi) + H (\nabla\cdot \mathbf{u},\chi).
+  \end{split}
+  \label{eqn:WeakSWE}
+\end{equation}
+Here $(\cdot, \cdot)$ is the standard $L^2$-inner product given by $(u,v) =
+\int_{\Omega}\! u\cdot v\, dx$.
