@@ -1,6 +1,6 @@
-Let $\Omega$ be the problem domain with $\Gamma$ the boundary of $\Omega$.
-Then the inviscid linear shallow water equations are given by
-\cite{Hanert2004, LeBlond1981, Le-Roux1998}
+Let $\Omega \times I$ be the problem domain with $\Gamma$ the boundary of
+$\Omega$ and $I = [0, T]$.  Then the inviscid linear shallow water equations are
+given by \cite{Hanert2004, LeBlond1981, Le-Roux1998}
 \begin{equation}
   \begin{split}
     \mathbf{u}_t + f\mathbf{k} \times \mathbf{u} + g \nabla \eta = 0, \\
@@ -17,5 +17,10 @@ boundary condition
   \mathbf{u}\cdot \mathbf{n} = 0 \quad \text{on } \Gamma,
   \label{eqn:BCs}
 \end{equation}
-where $\mathbf{n}$ is the outward normal at the boundary.
+where $\mathbf{n}$ is the outward normal at the boundary,
+and initial condition
+\begin{equation}
+  \mathbf{u}, \eta = \mathbf{u}_0, \eta_0 \quad \text{for } t = 0.
+  \label{eqn:IC}
+\end{equation}
 

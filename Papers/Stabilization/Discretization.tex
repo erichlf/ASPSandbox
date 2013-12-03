@@ -12,3 +12,10 @@ in weak residual form, is given by
 \end{equation}
 Here $(\cdot, \cdot)$ is the standard $L^2$-inner product given by $(u,v) =
 \int_{\Omega}\! u\cdot v\, dx$.
+
+The cG(1)cG(1) method is a variant of the G2 method \cite{Johnson1998}, where
+the time discretization is cG(1), continuous piecewise linear trial functions
+and piecewise constant test functions, instead of a discontinuous Galerkin
+method. For the spatial discretization cG(1) corresponds to continuous piecewise
+linear trial and test functions and equal order finite element pairs for the
+velocity and elevation elements. If we take $I = (0,T]$
