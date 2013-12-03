@@ -1,13 +1,13 @@
-In 1963 the first numerical model of ocean circulation was developed by Bryan et
-al.  \cite{Bryan1963}. Since the work developed by Bryan there have been many
-numerical studies of ocean circulation, however the majority of which have
-relied on the Finite Difference Method (FDM). For a more detailed review see
-Griffies et al. \cite{Griffies2000}. However, some \emph{Finite Element} (FE)
-ocean models do exist, see for example, \cite{Fix} and \cite{Myers}. In addition
-to the the Fix and Myers FE models one can find: the QUODDY model by Ip et. al.
-\cite{Ip1995}, a 3D shallow water equations model based on linear triangular
-elements; the DGCOM model by Giraldo et al. \cite{GiraldoWWW}, a 2D shallow
-water equation model based on the discontinuous Galerkin approach.
+In 1969 the first Ocean General Circulation Model (OGCM) was developed by Bryan
+et al \cite{Bryan1969}. Since the work developed by Bryan there have been many
+numerical studies of OGCMs, however the majority of which have relied on the
+Finite Difference Method (FDM). For a more detailed review see Griffies et al.
+\cite{Griffies2000}. However, some \emph{Finite Element} (FE) ocean models do
+exist, see for example, \cite{Fix} and \cite{Myers}. In addition to the the Fix
+and Myers FE models one can find: the QUODDY model by Ip et. al.  \cite{Ip1995},
+a 3D shallow water equations model based on linear triangular elements; the
+DGCOM model by Giraldo et al. \cite{GiraldoWWW}, a 2D shallow water equation
+model based on the discontinuous Galerkin approach.
 
 The Finite Element Method (FEM) offers some distinct advantages over the FDM:
 the FEM allows for the easy representation of coastlines; and the FDM suffers
@@ -41,10 +41,14 @@ Galerkin) method, using the finite element cG(1)cG(1). This method uses
 piecewise linears in space and piecewise constants in time, and will be
 discussed in more detail in a later section. High-order finite elements, which
 are computationally expensive have little benefit when modelling rapidly
-propagating gravity waves \cite{Le-Roux1998}, and so it makes sense to
-explore low-order finite element schemes. However, as stated above equal
-order pairings of velocity-elevation FEs result in spurious elevation modes,
-thus, the addition of stabilizing terms are used prevent these spurious elevation modes. 
+propagating gravity waves \cite{Le-Roux1998}, and so it makes sense to explore
+low-order finite element schemes. Additionally, Le Roux et al \cite{Le-Roux1998}
+showed that for geostrophic balance, which is of central importance to OGCMs,
+equal order linear finite element pairs were a good candidate for the
+discretization of the coupled momentum-continuity equations. However, as stated
+above equal order pairings of velocity-elevation FEs result in spurious
+elevation modes, thus, the addition of stabilizing terms are used prevent these
+spurious elevation modes. 
 
 \textcolor{red}{Maybe we should look into whether this discretization is mass
 conserving, since we intend to use it for long time integration.}
