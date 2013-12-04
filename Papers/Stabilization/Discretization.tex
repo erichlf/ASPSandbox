@@ -1,12 +1,12 @@
 Given $\mathbf{u} \in V=H^1_0(\Omega)$ and $\eta \in Q=H^1(\Omega)$ and
 test functions $\mathbf{v} \in V$ and $\chi \in Q$ then the The weak form of the
-SWE equations \eqref{eqn:SWE} with boundary condition \eqref{eqn:BCs}, written
-in weak residual form, is given by
+SWE equations \eqref{eqn:SWE} with boundary condition \eqref{eqn:BCs}, is given
+by
 \begin{equation}
   \begin{split}
-    r_1(\mathbf{u},\eta) &= (\mathbf{u}_t, \mathbf{v}) + f(\mathbf{k} \times
-        \mathbf{u}, \mathbf{v}) - g (\eta, \nabla\cdot \mathbf{v})\\
-    r_2(\mathbf{u},\eta) &= (\eta_t, \chi) + H (\nabla\cdot \mathbf{u},\chi).
+    (\mathbf{u}_t, \mathbf{v}) + f(\mathbf{k} \times
+        \mathbf{u}, \mathbf{v}) - g (\eta, \nabla\cdot \mathbf{v}) &= 0\\
+    (\eta_t, \chi) + H (\nabla\cdot \mathbf{u},\chi) &= 0.
   \end{split}
   \label{eqn:WeakSWE}
 \end{equation}
@@ -18,4 +18,41 @@ the time discretization is cG(1), continuous piecewise linear trial functions
 and piecewise constant test functions, instead of a discontinuous Galerkin
 method. For the spatial discretization cG(1) corresponds to continuous piecewise
 linear trial and test functions and equal order finite element pairs for the
-velocity and elevation elements. If we take $I = (0,T]$
+velocity and elevation elements. Let $0 = t_0 < t_1 < \cdots < t_N = T$ be a
+sequence of discrete time steps associated with the time intervals $I_n =
+(t_{n-1},t_n]$ of length $k_n = t_n - t_{n-1}$, then the $n^{th}$
+space-time slab is given by $S_n = \Omega \times I_n$. Now let $V^n \subset V,
+Q^n \subset Q$ and $W^n = V^n \times Q^n$ be a finite element space consisting
+of piecewise linear functions on a mesh $\mathcal{T}_n = {K}$ of mesh size
+$h_n(x)$.
+
+With the proper space in place, we seek functions $(\mathbf{u}_h, \eta_h)$ which
+are continuous piecewise linear in space and time. Then the cG(1)cG(1) method
+for the SWE, \eqref{eqn:SWE}, with boundary conditions \eqref{eqn:BCs} reads:
+For $n = 1, \dots, N$, find $(\mathbf{u}_h^n, \eta_h^n) \equiv
+(\mathbf{u}_h(t_n), \eta_h(t_n))$ with $(\mathbf{u}_h, \eta_h) \in W^n$, such
+that
+\begin{equation}
+  \begin{split}
+    &k_n^{-1}(\mathbf{u}_n - \mathbf{u}_{n-1}, \mathbf{v}) + f(\mathbf{k} \times
+        \bar{\mathbf{u}}, \mathbf{v}) - g (\bar{\eta}, \nabla\cdot \mathbf{v})
+        + k_n^{-1}(\eta_n - \eta_{n-1}, \chi) + H (\nabla\cdot \bar{\mathbf{u}},\chi) \\
+    &\qquad+ \delta_1 ( R_1(\bar{\mathbf{u}}_h^n, \eta_h^n),
+        R_1(\mathbf{v}, \chi))
+    + \delta_2 (R_2(\bar{\mathbf{u}}_h^n, \eta_h^n),
+        R_2(\mathbf{v}, \chi))
+    \quad \forall (\mathbf{v},\chi) \in W^n,
+  \end{split}
+  \label{eqn:cG1cG1}
+\end{equation}
+where $\bar{\mathbf{u}}_h^n = \frac{1}{2}(\mathbf{u}_h^n + \mathbf{u}_h^{n-1}),\,
+\bar{\eta}_h^n = \frac{1}{2}(\eta_h^n + \eta_h^{n+1})$, with the stabilizing
+terms are giving by
+\begin{align*}
+  R_1(\mathbf{u},\eta) &:= f\mathbf{k} \times \mathbf{u} + g \nabla \eta, \\
+  R_2(\mathbf{u},\eta) &:= H \nabla\cdot \mathbf{u},
+\end{align*}
+$\delta_1 = \frac{1}{2g}(k_n^{-2} + |\mathbf{u}^n|^2 h_n^{-2})^{-1/2}$, and
+$\delta_2 = \frac{1}{2H}(k_n^{-2} + |\eta^n|^2 h_n^{-2})^{-1/2}$. Note that in
+the strong residuals above ($R_1$ and $R_2$) the time derivative terms are zero
+due to the choice of test functions which are piecewise constants in time.
