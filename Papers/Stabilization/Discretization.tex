@@ -1,3 +1,13 @@
+It was shown in \cite{Hanert2002} and \cite{Le-Roux1998} that the equal order
+$P_1P_1$ finite element pair lead to spurious elevation modes. In Hanert et al
+\cite{Hanert2002} they showed that the linear system arrizing from the equal
+order $P_1P_1$ finite element pair resulted in ``four degrees of freedom
+corresponding to four possible solutions.'' Thus one solution corresponds to the
+elevation field and the other three correspond to spurious elevation modes. To
+eliminate the spurious elevation modes one should filter them out. In what
+follows we introduce the cG(1)cG(1) finite element discretization of the SWE,
+which includes stabilizations terms, so as to eliminate the spurious modes.
+
 Given $\mathbf{u} \in V=H^1_0(\Omega)$ and $\eta \in Q=H^1(\Omega)$ and
 test functions $\mathbf{v} \in V$ and $\chi \in Q$ then the The weak form of the
 SWE equations \eqref{eqn:SWE} with boundary condition \eqref{eqn:BCs}, is given

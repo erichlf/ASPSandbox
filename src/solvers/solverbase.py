@@ -223,7 +223,7 @@ class SolverBase:
                     self.vizP = plot(p, title='Height', rescale=True)
             else :
                 self.vizU.plot(u)
-                self.vizP.plot(p)
+                self.vizP.plot(p,elevate=0.0)
 
         # Check memory usage
         if self.options['check_mem_usage']:
