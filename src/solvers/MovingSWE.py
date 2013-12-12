@@ -27,11 +27,11 @@ class Solver(SolverBase):
         """
 
         #zeta = Expression('A/sqrt(2*S*pi)*exp(-pow(x[0] - (t - 0.5),2)/(2*S))',
-        #L is the length on half the domain
+        #L is the length of half the domain
         #P is the amplitude
         #U is the speed of the moving object
         zeta0 = 'x[0]>-(0.5*L+U*t) ? (x[0]<(0.5*L-U*t) ? 0.5*P*(1+cos(2*pi/L*(x[0]+U*t))) : 0.0) : 0.0'
-        zeta = Expression(zeta0, P=0.2, U=0.1, L=0.5,t=t)
+        zeta = Expression(zeta0, P=0.1, U=0.1, L=0.5,t=t)
 
         zeta = self.Q_project(zeta,W)
 
@@ -51,9 +51,11 @@ class Solver(SolverBase):
         Pp = self.options['height_order']
 
         #parameters
-        H = self.Th
-        eps = 1./self.Re
-        sigma = 1./self.Re
+        a0 = 0.1 #typical wave height
+        H = 1.0 #Characteristic water depth
+        lam = 2*pi/0.5 #typical wave length
+        eps = a0/H
+        sigma = H/lam
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', Pu)
@@ -103,15 +105,15 @@ class Solver(SolverBase):
             + inner(grad(H + eps*eta_theta),U_theta)*chi*dx
         F += zeta_t*chi*dx
         F += (1./dt)*inner(U - U_,v)*dx \
-            - eta_theta*div(v)*dx \
+            + inner(grad(eta_theta),v)*dx \
             + eps*inner(grad(U_theta)*U_theta,v)*dx \
             + 1./dt*sigma**2*H**2/3.*inner(grad(U - U_),grad(v))*dx
         F -= H/2.*inner(grad(zeta_tt),v)*dx
 
         if(self.options['stabilize']):
           # Stabilization parameters
-          k1  = 0.5
-          k2  = 0.5
+          k1  = 0.5/(eps+H)
+          k2  = 0.5/(eps+H)
           d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
           d2 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
@@ -128,10 +130,7 @@ class Solver(SolverBase):
         self.start_timing()
 
         #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[1])
-        if(self.options['plot_solution']):
-            viz = plot(zeta, rescale=True)
-
+        self.update(problem, t, zeta, w_.split()[1])
         while t<T:
             t += dt
             #update the wave generator
@@ -150,9 +149,7 @@ class Solver(SolverBase):
             eta_ = w_.split()[1]
 
             # Update
-            self.update(problem, t, U_, eta_)
-            if(self.options['plot_solution']):
-                viz.update(zeta)
+            self.update(problem, t, zeta, eta_)
 
         return U_, eta_
 

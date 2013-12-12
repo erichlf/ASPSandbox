@@ -218,12 +218,13 @@ class SolverBase:
                 # Plot velocity and pressure
                 self.vizU = plot(u, title='Velocity', rescale=True)
                 if regex.search(self.prefix(problem)) is None:
-                    self.vizP = plot(p, title='Pressure', rescale=True)
+                    self.vizP = plot(p, title='Pressure', rescale=True,
+                            elevate=0.0)
                 else :
                     self.vizP = plot(p, title='Height', rescale=True)
             else :
                 self.vizU.plot(u)
-                self.vizP.plot(p,elevate=0.0)
+                self.vizP.plot(p)
 
         # Check memory usage
         if self.options['check_mem_usage']:
