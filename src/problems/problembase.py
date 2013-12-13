@@ -19,10 +19,6 @@ class ProblemBase:
         # Parameters must be defined by subclass
         self.mesh    = None
 
-        self.Re = options["Re"] #Reynolds Number
-        self.Ro = options["Ro"] #Rosby Number
-        self.Fr = options["Fr"] #Froude Number
-        self.Th = options["Th"] #Th = N0/H0
         self.t      = 0
         self.T = options["T"] #final time
 

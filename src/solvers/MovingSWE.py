@@ -10,10 +10,8 @@ class Solver(SolverBase):
     def __init__(self, options):
         SolverBase.__init__(self, options)
 
-        self.Re = options['Re']
-        self.Ro = options['Ro']
-        self.Fr = options['Fr']
-        self.Th = options['Th']
+        self.nu = options['nu']
+        self.H = options['H']
 
         self.dt = options['dt']
         self.theta = options['theta']
@@ -52,7 +50,7 @@ class Solver(SolverBase):
 
         #parameters
         a0 = 0.1 #typical wave height
-        H = 1.0 #Characteristic water depth
+        H = self.H #Characteristic water depth
         lam = 2*pi/0.5 #typical wave length
         eps = a0/H
         sigma = H/lam

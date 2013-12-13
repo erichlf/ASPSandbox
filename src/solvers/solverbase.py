@@ -28,6 +28,21 @@ class SolverBase:
         # Store options
         self.options = options
 
+        #initialize parameters
+        self.nu = self.options['nu'] #kinematic viscosity
+        self.H = None #Fluid depth
+        self.f0 = None #Reference Coriolis force
+        self.beta = None #beta plane parameter
+        self.g = None #gravity
+
+        #initialize the time stepping method parameters
+        self.dt = self.options['dt'] #time step
+        self.theta = self.options['theta'] #time stepping method
+
+        #initialize element orders
+        self.Pu = self.options['velocity_order'] #order of velocity element
+        self.Pp = self.options['height_order'] #order of height/pressure element
+
         # Reset some solver variables
         self._time = None
         self._cputime = 0.0
@@ -55,15 +70,9 @@ class SolverBase:
         self._time = time()
 
     def solve(self, problem):
-        #get problem mesh 
+        #get problem mesh
         mesh = problem.mesh
         h = CellSize(mesh) #mesh size
-
-        #problem parameters
-        self.Fr = self.options['Fr'] #Froude Number
-        self.Th = self.options['Th'] #Ratio of wave height to depth
-        self.Re = self.options['Re'] #Reynolds Number
-        self.Ro = self.options['Ro'] #Rossby Number
 
         #if we want a linear version then make a coefficient zero for the
         #terms which only occur in the non-linear from of SWE
@@ -74,14 +83,10 @@ class SolverBase:
 
         t = 0 #initial time
         T = problem.T #final time
-        self.dt = self.options['dt'] #time step
-        theta = self.options['theta'] #time stepping method
-        Pu = self.options['velocity_order'] #order of velocity element
-        Pp = self.options['height_order'] #order of height/pressure element
 
         # Define function spaces
-        V = VectorFunctionSpace(mesh, 'CG', Pu)
-        Q = FunctionSpace(mesh, 'CG', Pp)
+        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        Q = FunctionSpace(mesh, 'CG', self.Pp)
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
@@ -101,30 +106,23 @@ class SolverBase:
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
         #U_(k+theta)
-        U_theta = (1.0-theta)*U_ + theta*U
+        U_theta = (1.0-self.theta)*U_ + self.theta*U
 
         #p_(k+theta)
-        eta_theta = (1.0-theta)*eta_ + theta*eta
+        eta_theta = (1.0-self.theta)*eta_ + self.theta*eta
 
         F = self.weak_residual(U, U_, eta, eta_, v, chi)
 
         if(self.options['stabilize']):
           # Stabilization parameters
-          if(self.Fr is None):
-              k1  = 1.0
-              k2  = 0.5
-          else:
-              k1  = 1.0*self.Th
-              k2  = 0.5*self.Fr**(2.)
-          d1 = k1*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5) 
-          d2 = k2*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+          d1, d2 = self.stableParameters(U_,eta_,h)
 
           #add stabilization
           R1, R2 = self.strong_residual(U_theta,U_theta,eta_theta)
           Rv1, Rv2 = self.strong_residual(U_theta,v,chi)
           F += d1*R1*Rv1*dx + d2*inner(R2,Rv2)*dx
 
-        U_, eta_ = self.timeStepper(problem, t, T, dt, W, w, w_, U_, eta_, F) 
+        U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, F)
         return U_, eta_
 
     def timeStepper(self, problem, t, T, dt, W, w, w_, U_, eta_, F):
@@ -166,14 +164,13 @@ class SolverBase:
 
     def suffix(self):
         #Return file suffix for output files
-        if(not self.options['linear']):
-            s = 'Re' + str(int(self.Re))
-        if(self.Fr is not None):
-            s += 'Fr' + str(int(1./self.Fr))
-        if(self.Ro is not None):
-            s += 'Ro' + str(int(1./self.Ro))
-        if(self.Th is not None):
-            s += 'Th' + str(int(1./self.Th))
+        if(nu != 0):
+            s = 'Re' + str(int(1./self.nu))
+        if(self.H is not None):
+            s += 'H' + str(self.H)
+        if(self.fo is not None):
+            s += 'fo' + str(self.f0)
+            s += 'beta' + str(beta)
 
         return s
 

@@ -5,10 +5,10 @@ __license__  = "GNU GPL version 3 or any later version"
 from solverbase import *
 
 class Solver(SolverBase):
-#    Incremental pressure-correction scheme.
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
+        self.nu = options['nu']
 
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,p):
@@ -19,14 +19,10 @@ class Solver(SolverBase):
 
     #weak residual for cG(1)cG(1)
     def weak_residual(self,U,U_,p,p_,v,q):
-        Re = self.Re #Reynolds Number
-        #set un-needed parameters to zero so file is named correctly
-        self.Fr = None
-        self.Th = None
-        self.Ro = None
+        nu = self.nu #Reynolds Number
 
-        theta = self.options['theta'] #time stepping method
-        dt = self.options["dt"]
+        theta = self.theta #time stepping method
+        dt = self.dt
 
         #U_(k+theta)
         U_theta = (1.0-theta)*U_ + theta*U
@@ -39,9 +35,17 @@ class Solver(SolverBase):
         r += (1./dt)*inner(U - U_,v)*dx \
             - p_theta*div(v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
-            + 1./Re*inner(grad(U_theta),grad(v))*dx
+            + nu*inner(grad(U_theta),grad(v))*dx
 
         return r
+
+    def stableParameters(self,U_,eta_,h):
+        k1  = 1.
+        k2  = 0.5
+        d1 = k1*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
+        d2 = k2*(self.dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+
+        return d1, d2
 
     def __str__(self):
           return 'NSE'
