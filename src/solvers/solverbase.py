@@ -115,7 +115,7 @@ class SolverBase:
 
         if(self.options['stabilize']):
           # Stabilization parameters
-          d1, d2 = self.stableParameters(U_,eta_,h)
+          d1, d2 = self.stabilization_parameters(U_,eta_,h)
 
           #add stabilization
           R1, R2 = self.strong_residual(U_theta,U_theta,eta_theta)

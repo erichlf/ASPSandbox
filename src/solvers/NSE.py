@@ -39,7 +39,7 @@ class Solver(SolverBase):
 
         return r
 
-    def stableParameters(self,U_,eta_,h):
+    def stabilization_parameters(self,U_,eta_,h):
         k1  = 1.
         k2  = 0.5
         d1 = k1*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
