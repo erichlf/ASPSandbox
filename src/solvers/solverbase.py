@@ -164,12 +164,12 @@ class SolverBase:
 
     def suffix(self):
         #Return file suffix for output files
-        if(nu != 0):
+        if(self.nu != 0):
             s = 'Re' + str(int(1./self.nu))
         if(self.H is not None):
             s += 'H' + str(self.H)
-        if(self.fo is not None):
-            s += 'fo' + str(self.f0)
+        if(self.f0 is not None):
+            s += 'f0' + str(self.f0)
             s += 'beta' + str(beta)
 
         return s

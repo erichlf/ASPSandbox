@@ -1,5 +1,5 @@
-\subsection{High Frequency Elevation Modes} \label{sse:ElevModes}
-  In this section we perform the same numerical experiment as in Hanert et al
+\subsection{Test 1: High Frequency Elevation Modes} \label{sse:ElevModes}
+  In this subsection we perform the same numerical experiment as in Hanert et al
   \cite{Hanert2002}, and Batteen and Han \cite{Batteen1981} in order to
   demonstrate the stability added by using the cG(1)cG(1) method presented in
   \autoref{sec:Discrete}. In both \cite{Hanert2002} and \cite{Batteen1981} they
@@ -20,10 +20,31 @@
   0.16$ m for the inertial limit and $H \approx 10$ m for the gravity wave
   limit. Choosing $k = 100$ s for the inertial limit and $k = 800$ s for the
   gravity wave limit, results in the same Gravitational Courant number, $C_g =
-  \sqrt{gH}\,k/h$, \cite{Le-Roux1998}.
+  \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. A summary of all problem parameters can
+  be seen in \autoref{tab:Test1Params}.
+
+  \def\arraystretch{1.25} %add some more padding to the table
+  \begin{table}
+    \begin{center}
+      \begin{tabular}{|c|c|c|}
+        \hline
+        & $R/h = 1/4$ & $R/h = 2$ \\[0.1em] \hline
+        $\Omega$ & \multicolumn{2}{c|}{[1000 km, 1000 km]} \\ \hline
+        $t$ & [0 s, 10\,000 s] & [0 s, 80\,000 s] \\ \hline
+        $g$ & \multicolumn{2}{c|}{$9.8$ m/s$^2$} \\ \hline 
+        $f$ & \multicolumn{2}{c|}{$10^{-4}$ s$^{-1}$} \\ \hline
+        $H$ & 0.16 m & 10 m \\ \hline
+        $k$ & 100 s & 800 s \\ \hline
+        $h$ & \multicolumn{2}{c|}{50 km} \\ \hline
+      \end{tabular}
+      \caption{Summary of Test 1 parameters for both the gravity wave, $R/h =
+      2$, and inertial wave $R/h = 1/4$, limits.}
+      \label{tab:Test1Params}
+    \end{center}
+  \end{table}
 
   As was noted in Hanert et al \cite{Hanert2002} the $P_1P_1$ element, with no
   stabilization, results in a noisy elevation pattern when applied to this
-  problem. This can clearly be seen in \autoref{fig:P1P1HighFrequencyElevation}.
-  However, using the cG(1)cG(1) method results in a solution which is not noisy,
-  as can be seen in \autoref{fig:cG1cG1HighFrequencyElevation}.
+  problem. %This can clearly be seen in \autoref{fig:P1P1HighFrequencyElevation}.
+%  However, using the cG(1)cG(1) method results in a solution which is not noisy,
+%  as can be seen in \autoref{fig:cG1cG1HighFrequencyElevation}.
