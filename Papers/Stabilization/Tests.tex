@@ -1,14 +1,14 @@
-\subsection{Test 1: High Frequency Elevation Modes} \label{sse:ElevModes}
-  In this subsection we perform the same numerical experiment as in Hanert et al
-  \cite{Hanert2002}, and Batteen and Han \cite{Batteen1981} in order to
-  demonstrate the stability added by using the cG(1)cG(1) method presented in
-  \autoref{sec:Discrete}. In both \cite{Hanert2002} and \cite{Batteen1981} they
-  showed that certain FE element pairs, in the case of Hanert et al, or certain FD
-  grids, in the case of Batteen and Han, resulted in spurious elevation modes by
-  strongly forcing short wave modes.
+\subsection{Test 1: High Frequency Elevation Modes} \label{sse:HFElevModes}
+  In this subsection we perform the same numerical experiment as in Subsection
+  6.1 of Hanert et al \cite{Hanert2002}, and Batteen and Han \cite{Batteen1981}
+  in order to demonstrate the stability added by using the cG(1)cG(1) method
+  presented in \autoref{sec:Discrete}. In both \cite{Hanert2002} and
+  \cite{Batteen1981} they showed that certain FE element pairs, in the case of
+  Hanert et al, or certain FD grids, in the case of Batteen and Han, resulted in
+  spurious elevation modes by strongly forcing short wave modes.
 
   Following the numerical test in \cite{Hanert2002} and \cite{Batteen1981}, we
-  solve the inviscid SWE equation, \eqref{eqn:SWE}, where the problem domain is
+  solve the inviscid linear SWE equation, \eqref{eqn:SWE}, where the problem domain is
   a square with side length 1000 km with regular grid spacing of $h=50$ km,
   initial condition $\mathbf{u}_0 = 0$, and point mass source and sink of 1 m
   and -1 m at fixed locations in the middle of the domain, vertically, 500 km
@@ -21,7 +21,7 @@
   limit. Choosing $k = 100$ s for the inertial limit and $k = 800$ s for the
   gravity wave limit, results in the same Gravitational Courant number, $C_g =
   \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. A summary of all problem parameters can
-  be seen in \autoref{tab:Test1Params}.
+  be seen in \autoref{tab:HFElevationParams}.
 
   \def\arraystretch{1.25} %add some more padding to the table
   \begin{table}
@@ -29,17 +29,21 @@
       \begin{tabular}{|c|c|c|}
         \hline
         & $R/h = 1/4$ & $R/h = 2$ \\[0.1em] \hline
-        $\Omega$ & \multicolumn{2}{c|}{[1000 km, 1000 km]} \\ \hline
+        $\Omega$ & \multicolumn{2}{c|}{[1000 km, 1000 km]$^2$} \\ \hline
         $t$ & [0 s, 10\,000 s] & [0 s, 80\,000 s] \\ \hline
         $g$ & \multicolumn{2}{c|}{$9.8$ m/s$^2$} \\ \hline 
         $f$ & \multicolumn{2}{c|}{$10^{-4}$ s$^{-1}$} \\ \hline
         $H$ & 0.16 m & 10 m \\ \hline
+        $\mathbf{u}_0(\mathbf{x})$ & \multicolumn{2}{c|}{0 m/s} \\ \hline
+        $\eta_0(\mathbf{x})$ & \multicolumn{2}{c|}{0 m} \\ \hline
+        $\mathbf{F}$ & \multicolumn{2}{c|}{} \\ \hline
         $k$ & 100 s & 800 s \\ \hline
         $h$ & \multicolumn{2}{c|}{50 km} \\ \hline
+        $C_g$ & \multicolumn{2}{c|}{ $\sim 0.5$ }\\ \hline
       \end{tabular}
       \caption{Summary of Test 1 parameters for both the gravity wave, $R/h =
       2$, and inertial wave $R/h = 1/4$, limits.}
-      \label{tab:Test1Params}
+      \label{tab:HFElevationParams}
     \end{center}
   \end{table}
 
@@ -48,3 +52,41 @@
   problem. %This can clearly be seen in \autoref{fig:P1P1HighFrequencyElevation}.
 %  However, using the cG(1)cG(1) method results in a solution which is not noisy,
 %  as can be seen in \autoref{fig:cG1cG1HighFrequencyElevation}.
+
+\subsection{Test 4: Gravity Wave Propagation and Dispersion} \label{sse:GravityWaves}
+  In this subsection we explore the same numerical experiment ``a'' in Le Roux
+  et al \cite{Le-Roux1998}, where the propagation and dispersion of gravity
+  waves are examined in a circular basin, $\Omega$. In this test the inviscid
+  linear SWE \eqref{eqn:SWE} is solved for an initial Gaussian height field
+  \begin{equation}
+    \eta(\mathbf{x},0) := \alpha e^{-\beta \sqrt{x_1^2 + x_2^2}},
+    \label{eqn:Guass}
+  \end{equation}
+  initial velocity $\mathbf{u}_0(\mathbf{x})=0$, and forcing function
+  $\mathbf{F}:=\mathbf{0}$. Additionally, the Coriolis parameter is set to zero,
+  thus the initial Gaussian should maintain its shape throughout the simulation.
+
+  \def\arraystretch{1.25} %add some more padding to the table
+  \begin{table}
+    \begin{center}
+      \begin{tabular}{|c|c|}
+        \hline
+        $\Omega$ & $\sqrt{x^2 + y^2} \le 1000$ km \\ \hline
+        $t$ &  \\ \hline
+        $g$ & $9.8$ m/s$^2$ \\ \hline 
+        $f$ & 0 s$^{-1}$ \\ \hline
+        $H$ & 2000 m \\ \hline
+        $\mathbf{u}_0(\mathbf{x})$ & $\mathbf{0}$ m/s \\ \hline
+        $\eta_0(\mathbf{x})$ & $\eta(\mathbf{x},0) := \alpha e^{-\beta
+          \sqrt{x_1^2 + x_2^2}}$ \\ \hline
+        $\alpha$ & 100 m \\ \hline
+        $\beta$ & $6.4\times10^{-11}$ m$^{-2}$ \\ \hline
+        $\mathbf{F}$ & $\mathbf{0}$ \\ \hline
+        $k$ & 80 s \\ \hline
+        $h$ & $\sim 20$ km \\ \hline
+        $C_g$ & \\ \hline
+      \end{tabular}
+      \caption{Summary of Test 4 parameters.}
+      \label{tab:GravityWaveParams}
+    \end{center}
+  \end{table}
