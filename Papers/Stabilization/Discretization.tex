@@ -1,12 +1,16 @@
 It was shown in \cite{Hanert2002} and \cite{Le-Roux1998} that the equal order
-$P_1P_1$ finite element pair lead to spurious elevation modes. In Hanert et al
+$P_1-P_1$ finite element pair lead to spurious elevation modes. In Hanert et al
 \cite{Hanert2002} they showed that the linear system arrizing from the equal
-order $P_1P_1$ finite element pair resulted in ``four degrees of freedom
+order $P_1-P_1$ finite element pair resulted in ``four degrees of freedom
 corresponding to four possible solutions.'' Thus one solution corresponds to the
 elevation field and the other three correspond to spurious elevation modes. To
 eliminate the spurious elevation modes one should filter them out. In what
 follows we introduce the cG(1)cG(1) finite element discretization of the SWE,
-which includes stabilizations terms, so as to eliminate the spurious modes.
+which a weighted least squares residual, so as to eliminate the spurious modes.
+The weight depends on the mesh size and thus as the mesh size decreases the
+ammount of filtering is decreases. This method has been show to be very
+effective and efficient when applied to the Navier-Stokes equations
+\cite{Hoffman2003,Hoffman2006a,Hoffman2006b,Hoffman2011,Jansson2011}.
 
 Given $\mathbf{u} \in V=H^1_0(\Omega)$ and $\eta \in Q=H^1(\Omega)$ and
 test functions $\mathbf{v} \in V$ and $\chi \in Q$ then the The weak form of the
@@ -15,7 +19,8 @@ by
 \begin{equation}
   \begin{split}
     (\mathbf{u}_t, \mathbf{v}) + f(\mathbf{k} \times
-        \mathbf{u}, \mathbf{v}) - g (\eta, \nabla\cdot \mathbf{v}) &= 0\\
+        \mathbf{u}, \mathbf{v}) - g (\eta, \nabla\cdot \mathbf{v}) 
+        &= (\mathbf{F},\mathbf{v})\\
     (\eta_t, \chi) + H (\nabla\cdot \mathbf{u},\chi) &= 0.
   \end{split}
   \label{eqn:WeakSWE}
@@ -45,10 +50,11 @@ that
 \begin{equation}
   \begin{split}
     &k_n^{-1}(\mathbf{u}_n - \mathbf{u}_{n-1}, \mathbf{v}) + f(\mathbf{k} \times
-        \bar{\mathbf{u}}, \mathbf{v}) - g (\bar{\eta}, \nabla\cdot \mathbf{v})
-        + k_n^{-1}(\eta_n - \eta_{n-1}, \chi) + H (\nabla\cdot \bar{\mathbf{u}},\chi) \\
+        \bar{\mathbf{u}}, \mathbf{v}) - g (\bar{\eta}, \nabla\cdot \mathbf{v}) -
+        (\mathbf{F},\mathbf{v}) + k_n^{-1}(\eta_n - \eta_{n-1}, \chi) + H
+        (\nabla\cdot \bar{\mathbf{u}},\chi) \\
     &\qquad+ \delta_1 ( R_1(\bar{\mathbf{u}}_h^n, \eta_h^n),
-        R_1(\mathbf{v}, \chi))
+        R_1(\mathbf{v}, \chi) + F)
     + \delta_2 (R_2(\bar{\mathbf{u}}_h^n, \eta_h^n),
         R_2(\mathbf{v}, \chi))
     \quad \forall (\mathbf{v},\chi) \in W^n,
@@ -57,9 +63,9 @@ that
 \end{equation}
 where $\bar{\mathbf{u}}_h^n = \frac{1}{2}(\mathbf{u}_h^n + \mathbf{u}_h^{n-1}),\,
 \bar{\eta}_h^n = \frac{1}{2}(\eta_h^n + \eta_h^{n+1})$, with the stabilizing
-terms are giving by
+terms given by
 \begin{align*}
-  R_1(\mathbf{u},\eta) &:= f\mathbf{k} \times \mathbf{u} + g \nabla \eta, \\
+  R_1(\mathbf{u},\eta) &:= f\mathbf{k} \times \mathbf{u} + g \nabla \eta - F, \\
   R_2(\mathbf{u},\eta) &:= H \nabla\cdot \mathbf{u},
 \end{align*}
 $\delta_1 = \frac{1}{2g}(k_n^{-2} + |\mathbf{u}^n|^2 h_n^{-2})^{-1/2}$, and

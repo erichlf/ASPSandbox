@@ -26,11 +26,14 @@ account. The more common approach is to use a FE which is of differing order,
 such as Taylor-Hood FE pairs. For instance, it is well known that an equal order
 FE pair implementation of the Navier-Stokes equations results in spurious
 pressure modes, but a use of Taylor-Hood FE pairs does not. The explanation of
-this comes from the cellebrated LBB condition \cite{Johnson2009}
+this comes from the celebrated LBB condition \cite{Johnson2009}
 \textcolor{red}{Cite more authors here}. For the rotating Shallow Water
 Equations (SWE) we see a similar issue where a standard equal order FE results
 in spurious elevation modes (see \cite{Hanert2002,Hanert2006,Le-Roux2005}) ,
-while Taylor-Hood elements do not \cite{Hanert2004}. 
+while Taylor-Hood elements do not \cite{Hanert2004}. Additionally, one may
+choose other lesser known finite element pairs such as the non-conforming
+$P_1^{NC}-P_1$, see \cite{Le-Roux1998,Hanert2002,Hanert2005} for more details of
+these finite element pairs.
 
 In this paper we present a least squares stabilization of a piecewise linear
 equal order FE pair applied to the SWE. The SWE, have been widely used to access
