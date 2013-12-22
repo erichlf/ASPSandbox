@@ -3,17 +3,17 @@ spatial domain $\Omega$ and $I = [0, T]$ the time domain.  Then the inviscid
 linear shallow water equations are given by
 \begin{equation}
   \begin{split}
-    \mathbf{u}_t + f\mathbf{k} \times \mathbf{u} + g \nabla \eta = \mathbf{F}, \\
-    \eta_t + H \nabla\cdot \mathbf{u} = 0,
+    \mathbf{u}_t + f\mathbf{k} \times \mathbf{u} + g \nabla \eta = \mathbf{F}_1, \\
+    \eta_t + H \nabla\cdot \mathbf{u} = F_2,
   \end{split}
   \label{eqn:SWE}
 \end{equation}
 where $\mathbf{u}=[u_1,u_2]^T$ is the two-dimensional velocity vector, $\eta$ is the
 deviation of the fluid elevation from the mean fluid depth $H_0$, $H$ is the
-fluid depth (considered constant in this study), $mathbf{F}$ is a vector valued
-forcing function, and $f$ is the Coriolis parameter, $\mathbf{k}$ is a unit
-vector in the vertical direction \cite{Hanert2004, LeBlond1981, Le-Roux1998}.
-Less compactly we see
+fluid depth (considered constant in this study), $\mathbf{F}_1$ is a vector valued
+forcing function, $F_2$ is a mass source or sink, and $f$ is the Coriolis
+parameter, $\mathbf{k}$ is a unit vector in the vertical direction
+\cite{Hanert2004, LeBlond1981, Le-Roux1998}.  Less compactly we see
 \begin{equation}
   f\mathbf{k} \times \mathbf{u} := f\begin{bmatrix}
     -u_2 \\

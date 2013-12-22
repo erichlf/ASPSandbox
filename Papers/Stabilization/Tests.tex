@@ -1,3 +1,15 @@
+In the following subsections we demonstrate the effectiveness of the the G2
+method with cG(1)cG(1) finite elements when applied to the SWE. For each
+numerical test we compare the cG(1)cG(1) discretization to the $P_1-P_1$
+discretization with Crank-Nicholson time stepping scheme. The $P_1-P_1$ finite
+element pair is know to produce spurious computational modes for the tests
+given \cite{Le-Roux1998,Hanert2006}. Thus, a stable solution is the result of
+the G2 cG(1)cG(1) discretization. In addition to the stabilization we will
+observe the dispersivity of the cG(1)cG(1) discretization in
+\autoref{sse:GravityWaves}. The dispersivity of a method is important when
+considering long time integration, such as what would be seen in a OGCM
+\cite{Le_Roux1998}.
+
 \subsection{Test 1: High Frequency Elevation Modes} \label{sse:HFElevModes}
   In this subsection we perform the same numerical experiment as in Subsection
   6.1 of Hanert et al \cite{Hanert2002}, and Batteen and Han \cite{Batteen1981}
@@ -24,19 +36,25 @@
   be seen in \autoref{tab:HFElevationParams}.
 
   \def\arraystretch{1.25} %add some more padding to the table
-  \begin{table}
+  \begin{table}[H]
     \begin{center}
       \begin{tabular}{|c|c|c|}
         \hline
         & $R/h = 1/4$ & $R/h = 2$ \\[0.1em] \hline
-        $\Omega$ & \multicolumn{2}{c|}{[1000 km, 1000 km]$^2$} \\ \hline
+        $\Omega$ & \multicolumn{2}{c|}{$[0\text{ km}, 1000\text{ km}]^2$} \\ \hline
         $t$ & [0 s, 10\,000 s] & [0 s, 80\,000 s] \\ \hline
-        $g$ & \multicolumn{2}{c|}{$9.8$ m/s$^2$} \\ \hline 
-        $f$ & \multicolumn{2}{c|}{$10^{-4}$ s$^{-1}$} \\ \hline
+        $g$ & \multicolumn{2}{c|}{$9.8\text{ m/s}^2$} \\ \hline 
+        $f$ & \multicolumn{2}{c|}{$10^{-4}\text{ s}^{-1}$} \\ \hline
         $H$ & 0.16 m & 10 m \\ \hline
         $\mathbf{u}_0(\mathbf{x})$ & \multicolumn{2}{c|}{0 m/s} \\ \hline
         $\eta_0(\mathbf{x})$ & \multicolumn{2}{c|}{0 m} \\ \hline
-        $\mathbf{F}$ & \multicolumn{2}{c|}{} \\ \hline
+        $\mathbf{F}_1$ & \multicolumn{2}{c|}{ $\mathbf{0}\text{ m/s}^2$} \\ \hline
+        $F_2$ & \multicolumn{2}{c|}{$
+          \begin{cases} 
+            1\text{ m} & \mathbf{x} = (250\text{ km}, 500\text{ km}) \\
+            -1\text{ m} & \mathbf{x} = (750\text{ km}, 500\text{ km}) \\
+            0\text{ m} & \text{otherwise}
+          \end{cases}$} \\ \hline
         $k$ & 100 s & 800 s \\ \hline
         $h$ & \multicolumn{2}{c|}{50 km} \\ \hline
         $C_g$ & \multicolumn{2}{c|}{ $\sim 0.5$ }\\ \hline
@@ -53,6 +71,35 @@
 %  However, using the cG(1)cG(1) method results in a solution which is not noisy,
 %  as can be seen in \autoref{fig:cG1cG1HighFrequencyElevation}.
 
+\subsection{Test 2: High Frequency Velocity Modes}
+  \def\arraystretch{1.25} %add some more padding to the table
+  \begin{table}[H]
+    \begin{center}
+      \begin{tabular}{|c|c|}
+        \hline
+        $\Omega$ & $[0\text{ km}, 1000\text{ km}]^2$ \\ \hline
+        $t$ &  \\ \hline
+        $g$ & $9.8\text{ m/s}^2$ \\ \hline 
+        $f$ & $10^{-4}\text{ s}^{-1}$ \\ \hline
+        $H$ & 2000 m \\ \hline
+        $\mathbf{u}_0(\mathbf{x})$ & 
+          $\left|\mathbf{u}\right| = 
+            \begin{cases}
+              1\text{ m/s} & \text{if }\mathbf{x}=(500\text{ km}, 500\text{ km}) \\ 
+              0\text{ m/s} & \text{otherwise}
+            \end{cases}$ \\ \hline
+          $\eta_0(\mathbf{x})$ & 0 m \\ \hline
+        $\mathbf{F}_1$ & 0 m/s$^2$\\ \hline
+        $F_2$ & 0 m\\ \hline
+        $k$ & 100 s \\ \hline
+        $h$ & 50 km \\ \hline
+        $C_g$ & $\sim 0.5$ \\ \hline
+      \end{tabular}
+      \caption{Summary of Test 2 parameters.}
+      \label{tab:HFVelocityParams}
+    \end{center}
+  \end{table}
+
 \subsection{Test 4: Gravity Wave Propagation and Dispersion} \label{sse:GravityWaves}
   In this subsection we explore the same numerical experiment ``a'' in Le Roux
   et al \cite{Le-Roux1998}, where the propagation and dispersion of gravity
@@ -67,7 +114,7 @@
   thus the initial Gaussian should maintain its shape throughout the simulation.
 
   \def\arraystretch{1.25} %add some more padding to the table
-  \begin{table}
+  \begin{table}[H]
     \begin{center}
       \begin{tabular}{|c|c|}
         \hline
@@ -81,7 +128,8 @@
           \sqrt{x_1^2 + x_2^2}}$ \\ \hline
         $\alpha$ & 100 m \\ \hline
         $\beta$ & $6.4\times10^{-11}$ m$^{-2}$ \\ \hline
-        $\mathbf{F}$ & $\mathbf{0}$ \\ \hline
+        $\mathbf{F}_1$ & $\mathbf{0}$ \\ \hline
+        $F_2$ & 0 \\ \hline
         $k$ & 80 s \\ \hline
         $h$ & $\sim 20$ km \\ \hline
         $C_g$ & \\ \hline

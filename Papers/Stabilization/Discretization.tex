@@ -20,8 +20,8 @@ by
   \begin{split}
     (\mathbf{u}_t, \mathbf{v}) + f(\mathbf{k} \times
         \mathbf{u}, \mathbf{v}) - g (\eta, \nabla\cdot \mathbf{v}) 
-        &= (\mathbf{F},\mathbf{v})\\
-    (\eta_t, \chi) + H (\nabla\cdot \mathbf{u},\chi) &= 0.
+        &= (\mathbf{F}_1,\mathbf{v})\\
+    (\eta_t, \chi) + H (\nabla\cdot \mathbf{u},\chi) &= (F_2,\chi).
   \end{split}
   \label{eqn:WeakSWE}
 \end{equation}
@@ -51,22 +51,24 @@ that
   \begin{split}
     &k_n^{-1}(\mathbf{u}_n - \mathbf{u}_{n-1}, \mathbf{v}) + f(\mathbf{k} \times
         \bar{\mathbf{u}}, \mathbf{v}) - g (\bar{\eta}, \nabla\cdot \mathbf{v}) -
-        (\mathbf{F},\mathbf{v}) + k_n^{-1}(\eta_n - \eta_{n-1}, \chi) + H
-        (\nabla\cdot \bar{\mathbf{u}},\chi) \\
-    &\qquad+ \delta_1 ( R_1(\bar{\mathbf{u}}_h^n, \eta_h^n),
-        R_1(\mathbf{v}, \chi) + F)
-    + \delta_2 (R_2(\bar{\mathbf{u}}_h^n, \eta_h^n),
-        R_2(\mathbf{v}, \chi))
-    \quad \forall (\mathbf{v},\chi) \in W^n,
+        (\mathbf{F}_1,\mathbf{v}) \\
+    &\quad+ k_n^{-1}(\eta_n - \eta_{n-1}, \chi) + H (\nabla\cdot
+      \bar{\mathbf{u}},\chi) - (F_2,\chi)\\
+    &\quad+ \delta_1 ( R_1(\bar{\mathbf{u}}_h^n, \eta_h^n),
+      R_1(\mathbf{v}, \chi) + \mathbf{F}_1) \\
+    &\quad+ \delta_2 (R_2(\bar{\mathbf{u}}_h^n, \eta_h^n),
+        R_2(\mathbf{v}, \chi) + F_2)
   \end{split}
+  \quad \forall (\mathbf{v},\chi) \in W^n,
   \label{eqn:cG1cG1}
 \end{equation}
 where $\bar{\mathbf{u}}_h^n = \frac{1}{2}(\mathbf{u}_h^n + \mathbf{u}_h^{n-1}),\,
 \bar{\eta}_h^n = \frac{1}{2}(\eta_h^n + \eta_h^{n+1})$, with the stabilizing
 terms given by
 \begin{align*}
-  R_1(\mathbf{u},\eta) &:= f\mathbf{k} \times \mathbf{u} + g \nabla \eta - F, \\
-  R_2(\mathbf{u},\eta) &:= H \nabla\cdot \mathbf{u},
+  R_1(\mathbf{u},\eta) &:= f\mathbf{k} \times \mathbf{u} + g \nabla \eta -
+    \mathbf{F}_1, \\
+  R_2(\mathbf{u},\eta) &:= H \nabla\cdot \mathbf{u} - F_2,
 \end{align*}
 $\delta_1 = \frac{1}{2g}(k_n^{-2} + |\mathbf{u}^n|^2 h_n^{-2})^{-1/2}$, and
 $\delta_2 = \frac{1}{2H}(k_n^{-2} + |\eta^n|^2 h_n^{-2})^{-1/2}$. Note that in
