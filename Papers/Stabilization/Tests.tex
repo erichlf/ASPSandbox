@@ -59,7 +59,7 @@ considering long time integration, such as what would be seen in a OGCM
           \end{cases}$} \\ \hline
         $k$ & 100 s & 800 s \\ \hline
         $h$ & \multicolumn{2}{c|}{50 km} \\ \hline
-        $C_g$ & \multicolumn{2}{c|}{ $\sim 0.5$ }\\ \hline
+        $C_g$ & \multicolumn{2}{c|}{\textcolor{red}{Check}$\sim 0.5$} \\ \hline
       \end{tabular}
       \caption{Summary of Test 1 parameters for both the gravity wave, $R/h =
       2$, and inertial wave $R/h = 1/4$, limits.}
@@ -74,12 +74,19 @@ considering long time integration, such as what would be seen in a OGCM
 %  as can be seen in \autoref{fig:cG1cG1HighFrequencyElevation}.
 
 \subsection{Test 2: High Frequency Velocity Modes}
-  In \cite{Hanert2002} they showed that certain FE element pairs resulted in
-  spurious elevation modes by strongly forcing short wave modes.  To demonstrate
-  the effectiveness of the cG(1)cG(1) discretization at eliminating spurious
-  velocity modes we perform the same numerical experiment as in Subsection 6.2
-  of Hanert et al \cite{Hanert2002}, and Batteen and Han \cite{Batteen1981}
+  In this subsection we intend to show that the cG(1)cG(1) discretization of the
+  SWE is stable in the velocity field. In \cite{Hanert2002} they showed that
+  certain FE element pairs resulted in spurious elevation modes by strongly
+  forcing short wave modes.  To demonstrate the effectiveness of the cG(1)cG(1)
+  discretization at eliminating spurious velocity modes we perform the same
+  numerical experiment as in Subsection 6.2 of Hanert et al \cite{Hanert2002},
+  and Batteen and Han \cite{Batteen1981}
 
+  For this numerical experiment we take many of the same parameters as we did
+  for Test 1, except the mass source, $F_2$, is set to zero, the depth, $H$, is
+  set to 2000 m, the initial velocity condition is zero except at the center
+  where the magnitude of the velocity is set to 1 m/s, and the time step is set
+  to 100 s.
   \def\arraystretch{1.25} %add some more padding to the table
   \begin{table}[H]
     \begin{center}
@@ -101,7 +108,7 @@ considering long time integration, such as what would be seen in a OGCM
         $F_2$ & 0 m\\ \hline
         $k$ & 100 s \\ \hline
         $h$ & 50 km \\ \hline
-        $C_g$ & $\sim 0.5$ \\ \hline
+        $C_g$ & \textcolor{red}{Check}$\sim 0.5$ \\ \hline
       \end{tabular}
       \caption{Summary of Test 2 parameters.}
       \label{tab:HFVelocityParams}
