@@ -22,20 +22,20 @@ considering long time integration, such as what would be seen in a OGCM
   elevation modes.
 
   Following the numerical test in \cite{Hanert2002} and \cite{Batteen1981}, we
-  solve the inviscid linear SWE equation, \eqref{eqn:SWE}, where the problem domain is
-  a square with side length 1000 km with regular grid spacing of $h=50$ km,
-  initial condition $\mathbf{u}_0 = 0$, and point mass source and sink of 1 m
-  and -1 m at fixed locations in the middle of the domain, vertically, 500 km
-  apart, horizontally, so as to force the flow.  The resulting solution are
-  presented after 100 time steps. The numerical simulations were performed for
-  both inertial ($R/h = 1/4$) and gravity wave ($R/h = 2$) limits, where $R$ is
-  the Rossby radius of deformation given by $R \equiv \sqrt{gH}/f$. Taking the
-  the Coriolis parameter to be $f = 10^{-4}$ s$^{-1}$ then we have $H \approx
-  0.16$ m for the inertial limit and $H \approx 10$ m for the gravity wave
-  limit. Choosing $k = 100$ s for the inertial limit and $k = 800$ s for the
-  gravity wave limit, results in the same Gravitational Courant number, $C_g =
-  \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. A summary of all problem parameters can
-  be seen in \autoref{tab:HFElevationParams}.
+  solve the inviscid linear SWE equation, \eqref{eqn:SWE}, where the problem
+  domain is a square with side length 1000 km with regular grid spacing of
+  $h=50$ km, initial condition $\mathbf{u}_0 = 0$, and point mass source and
+  sink of 1 m and -1 m at fixed locations in the middle of the domain,
+  vertically, 500 km apart, horizontally, so as to force the flow.  The
+  resulting solution are presented after 100 time steps. The numerical
+  simulations were performed for both inertial ($R/h = 1/4$) and gravity wave
+  ($R/h = 2$) limits, where $R$ is the Rossby radius of deformation given by $R
+  \equiv \sqrt{gH}/f$. Taking the the Coriolis parameter to be $f = 10^{-4}$
+  s$^{-1}$ then we have $H \approx 0.16$ m for the inertial limit and $H \approx
+  10$ m for the gravity wave limit. Choosing $k = 100$ s for the inertial limit
+  and $k = 800$ s for the gravity wave limit, results in the same Gravitational
+  Courant number, $C_g = \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. A summary of all
+  problem parameters can be seen in \autoref{tab:HFElevationParams}.
 
   \def\arraystretch{1.25} %add some more padding to the table
   \begin{table}[H]

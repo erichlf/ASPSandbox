@@ -36,6 +36,7 @@ class SolverBase:
         self.g = None #gravity
 
         #initialize the time stepping method parameters
+        self.t0 = 0 #initial time
         self.dt = self.options['dt'] #time step
         self.theta = self.options['theta'] #time stepping method
 
@@ -70,6 +71,7 @@ class SolverBase:
         self._time = time()
 
     def solve(self, problem):
+        self.problem = problem
         #get problem mesh
         mesh = problem.mesh
         h = CellSize(mesh) #mesh size
@@ -81,8 +83,11 @@ class SolverBase:
         else:
             self.NonLinear = 1
 
-        t = 0 #initial time
+        t = self.t0
         T = problem.T #final time
+
+        F1 = problem.F1(t) #forcing function for the momentum equation
+        F2 = problem.F2(t) #mass source for the continuity equation
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
@@ -92,6 +97,10 @@ class SolverBase:
         # Get boundary conditions
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
+        #forcing and mass source/sink
+        F1 = self.V_project(problem.F1(t),W)
+        F2 = self.Q_project(problem.F2(t),W)
+
         #define trial and test function
         v, chi = TestFunctions(W)
 
@@ -99,7 +108,6 @@ class SolverBase:
         w_ = Function(W)
 
         #initial condition
-        #w = self.InitialConditions(problem, W)
         w_ = self.InitialConditions(problem, W)
 
         U, eta = (as_vector((w[0], w[1])), w[2])
@@ -111,7 +119,8 @@ class SolverBase:
         #p_(k+theta)
         eta_theta = (1.0-self.theta)*eta_ + self.theta*eta
 
-        F = self.weak_residual(U, U_, eta, eta_, v, chi)
+        F = self.weak_residual(U, U_, eta, eta_, v, chi) \
+            - inner(F1,v)*dx - F2*chi*dx
 
         if(self.options['stabilize']):
           # Stabilization parameters
@@ -120,7 +129,7 @@ class SolverBase:
           #add stabilization
           R1, R2 = self.strong_residual(U_theta,U_theta,eta_theta)
           Rv1, Rv2 = self.strong_residual(U_theta,v,chi)
-          F += d1*R1*Rv1*dx + d2*inner(R2,Rv2)*dx
+          F += d1*inner(R1 - F1, Rv1)*dx + d2*(R2 - F2)*Rv2*dx
 
         U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, F)
         return U_, eta_
@@ -139,6 +148,10 @@ class SolverBase:
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
             solve(F==0, w, bcs=bcs)
+
+            #update forcing and mass source/sink
+            F1 = self.V_project(self.problem.F1(t),W)
+            F2 = self.Q_project(self.problem.F2(t),W)
 
             w_.vector()[:] = w.vector()
 

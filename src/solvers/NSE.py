@@ -12,8 +12,8 @@ class Solver(SolverBase):
 
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,p):
-        R1 = div(U)
-        R2 = grad(u)*U + grad(p)
+        R1 = grad(u)*U + grad(p)
+        R2 = div(U)
 
         return R1, R2
 
@@ -31,11 +31,11 @@ class Solver(SolverBase):
         p_theta = (1.0-theta)*p_ + theta*p
 
         #weak form of the equations
-        r = div(U_theta)*q*dx 
-        r += (1./dt)*inner(U - U_,v)*dx \
+        r = (1./dt)*inner(U - U_,v)*dx \
             - p_theta*div(v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
             + nu*inner(grad(U_theta),grad(v))*dx
+        r += div(U_theta)*q*dx
 
         return r
 
