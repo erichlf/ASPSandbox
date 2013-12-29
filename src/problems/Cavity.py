@@ -55,8 +55,13 @@ class Problem(ProblemBase):
 
         return bcs
 
-    def F(self, t):
+    def F1(self, t):
+        #forcing function for the momentum equation
         return Constant((0,0))
+
+    def F2(self, t):
+        #mass source for the continuity equation
+        return Constant(0)
 
     def __str__(self):
         return 'Cavity'

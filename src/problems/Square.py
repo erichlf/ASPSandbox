@@ -6,6 +6,11 @@ __license__  = "GNU GPL version 3 or any later version"
 #   by Kent-Andre Mardal <kent-and@simula.no>
 #
 
+'''
+This is an extremely boring problem with no forcing and on a square.
+This is basically a blank problem that we can adapt with optional inputs.
+'''
+
 from problembase import *
 from numpy import array
 
@@ -39,11 +44,11 @@ class Problem(ProblemBase):
 
     def F1(self, t):
         #forcing function for the momentum equation
-        return Constant((0,0))
+        return Expression(self.options['F1'])
 
     def F2(self, t):
         #mass source for the continuity equation
-        return Constant(0)
+        return Expression(self.options['F2'])
 
     def __str__(self):
         return 'Drop'

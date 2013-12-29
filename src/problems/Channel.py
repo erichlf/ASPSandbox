@@ -56,8 +56,13 @@ class Problem(ProblemBase):
     def pressure_bc(self, V, Q, t):
         return Expression('p*(1.-x[0])',p=1.,t=t)
 
-    def F(self, t):
+    def F1(self, t):
+        #forcing function for the momentum equation
         return Constant((0,0))
+
+    def F2(self, t):
+        #mass source for the continuity equation
+        return Constant(0)
 
     def __str__(self):
         return 'Channel'
