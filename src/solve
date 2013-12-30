@@ -25,6 +25,10 @@ OPTIONS = { "N": 32, #number of elements along an axis
             "H": 1.63, #water depth
             "F1": '0,0', #momentum forcing function
             "F2": '0', #mass source/sink
+            "x0": '0', #x-coordinate of the bottom-left corner
+            "x1": '1', #x-coordinate of the top-right corner
+            "y0": '0', #y-coordinate of the bottom-left corner
+            "y1": '1', #y-coordinate of the top-right corner
             "theta": 0.5, #theta for the theta time-stepping method
             "save_solution": True,
             "save_frequency": 1,
@@ -96,16 +100,16 @@ def main(args):
             except:
                 options[key] = str(value)
         except:
-            print 'Warning: Unhandled command-line argument', parameter 
+            print 'Warning: Unhandled command-line argument', parameter
 
     #the momentum forcing function needs to be made into a vector of strings
     #options['F1'] = [
     pattern = re.compile('^\((.+),\s*(.+)\)$')
     m = pattern.match(str(options['F1']))#, re.search('(?,).+(?$)',str(options['F1']))]
     options['F1'] = [m.group(1), m.group(2)]
+    print options['F1']
     print m.group(1)
     print m.group(2)
-    print options['F1']
 
     # Set global DOLFIN parameters
     parameters['form_compiler']['cpp_optimize'] = True

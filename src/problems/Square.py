@@ -28,7 +28,11 @@ class Problem(ProblemBase):
 
         # Create mesh
         N = options["N"]
-        self.mesh = RectangleMesh(-1,-1,1,1,N, N)
+        x0 = float(options["x0"])
+        x1 = float(options["x1"])
+        y0 = float(options["y0"])
+        y1 = float(options["y1"])
+        self.mesh = RectangleMesh(x0,y0,x1,y1,N, N)
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
@@ -48,6 +52,7 @@ class Problem(ProblemBase):
 
     def F2(self, t):
         #mass source for the continuity equation
+        print self.options['F2']
         return Expression(self.options['F2'],t=t)
 
     def __str__(self):
