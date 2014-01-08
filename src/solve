@@ -19,7 +19,7 @@ OPTIONS = { "N": 32, #number of elements along an axis
             "dt": 0.01, #time-step
             "T": 1.0, #final-time
             "Re": 1000, #Reynolds number
-            "Ro": 1E-4, #Rossby number
+            "Ro": 1E-2, #Rossby number
             "Fr": 0.01, #Froude number
             "Th": 1, #wave deflection number
             "H": 1.63, #water depth
