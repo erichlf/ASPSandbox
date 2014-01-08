@@ -8,7 +8,7 @@ class Solver(SolverBase):
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
-        self.nu = options['nu']
+        self.Re = options['Re']
 
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,p):
@@ -34,7 +34,7 @@ class Solver(SolverBase):
         r = (1./dt)*inner(U - U_,v)*dx \
             - p_theta*div(v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
-            + nu*inner(grad(U_theta),grad(v))*dx
+            + Re*inner(grad(U_theta),grad(v))*dx
         r += div(U_theta)*q*dx
 
         return r

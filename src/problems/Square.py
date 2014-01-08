@@ -52,7 +52,6 @@ class Problem(ProblemBase):
 
     def F2(self, t):
         #mass source for the continuity equation
-        print self.options['F2']
         return Expression(self.options['F2'],t=t)
 
     def __str__(self):

@@ -29,16 +29,16 @@ class SolverBase:
         self.options = options
 
         #initialize parameters
-        self.nu = self.options['nu'] #kinematic viscosity
+        self.Re = self.options['Re'] #Reynolds number
         self.H = None #Fluid depth
-        self.f0 = None #Reference Coriolis force
-        self.beta = None #beta plane parameter
-        self.g = None #gravity
+        self.Ro = None #Rossby number
+        self.Fr = None #Froude number
+        self.Th = None #average wave height
 
         #initialize the time stepping method parameters
         self.t0 = 0 #initial time
         self.dt = self.options['dt'] #time step
-        self.theta = self.options['theta'] #time stepping method
+        self.alpha = self.options['alpha'] #time stepping method
 
         #initialize element orders
         self.Pu = self.options['velocity_order'] #order of velocity element
@@ -113,11 +113,11 @@ class SolverBase:
         U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
-        #U_(k+theta)
-        U_theta = (1.0-self.theta)*U_ + self.theta*U
+        #U_(k+alpha)
+        U_alpha = (1.0-self.alpha)*U_ + self.alpha*U
 
-        #p_(k+theta)
-        eta_theta = (1.0-self.theta)*eta_ + self.theta*eta
+        #p_(k+alpha)
+        eta_alpha = (1.0-self.alpha)*eta_ + self.alpha*eta
 
         F = self.weak_residual(U, U_, eta, eta_, v, chi) \
             - inner(F1,v)*dx - F2*chi*dx
@@ -127,8 +127,8 @@ class SolverBase:
           d1, d2 = self.stabilization_parameters(U_,eta_,h)
 
           #add stabilization
-          R1, R2 = self.strong_residual(U_theta,U_theta,eta_theta)
-          Rv1, Rv2 = self.strong_residual(U_theta,v,chi)
+          R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
+          Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
           F += d1*inner(R1 - F1, Rv1)*dx + d2*(R2 - F2)*Rv2*dx
 
         U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, F)
@@ -177,13 +177,18 @@ class SolverBase:
 
     def suffix(self):
         #Return file suffix for output files
-        if(self.nu != 0):
-            s = 'Re' + str(int(1./self.nu))
+        if(self.Re != 0):
+            s = 'Re' + str(int(self.Re))
+        else:
+            s = 'Inviscid'
+        if(self.Ro is not None):
+            s += 'Ro' + str(self.Ro)
+        if(self.Fr is not None):
+            s += 'Fr' + str(self.Fr)
+        if(self.Th is not None):
+            s += 'Th' + str(self.Th)
         if(self.H is not None):
             s += 'H' + str(self.H)
-        if(self.f0 is not None):
-            s += 'f0' + str(self.f0)
-            s += 'beta' + str(beta)
 
         return s
 
