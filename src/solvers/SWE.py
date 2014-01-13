@@ -46,6 +46,7 @@ class Solver(SolverBase):
         Fr = self.Fr #Froude number
 
         NonLinear = self.NonLinear
+        inviscid = self.inviscid
 
         alpha = self.alpha #time stepping method
         dt = self.dt
@@ -60,8 +61,8 @@ class Solver(SolverBase):
         #momentum equation
         r = (1./dt)*inner(U - U_,v)*dx \
             + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0])*dx \
-            - Fr**(-2)*Th*eta_alpha*div(v)*dx \
-            + 1/Re*inner(grad(U_alpha),grad(v))*dx
+            - Fr**(-2)*Th*eta_alpha*div(v)*dx
+        r += inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         #add the terms for the non-linear SWE
         r += NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
         #continuity equation

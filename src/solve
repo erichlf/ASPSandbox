@@ -42,7 +42,8 @@ OPTIONS = { "N": 32, #number of elements along an axis
             "velocity_order": 1, #order of velocity element
             "height_order": 1, #order of height/pressure element
             "stabilize": True, #stabilize?
-            "linear": False #use the linear version?
+            "linear": False, #use the linear version?
+            "inviscid": False #use the inviscid version?
             }
 
 def usage():

@@ -24,6 +24,8 @@ class Solver(SolverBase):
         theta = self.theta #time stepping method
         dt = self.dt
 
+        inviscid = self.options['inviscid']
+
         #U_(k+theta)
         U_theta = (1.0-theta)*U_ + theta*U
 
@@ -34,7 +36,7 @@ class Solver(SolverBase):
         r = (1./dt)*inner(U - U_,v)*dx \
             - p_theta*div(v)*dx \
             + inner(grad(U_theta)*U_theta,v)*dx \
-            + Re*inner(grad(U_theta),grad(v))*dx
+        r +=  inviscid/Re*inner(grad(U_theta),grad(v))*dx
         r += div(U_theta)*q*dx
 
         return r

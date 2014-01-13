@@ -83,6 +83,11 @@ class SolverBase:
         else:
             self.NonLinear = 1
 
+        if(self.options['inviscid']):
+            self.inviscid = 0
+        else:
+            self.inviscid = 1
+
         t = self.t0
         T = problem.T #final time
 
@@ -166,21 +171,21 @@ class SolverBase:
         #Return file prefix for output files
         p = problem.__module__.split('.')[-1]
         s = self.__module__.split('.')[-1]
+        if(self.options['stabilize'] and s in StabileSolvers):
+            s += 'Stabilized'
+        if(self.options['inviscid']):
+            s = 'Inviscid' + s
         if(self.options['linear'] and s in LinearSolvers):
-            if(self.options['stabilize'] and s in StabileSolvers):
-                s += 'Stabilized'
             s = 'Linear' + s
-        elif(self.options['stabilize'] and s in StabileSolvers):
-                s += 'Stabilized'
 
         return problem.output_location + p + s
 
     def suffix(self):
+        s = ''
+
         #Return file suffix for output files
-        if(self.Re != 0):
+        if(not self.options['inviscid']):
             s = 'Re' + str(int(self.Re))
-        else:
-            s = 'Inviscid'
         if(self.Ro is not None):
             s += 'Ro' + str(self.Ro)
         if(self.Fr is not None):

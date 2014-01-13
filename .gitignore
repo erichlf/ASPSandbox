@@ -24,6 +24,8 @@ ffc_form_*.h
 # C extensions
 *.so
 
+*.swm
+
 # Packages
 *.egg
 *.egg-info

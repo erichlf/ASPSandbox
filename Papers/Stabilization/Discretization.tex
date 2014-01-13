@@ -49,11 +49,11 @@ For $n = 1, \dots, N$, find $(\mathbf{u}_h^n, \eta_h^n) \equiv
 that
 \begin{equation}
   \begin{split}
-    &k_n^{-1}(\mathbf{u}_n - \mathbf{u}_{n-1}, \mathbf{v}) + f(\mathbf{k} \times
-        \bar{\mathbf{u}}, \mathbf{v}) - g (\bar{\eta}, \nabla\cdot \mathbf{v}) -
+    &k_n^{-1}(\mathbf{u}_n - \mathbf{u}_{n-1}, \mathbf{v}) + Ro^{-1}(\mathbf{k} \times
+    \bar{\mathbf{u}}, \mathbf{v}) - Fr^{-2}\Theta\,(\bar{\eta}, \nabla\cdot \mathbf{v}) -
         (\mathbf{F}_1,\mathbf{v}) \\
-    &\quad+ k_n^{-1}(\eta_n - \eta_{n-1}, \chi) + H (\nabla\cdot
-      \bar{\mathbf{u}},\chi) - (F_2,\chi)\\
+    &\quad+ k_n^{-1}(\eta_n - \eta_{n-1}, \chi) 
+      + \Theta^{-2}H (\nabla\cdot \bar{\mathbf{u}},\chi) - (F_2,\chi)\\
     &\quad+ \delta_1 ( R_1(\bar{\mathbf{u}}_h^n, \eta_h^n),
       R_1(\mathbf{v}, \chi) + \mathbf{F}_1) \\
     &\quad+ \delta_2 (R_2(\bar{\mathbf{u}}_h^n, \eta_h^n),
