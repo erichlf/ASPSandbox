@@ -19,10 +19,10 @@ OPTIONS = { "N": 32, #number of elements along an axis
             "dt": 0.01, #time-step
             "T": 1.0, #final-time
             "Re": 1000, #Reynolds number
-            "Ro": 1E-2, #Rossby number
-            "Fr": 0.01, #Froude number
-            "Th": 1, #wave deflection number
-            "H": 1.63, #water depth
+            "Ro": 0.125, #Rossby number
+            "Fr": 9.98, #Froude number
+            "Theta": 6.25, #wave deflection number
+            "H": 1, #water depth
             "F1": '(0,0)', #momentum forcing function
             "F2": '0', #mass source/sink
             "x0": '0', #x-coordinate of the bottom-left corner
@@ -95,7 +95,8 @@ def main(args):
     options = OPTIONS.copy()
     for parameter in params:
         try:
-            key, value = parameter.split("=")
+            #key, value = parameter.split("=")
+            key, value = parameter.split('=',1)
             try:
                 options[key] = eval(value)
             except:

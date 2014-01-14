@@ -24,27 +24,37 @@ considering long time integration, such as what would be seen in a OGCM
   Following the numerical test in \cite{Hanert2002} and \cite{Batteen1981}, we
   solve the inviscid linear SWE equation, \eqref{eqn:SWE}, where the problem
   domain is a square with side length 1000 km with regular grid spacing of
-  $h=50$ km, initial condition $\mathbf{u}_0 = 0$, and point mass source and
+  $\Delta x=50$ km, initial condition $\mathbf{u}_0 = 0$, and point mass source and
   sink of 1 m and -1 m at fixed locations in the middle of the domain,
   vertically, 500 km apart, horizontally, so as to force the flow.  The
   resulting solution are presented after 100 time steps. The numerical
-  simulations were performed for both inertial ($R/h = 1/4$) and gravity wave
-  ($R/h = 2$) limits, where $R$ is the Rossby radius of deformation given by $R
+  simulations were performed for both inertial ($R/\Delta x = 1/4$) and gravity wave
+  ($R/\Delta x = 2$) limits, where $R$ is the Rossby radius of deformation given by $R
   \equiv \sqrt{gH}/f$. Taking the the Coriolis parameter to be $f = 10^{-4}$
   s$^{-1}$ then we have $H \approx 0.16$ m for the inertial limit and $H \approx
-  10$ m for the gravity wave limit. Choosing $k = 100$ s for the inertial limit
-  and $k = 800$ s for the gravity wave limit, results in the same Gravitational
-  Courant number, $C_g = \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. A summary of all
-  problem parameters can be seen in \autoref{tab:HFElevationParams}.
+  10$ m for the gravity wave limit. Choosing the time step to be $\Delta t = 100$ s for the inertial limit
+  and $\Delta t = 800$ s for the gravity wave limit, results in the nearly the same
+  Gravitational Courant number, $C_g = \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. To
+  convert to the non-dimensional parameters, given in Equations
+  \ref{eqn:Rossby}-\ref{eqn:Theta}, we take the characteristic length scale $L =
+  1000$ m, the characteristic time scale for the inertial limit and gravity
+  limit to be $T=80\,000s$ and $T=10\,000s$, respectively. Additionally, we will
+  take the average wave height to be $N=1$ m. Thus, the non-dimensional
+  parameters are as follows: $Ro = 0.125$ for the inertial limit and $Ro=1$ for
+  the gravity limit; $Fr = 9.98$ and $F = 10.1$ for the inertial and gravity
+  limits, respectively; finally $\Theta = 6.25$ for the inertial limit while for
+  the gravity limit $\Theta = 0.1$. A summary of all problem parameters can be
+  seen in \autoref{tab:HFElevationParams}.
 
   \def\arraystretch{1.25} %add some more padding to the table
   \begin{table}[H]
     \begin{center}
       \begin{tabular}{|c|c|c|}
         \hline
-        & $R/h = 1/4$ & $R/h = 2$ \\[0.1em] \hline
+        & $R/\Delta x = 1/4$ & $R/\Delta x = 2$ \\[0.1em] \hline \hline
+        \multicolumn{3}{|c|}{Dimensional Parameters} \\ \hline
         $\Omega$ & \multicolumn{2}{c|}{$[0\text{ km}, 1000\text{ km}]^2$} \\ \hline
-        $t$ & [0 s, 10\,000 s] & [0 s, 80\,000 s] \\ \hline
+        $t$ & [0 s, 80\,000 s] & [0 s, 10\,000 s] \\ \hline
         $g$ & \multicolumn{2}{c|}{$9.8\text{ m/s}^2$} \\ \hline 
         $f$ & \multicolumn{2}{c|}{$10^{-4}\text{ s}^{-1}$} \\ \hline
         $H$ & 0.16 m & 10 m \\ \hline
@@ -57,12 +67,19 @@ considering long time integration, such as what would be seen in a OGCM
             -1\text{ m} & \mathbf{x} = (750\text{ km}, 500\text{ km}) \\
             0\text{ m} & \text{otherwise}
           \end{cases}$} \\ \hline
-        $k$ & 100 s & 800 s \\ \hline
-        $h$ & \multicolumn{2}{c|}{50 km} \\ \hline
-        $C_g$ & \multicolumn{2}{c|}{\textcolor{red}{Check}$\sim 0.5$} \\ \hline
+        $\Delta t$ & 800 s & 100 s \\ \hline
+        $\Delta x$ & \multicolumn{2}{c|}{50 km} \\ \hline \hline
+        \multicolumn{3}{|c|}{Non-dimensional Parameters} \\ \hline
+        $H$ & \multicolumn{2}{c|}{1} \\ \hline \hline
+        $Ro$ & 0.125 & 1 \\ \hline
+        $Fr$ & 9.98 & 10.1 \\ \hline
+        $\Theta$ & 6.25 & 0.1 \\ \hline
+        $k$ & \multicolumn{2}{c|}{0.01} \\ \hline
+        $h$ & \multicolumn{2}{c|}{0.05} \\ \hline \hline
+        $C_g$ & \multicolumn{2}{c|}{$\sim 20$} \\ \hline
       \end{tabular}
-      \caption{Summary of Test 1 parameters for both the gravity wave, $R/h =
-      2$, and inertial wave $R/h = 1/4$, limits.}
+      \caption{Summary of Test 1 dimensional and non-dimensional parameters for
+      both the gravity wave, $R/h = 2$, and inertial wave $R/h = 1/4$, limits.}
       \label{tab:HFElevationParams}
     \end{center}
   \end{table}

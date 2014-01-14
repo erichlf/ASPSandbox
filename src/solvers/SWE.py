@@ -14,7 +14,7 @@ class Solver(SolverBase):
         self.H = options['H']
         self.Ro = options['Ro']
         self.Fr = options['Fr']
-        self.Th = options['Th']
+        self.Th = options['Theta']
 
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,eta):

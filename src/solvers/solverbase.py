@@ -19,7 +19,6 @@ maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
 StabileSolvers = ['NSE', 'SWE', 'MovingSWE']
-LinearSolvers = ['SWE']
 
 class SolverBase:
 #   Base class for all solvers.
@@ -74,6 +73,7 @@ class SolverBase:
         self.problem = problem
         #get problem mesh
         mesh = problem.mesh
+        self.mesh = mesh
         h = CellSize(mesh) #mesh size
 
         #if we want a linear version then make a coefficient zero for the
@@ -175,7 +175,7 @@ class SolverBase:
             s += 'Stabilized'
         if(self.options['inviscid']):
             s = 'Inviscid' + s
-        if(self.options['linear'] and s in LinearSolvers):
+        if(self.options['linear']):
             s = 'Linear' + s
 
         return problem.output_location + p + s
