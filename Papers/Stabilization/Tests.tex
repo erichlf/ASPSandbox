@@ -33,18 +33,26 @@ considering long time integration, such as what would be seen in a OGCM
   \equiv \sqrt{gH}/f$. Taking the the Coriolis parameter to be $f = 10^{-4}$
   s$^{-1}$ then we have $H \approx 0.16$ m for the inertial limit and $H \approx
   10$ m for the gravity wave limit. Choosing the time step to be $\Delta t = 100$ s for the inertial limit
-  and $\Delta t = 800$ s for the gravity wave limit, results in the nearly the same
+  and $\Delta t = 800$ s for the gravity wave limit, results in nearly the same
   Gravitational Courant number, $C_g = \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. To
   convert to the non-dimensional parameters, given in Equations
-  \ref{eqn:Rossby}-\ref{eqn:Theta}, we take the characteristic length scale $L =
-  1000$ m, the characteristic time scale for the inertial limit and gravity
-  limit to be $T=80\,000s$ and $T=10\,000s$, respectively. Additionally, we will
-  take the average wave height to be $N=1$ m. Thus, the non-dimensional
-  parameters are as follows: $Ro = 0.125$ for the inertial limit and $Ro=1$ for
-  the gravity limit; $Fr = 9.98$ and $F = 10.1$ for the inertial and gravity
-  limits, respectively; finally $\Theta = 6.25$ for the inertial limit while for
-  the gravity limit $\Theta = 0.1$. A summary of all problem parameters can be
-  seen in \autoref{tab:HFElevationParams}.
+  \ref{eqn:Rossby}-\ref{eqn:Theta}, we take the characteristic velocity scale to
+  be 
+  \begin{equation}
+    U = \sqrt{g\,H_0}
+    \label{eqn:VelocityScale}
+  \end{equation}
+  which gives 1.25 m/s for the inertial limit and 9.90 m/s for the gravity limit.
+  Next we take the characteristic length scale to $L = 1000$ km, which gives a
+  characteristic time scale for the inertial limit and gravity limit to be
+  $T=800\,000$ s and $T=101\,010$ s, respectively. Additionally, we will take the
+  average wave height to be $N=1$ m. Thus, the non-dimensional parameters are as
+  follows: $Ro = 1.25\times10^{-2}$ for the inertial limit and
+  $Ro=9.90\times10^{-2}$ for the gravity limit; $Fr = 1$ for both the inertial
+  and gravity limits due to the choice in characteristic velocity;
+  finally $\Theta = 6.25$ for the inertial limit while for the gravity limit
+  $\Theta = 0.1$. A summary of all problem parameters can be seen in
+  \autoref{tab:HFElevationParams}.
 
   \def\arraystretch{1.25} %add some more padding to the table
   \begin{table}[H]
@@ -71,8 +79,8 @@ considering long time integration, such as what would be seen in a OGCM
         $\Delta x$ & \multicolumn{2}{c|}{50 km} \\ \hline \hline
         \multicolumn{3}{|c|}{Non-dimensional Parameters} \\ \hline
         $H$ & \multicolumn{2}{c|}{1} \\ \hline \hline
-        $Ro$ & 0.125 & 1 \\ \hline
-        $Fr$ & 9.98 & 10.1 \\ \hline
+        $Ro$ & $1.25\times 10^{-2}$ & $9.90\times10^{-2}$ \\ \hline
+        $Fr$ & \multicolumn{2}{c|}{1} \\ \hline
         $\Theta$ & 6.25 & 0.1 \\ \hline
         $k$ & \multicolumn{2}{c|}{0.01} \\ \hline
         $h$ & \multicolumn{2}{c|}{0.05} \\ \hline \hline

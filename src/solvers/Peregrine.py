@@ -10,11 +10,9 @@ class Solver(SolverBase):
     def __init__(self, options):
         SolverBase.__init__(self, options)
 
-        self.nu = options['nu']
-        self.H = options['H']
-
-        self.dt = options['dt']
-        self.theta = options['theta']
+        #parameters
+        self.sigma = 1./options['Re']
+        self.eps = options['Th']
 
     def wave_object(self,W,t):
         """
@@ -40,20 +38,17 @@ class Solver(SolverBase):
         mesh = problem.mesh
         h = CellSize(mesh) #mesh size
 
-        t = 0 #initial time
+        t = self.t0 #initial time
         T = problem.T #final time
         dt = self.dt #time step
-        theta = self.theta #time stepping method
+        alpha = self.alpha #time stepping method
 
-        Pu = self.options['velocity_order']
-        Pp = self.options['height_order']
+        Pu = self.Pu
+        Pp = self.Pp
 
         #parameters
-        a0 = 0.1 #typical wave height
-        H = self.H #Characteristic water depth
-        lam = 2*pi/0.5 #typical wave length
-        eps = a0/H
-        sigma = H/lam
+        eps = self.eps
+        sigma = self.sigma
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', Pu)
@@ -79,7 +74,7 @@ class Solver(SolverBase):
         w = self.InitialConditions(problem, W)
         w_ = self.InitialConditions(problem, W)
 
-        #assign zetas as the wave object
+        #assign zeta as the wave object
         zeta = self.wave_object(W,t)
         zeta_.assign(zeta)
         zeta__.assign(zeta)
@@ -88,41 +83,25 @@ class Solver(SolverBase):
         U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
-        #U_(k+theta)
-        U_theta = (1.0-theta)*U_ + theta*U
+        #U_(k+alpha)
+        U_alpha = (1.0-alpha)*U_ + alpha*U
 
-        #p_(k+theta)
-        eta_theta = (1.0-theta)*eta_ + theta*eta
+        #p_(k+alpha)
+        eta_alpha = (1.0-alpha)*eta_ + alpha*eta
 
         zeta_t = 1./dt*(zeta - zeta_)
         zeta_tt = 1./dt**2*(zeta - 2*zeta_ + zeta__)
 
         #weak form of the equations
         F = (1./dt)*(eta - eta_)*chi*dx \
-            + (H + eps*eta_theta)*div(U_theta)*chi*dx \
-            + inner(grad(H + eps*eta_theta),U_theta)*chi*dx
+            + (H + eps*eta_alpha)*div(U_alpha)*chi*dx \
+            + inner(grad(H + eps*eta_alpha),U_alpha)*chi*dx
         F += zeta_t*chi*dx
         F += (1./dt)*inner(U - U_,v)*dx \
-            + inner(grad(eta_theta),v)*dx \
-            + eps*inner(grad(U_theta)*U_theta,v)*dx \
+            + inner(grad(eta_alpha),v)*dx \
+            + eps*inner(grad(U_alpha)*U_alpha,v)*dx \
             + 1./dt*sigma**2*H**2/3.*inner(grad(U - U_),grad(v))*dx
         F -= H/2.*inner(grad(zeta_tt),v)*dx
-
-        if(self.options['stabilize']):
-          # Stabilization parameters
-          k1  = 0.5/(eps+H)
-          k2  = 0.5/(eps+H)
-          d1 = k1*(dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
-          d2 = k2*(dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
-
-          #add stabilization
-          F += d1*(inner(grad(H+eps*eta_theta),U_theta) \
-                  + (H + eps*eta_theta)*div(U_theta) + zeta_t) \
-              *(inner(grad(H+eps*eta_theta),v) \
-                  + (H + eps*eta_theta)*div(v))*dx
-          F += d2*inner(grad(eta_theta) + eps*grad(U_theta)*U_theta \
-                  + H/2.*grad(zeta_tt), \
-              grad(chi) + eps*grad(v)*U_theta)*dx
 
         # Time loop
         self.start_timing()
@@ -152,4 +131,4 @@ class Solver(SolverBase):
         return U_, eta_
 
     def __str__(self):
-          return 'MovingSWE'
+          return 'Peregrine'

@@ -38,7 +38,6 @@ OPTIONS = { "N": 32, #number of elements along an axis
             "absolute_tolerance": 1e-25,
             "relative_tolerance": 1e-12,
             "monitor_convergence": False,
-            "linear_solver": 'lu',
             "velocity_order": 1, #order of velocity element
             "height_order": 1, #order of height/pressure element
             "stabilize": True, #stabilize?
@@ -113,7 +112,7 @@ def main(args):
     # Set global DOLFIN parameters
     parameters['form_compiler']['cpp_optimize'] = True
     parameters['allow_extrapolation'] = True;
-    nonLinearSolver = NewtonSolver(options["linear_solver"])
+    nonLinearSolver = NewtonSolver()
     prm = nonLinearSolver.parameters
     prm['convergence_criterion'] = 'incremental' 
     prm['absolute_tolerance'] = options["absolute_tolerance"]

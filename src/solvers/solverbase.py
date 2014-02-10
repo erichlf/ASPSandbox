@@ -18,7 +18,7 @@ import sys
 maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
-StabileSolvers = ['NSE', 'SWE', 'MovingSWE']
+StabileSolvers = ['NSE', 'SWE']
 
 class SolverBase:
 #   Base class for all solvers.
