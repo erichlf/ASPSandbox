@@ -1,4 +1,4 @@
-__author__ = "Erich L Foster <efoster@bcamath.org>"
+__author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 #
 #   adapted from problembase.py in nsbench originally developed by
