@@ -18,7 +18,7 @@ import sys
 maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
-StabileSolvers = ['NSE', 'SWE']
+StableSolvers = ['NSE', 'SWE']
 
 class SolverBase:
 #   Base class for all solvers.
@@ -171,7 +171,7 @@ class SolverBase:
         #Return file prefix for output files
         p = problem.__module__.split('.')[-1]
         s = self.__module__.split('.')[-1]
-        if(self.options['stabilize'] and s in StabileSolvers):
+        if(self.options['stabilize'] and s in StableSolvers):
             s += 'Stabilized'
         if(self.options['inviscid']):
             s = 'Inviscid' + s
