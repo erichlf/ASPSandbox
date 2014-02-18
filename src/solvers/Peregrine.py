@@ -12,7 +12,7 @@ class Solver(SolverBase):
 
         #parameters
         self.sigma = 1./options['Re']
-        self.eps = options['Th']
+        self.eps = options['Theta']
 
     def wave_object(self,W,t):
         """
@@ -26,8 +26,11 @@ class Solver(SolverBase):
         #L is the length of half the domain
         #P is the amplitude
         #U is the speed of the moving object
-        zeta0 = 'x[0]>-(0.5*L+U*t) ? (x[0]<(0.5*L-U*t) ? 0.5*P*(1+cos(2*pi/L*(x[0]+U*t))) : 0.0) : 0.0'
-        zeta = Expression(zeta0, P=0.1, U=0.1, L=0.5,t=t)
+        Lx = (self.x1 - self.x0)/2.
+        Ly = (self.y1 - self.y0)/2.
+
+        zeta0 = 'x[0]>-(0.5*Lx+U*t) && x[0]<(0.5*Lx-U*t) && x[1]>y0+0.5*Ly && x[1]<y1-0.5*Ly? 0.5*P*(1+cos(2*pi/Lx*(x[0]+U*t))) : 0.0'
+        zeta = Expression(zeta0, P=0.01, U=0.1, Lx=Lx, Ly=Ly, t=t, y0=self.y0, y1=self.y1)
 
         zeta = self.Q_project(zeta,W)
 
@@ -37,6 +40,10 @@ class Solver(SolverBase):
         #get problem mesh
         mesh = problem.mesh
         h = CellSize(mesh) #mesh size
+        self.x0 = problem.mesh.coordinates()[0][0]
+        self.x1 = problem.mesh.coordinates()[-1][0]
+        self.y0 = problem.mesh.coordinates()[0][1]
+        self.y1 = problem.mesh.coordinates()[-1][1]
 
         t = self.t0 #initial time
         T = problem.T #final time
@@ -94,14 +101,14 @@ class Solver(SolverBase):
 
         #weak form of the equations
         F = (1./dt)*(eta - eta_)*chi*dx \
-            + (H + eps*eta_alpha)*div(U_alpha)*chi*dx \
-            + inner(grad(H + eps*eta_alpha),U_alpha)*chi*dx
+            + (1. + zeta + eps*eta_alpha)*div(U_alpha)*chi*dx \
+            + inner(grad(1 + zeta + eps*eta_alpha),U_alpha)*chi*dx
         F += zeta_t*chi*dx
         F += (1./dt)*inner(U - U_,v)*dx \
             + inner(grad(eta_alpha),v)*dx \
             + eps*inner(grad(U_alpha)*U_alpha,v)*dx \
-            + 1./dt*sigma**2*H**2/3.*inner(grad(U - U_),grad(v))*dx
-        F -= H/2.*inner(grad(zeta_tt),v)*dx
+            + 1./dt*sigma**2*(1. + zeta)**2/3.*inner(grad(U - U_),grad(v))*dx
+        F -= (1. + zeta)/2.*inner(grad(zeta_tt),v)*dx
 
         # Time loop
         self.start_timing()
