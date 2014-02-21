@@ -26,10 +26,10 @@ class Solver(SolverBase):
         #L is the length of half the domain
         #P is the amplitude
         #U is the speed of the moving object
-        Lx = (self.x1 - self.x0)/2.
-        Ly = (self.y1 - self.y0)/2.
+        Lx = (self.x1 - self.x0)
+        Ly = (self.y1 - self.y0)
 
-        zeta0 = 'x[0]>-(0.5*Lx+U*t) && x[0]<(0.5*Lx-U*t) && x[1]>y0+0.5*Ly && x[1]<y1-0.5*Ly? 0.5*P*(1+cos(2*pi/Lx*(x[0]+U*t))) : 0.0'
+        zeta0 = 'x[0]>-(0.05*Lx+U*t) && x[0]<(0.05*Lx-U*t) ?  0.5*P*(1+cos(2*pi/(0.1*Lx)*(x[0]+U*t)))*sin(pi/Ly*x[1]) : 0.0'
         zeta = Expression(zeta0, P=0.01, U=0.1, Lx=Lx, Ly=Ly, t=t, y0=self.y0, y1=self.y1)
 
         zeta = self.Q_project(zeta,W)
