@@ -28,15 +28,17 @@ class Problem(ProblemBase):
 
         # Create mesh
         N = options["N"]
-        x0 = float(options["x0"])
-        x1 = float(options["x1"])
-        y0 = float(options["y0"])
-        y1 = float(options["y1"])
+        x0 = 0
+        x1 = 1
+        y0 = 0
+        y1 = 1
+        self.p1 = Point(x0 + 0.25*(x1-x0),y0 + 0.5*(y1-y0))
+        self.p2 = Point(x1 - 0.25*(x1-x0),y0 + 0.5*(y1-y0))
         self.mesh = RectangleMesh(x0,y0,x1,y1,N, N)
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        eta0 = Constant(0)
+        eta0 = Expression('Ap*exp(-(pow(x[0]-xp,2) + pow(x[1]-yp, 2))/(2*s*s)) + An*exp(-(pow(x[0] - xn,2) + pow(x[1] - yn, 2))/(2*s*s))', xp=self.p1[0], yp=self.p1[1], xn=self.p2[0], yn=self.p2[1], Ap=1.0, An=-1.0, s=1E-8)
 
         return u0, eta0
 
@@ -52,7 +54,9 @@ class Problem(ProblemBase):
 
     def F2(self, t):
         #mass source for the continuity equation
-        return Expression(self.options['F2'],t=t)
+        #our point source is defined in the initial condition since I need the
+        #functional space to apply it
+        return Expression('Ap*exp(-(pow(x[0]-xp,2) + pow(x[1]-yp, 2))/(2*s*s)) + An*exp(-(pow(x[0] - xn,2) + pow(x[1] - yn, 2))/(2*s*s))', xp=self.p1[0], yp=self.p1[1], xn=self.p2[0], yn=self.p2[1], Ap=1.0, An=-1.0, s=1E-8, t=t)
 
     def __str__(self):
-        return 'Square'
+        return 'Point'

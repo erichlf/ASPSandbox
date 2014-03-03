@@ -14,6 +14,7 @@
 *.log
 *.spl
 *.latexmain
+latexSuiteTemp0.*
 
 #DOLFIN specific
 ffc_form_*.h
@@ -25,6 +26,9 @@ ffc_form_*.h
 *.so
 
 *.swm
+*.swn
+*.swk
+*.swl
 
 # Packages
 *.egg

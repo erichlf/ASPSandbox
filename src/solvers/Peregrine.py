@@ -30,7 +30,7 @@ class Solver(SolverBase):
         Ly = (self.y1 - self.y0)
 
         zeta0 = 'x[0]>-(0.05*Lx+U*t) && x[0]<(0.05*Lx-U*t) ?  0.5*P*(1+cos(2*pi/(0.1*Lx)*(x[0]+U*t)))*sin(pi/Ly*x[1]) : 0.0'
-        zeta = Expression(zeta0, P=0.01, U=0.1, Lx=Lx, Ly=Ly, t=t, y0=self.y0, y1=self.y1)
+        zeta = Expression(zeta0, P=0.01, U=0.02, Lx=Lx, Ly=Ly, t=t, y0=self.y0, y1=self.y1)
 
         zeta = self.Q_project(zeta,W)
 
