@@ -74,8 +74,8 @@ class Solver(SolverBase):
     def stabilization_parameters(self,U_,eta_,h):
         k1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
         k2  = self.Th/(2*self.H)
-        d1 = k1*(self.dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
-        d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
+        d1 = k1*(self.dt**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
+        d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-1))**(-0.5)
 
         return d1, d2
 

@@ -36,6 +36,38 @@ class Solver(SolverBase):
 
         return zeta
 
+    #def strong_residual(self,u,U_eta,zeta):
+
+    def weak_residual(self,U,U_,eta,eta_,zeta,zeta_,zeta__,v,chi):
+        dt = self.dt #time step
+        alpha = self.alpha #time stepping method
+
+        #parameters
+        eps = self.eps
+        sigma = self.sigma
+
+        #U_(k+alpha)
+        U_alpha = (1.0-alpha)*U_ + alpha*U
+
+        #p_(k+alpha)
+        eta_alpha = (1.0-alpha)*eta_ + alpha*eta
+
+        zeta_t = 1./dt*(zeta - zeta_)
+        zeta_tt = 1./dt**2*(zeta - 2*zeta_ + zeta__)
+
+        #weak form of the equations
+        r = (1./dt)*(eta - eta_)*chi*dx \
+            + (1. + zeta + eps*eta_alpha)*div(U_alpha)*chi*dx \
+            + inner(grad(1 + zeta + eps*eta_alpha),U_alpha)*chi*dx
+        r += zeta_t*chi*dx
+        r += (1./dt)*inner(U - U_,v)*dx \
+            + inner(grad(eta_alpha),v)*dx \
+            + eps*inner(grad(U_alpha)*U_alpha,v)*dx \
+            + 1./dt*sigma**2*(1. + zeta)**2/3.*inner(grad(U - U_),grad(v))*dx
+        r -= (1. + zeta)/2.*inner(grad(zeta_tt),v)*dx
+
+        return r
+
     def solve(self, problem):
         #get problem mesh
         mesh = problem.mesh
@@ -52,10 +84,6 @@ class Solver(SolverBase):
 
         Pu = self.Pu
         Pp = self.Pp
-
-        #parameters
-        eps = self.eps
-        sigma = self.sigma
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', Pu)
@@ -99,17 +127,21 @@ class Solver(SolverBase):
         zeta_t = 1./dt*(zeta - zeta_)
         zeta_tt = 1./dt**2*(zeta - 2*zeta_ + zeta__)
 
-        #weak form of the equations
-        F = (1./dt)*(eta - eta_)*chi*dx \
-            + (1. + zeta + eps*eta_alpha)*div(U_alpha)*chi*dx \
-            + inner(grad(1 + zeta + eps*eta_alpha),U_alpha)*chi*dx
-        F += zeta_t*chi*dx
-        F += (1./dt)*inner(U - U_,v)*dx \
-            + inner(grad(eta_alpha),v)*dx \
-            + eps*inner(grad(U_alpha)*U_alpha,v)*dx \
-            + 1./dt*sigma**2*(1. + zeta)**2/3.*inner(grad(U - U_),grad(v))*dx
-        F -= (1. + zeta)/2.*inner(grad(zeta_tt),v)*dx
+        F = self.weak_residual(U, U_, eta, eta_, zeta, zeta_, zeta__, v, chi)
 
+        #if(self.options['stabilize']):
+        #  # Stabilization parameters
+        #  d1, d2 = self.stabilization_parameters(U_,eta_,h)
+
+          #add stabilization
+        #  R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
+        #  Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
+        #  F += d1*inner(R1, Rv1)*dx + d2*R2*Rv2*dx
+
+        U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, zeta, zeta_, zeta__, F)
+        return U_, eta_
+
+    def timeStepper(self, problem, t, T, dt, W, w, w_, U_, eta_, zeta, zeta_, zeta__, F):
         # Time loop
         self.start_timing()
 
