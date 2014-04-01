@@ -15,12 +15,12 @@ from problems import Problem, problems
 from solvers import Solver, solvers
 
 # Default options
-OPTIONS = { "N": 32, #number of elements along an axis
+OPTIONS = { "N": 20, #number of elements along an axis
             "dt": 0.01, #time-step
             "T": 1.0, #final-time
             "Re": 1000, #Reynolds number
-            "Ro": 0.125, #Rossby number
-            "Fr": 9.98, #Froude number
+            "Ro": 0.0125, #Rossby number
+            "Fr": 1, #Froude number
             "Theta": 6.25, #wave deflection number
             "H": 1, #water depth
             "F1": '(0,0)', #momentum forcing function

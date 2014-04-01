@@ -36,7 +36,16 @@ class Solver(SolverBase):
 
         return zeta
 
-    #def strong_residual(self,u,U_eta,zeta):
+    def strong_residual(self,u,U,eta,zeta,zeta_t,zeta_tt):
+        eps = self.eps
+
+        R1 = (1. + zeta + eps*eta)*div(U) \
+            + inner(grad(1 + zeta + eps*eta),U)
+        R1 += zeta_t
+        R2 = grad(eta)
+        R2 -= (1. + zeta)/2.*grad(zeta_tt)
+
+        return R1, R2
 
     def weak_residual(self,U,U_,eta,eta_,zeta,zeta_,zeta__,v,chi):
         dt = self.dt #time step
@@ -67,6 +76,14 @@ class Solver(SolverBase):
         r -= (1. + zeta)/2.*inner(grad(zeta_tt),v)*dx
 
         return r
+
+    def stabilization_parameters(self,U_,eta_,h):
+        k1  = self.eps/2
+        k2  = 1/2
+        d1 = k1*(self.dt**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
+        d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-1))**(-0.5)
+
+        return d1, d2
 
     def solve(self, problem):
         #get problem mesh
@@ -129,14 +146,14 @@ class Solver(SolverBase):
 
         F = self.weak_residual(U, U_, eta, eta_, zeta, zeta_, zeta__, v, chi)
 
-        #if(self.options['stabilize']):
-        #  # Stabilization parameters
-        #  d1, d2 = self.stabilization_parameters(U_,eta_,h)
+        if(self.options['stabilize']):
+          # Stabilization parameters
+          d1, d2 = self.stabilization_parameters(U_,eta_,h)
 
           #add stabilization
-        #  R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
-        #  Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
-        #  F += d1*inner(R1, Rv1)*dx + d2*R2*Rv2*dx
+          R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha,zeta,zeta_t,zeta_tt)
+          Rv1, Rv2 = self.strong_residual(U_alpha,v,chi,zeta,zeta_t,zeta_tt)
+          F += d1*inner(R1, Rv1)*dx + d2*R2*Rv2*dx
 
         U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, zeta, zeta_, zeta__, F)
         return U_, eta_

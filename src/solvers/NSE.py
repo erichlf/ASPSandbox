@@ -35,7 +35,7 @@ class Solver(SolverBase):
         #weak form of the equations
         r = (1./dt)*inner(U - U_,v)*dx \
             - p_theta*div(v)*dx \
-            + inner(grad(U_theta)*U_theta,v)*dx \
+            + inner(grad(U_theta)*U_theta,v)*dx
         r +=  inviscid/Re*inner(grad(U_theta),grad(v))*dx
         r += div(U_theta)*q*dx
 
