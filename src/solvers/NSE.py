@@ -19,25 +19,25 @@ class Solver(SolverBase):
 
     #weak residual for cG(1)cG(1)
     def weak_residual(self,U,U_,p,p_,v,q):
-        nu = self.nu #Reynolds Number
+        Re = self.Re #Reynolds Number
 
-        theta = self.theta #time stepping method
+        alpha = self.alpha #time stepping method
         dt = self.dt
 
         inviscid = self.options['inviscid']
 
-        #U_(k+theta)
-        U_theta = (1.0-theta)*U_ + theta*U
+        #U_(k+alpha)
+        U_alpha = (1.0-alpha)*U_ + alpha*U
 
-        #p_(k+theta)
-        p_theta = (1.0-theta)*p_ + theta*p
+        #p_(k+alpha)
+        p_alpha = (1.0-alpha)*p_ + alpha*p
 
         #weak form of the equations
         r = (1./dt)*inner(U - U_,v)*dx \
-            - p_theta*div(v)*dx \
-            + inner(grad(U_theta)*U_theta,v)*dx
-        r +=  inviscid/Re*inner(grad(U_theta),grad(v))*dx
-        r += div(U_theta)*q*dx
+            - p_alpha*div(v)*dx \
+            + inner(grad(U_alpha)*U_alpha,v)*dx
+        r +=  inviscid/Re*inner(grad(U_alpha),grad(v))*dx
+        r += div(U_alpha)*q*dx
 
         return r
 
