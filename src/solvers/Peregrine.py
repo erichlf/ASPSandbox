@@ -29,8 +29,8 @@ class Solver(SolverBase):
         Lx = (self.x1 - self.x0)
         Ly = (self.y1 - self.y0)
 
-        zeta0 = 'x[0]>-(0.05*Lx+U*t) && x[0]<(0.05*Lx-U*t) ?  0.5*P*(1+cos(2*pi/(0.1*Lx)*(x[0]+U*t)))*sin(pi/Ly*x[1]) : 0.0'
-        zeta = Expression(zeta0, P=0.01, U=0.02, Lx=Lx, Ly=Ly, t=t, y0=self.y0, y1=self.y1)
+        zeta0 = 'a0*exp(-pow(x[0]-xh-vh*t,2)/(bh*bh))'
+        zeta = Expression(zeta0, a0=0.1, xh=0.3, vh=1, bh=0.02,t=t)
 
         zeta = self.Q_project(zeta,W)
 
@@ -145,15 +145,6 @@ class Solver(SolverBase):
         zeta_tt = 1./dt**2*(zeta - 2*zeta_ + zeta__)
 
         F = self.weak_residual(U, U_, eta, eta_, zeta, zeta_, zeta__, v, chi)
-
-        if(self.options['stabilize']):
-          # Stabilization parameters
-          d1, d2 = self.stabilization_parameters(U_,eta_,h)
-
-          #add stabilization
-          R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha,zeta,zeta_t,zeta_tt)
-          Rv1, Rv2 = self.strong_residual(U_alpha,v,chi,zeta,zeta_t,zeta_tt)
-          F += d1*inner(R1, Rv1)*dx + d2*R2*Rv2*dx
 
         U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, zeta, zeta_, zeta__, F)
         return U_, eta_

@@ -3,8 +3,7 @@ __date__ = "2013-08-27"
 __license__  = "GNU GPL version 3 or any later version"
 
 # List of solvers
-solvers = ['NSE', 'SteadyStokes', 'Stokes', 'SWE', 'SWEAdvection',
-    'DensityNSE', 'Peregrine']
+solvers = ['NSE', 'SWE', 'SWEAdvection', 'DensityNSE', 'Peregrine']
 
 # Wrapper for solver classes
 def Solver(name, options):
