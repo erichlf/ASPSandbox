@@ -24,20 +24,20 @@ considering long time integration, such as what would be seen in a OGCM
   Following the numerical test in \cite{Hanert2002} and \cite{Batteen1981}, we
   solve the inviscid linear SWE equation, \eqref{eqn:SWE}, where the problem
   domain is a square with side length 1000 km with regular grid spacing of
-  $\Delta x=50$ km, initial condition $\mathbf{u}_0 = 0$, and point mass source and
-  sink of 1 m and -1 m at fixed locations in the middle of the domain,
+  $\Delta x=50$ km, initial condition $\mathbf{u}_0 = 0$, and point mass source
+  and sink of 1 m and -1 m at fixed locations in the middle of the domain,
   vertically, 500 km apart, horizontally, so as to force the flow.  The
   resulting solution are presented after 100 time steps. The numerical
-  simulations were performed for both inertial ($R/\Delta x = 1/4$) and gravity wave
-  ($R/\Delta x = 2$) limits, where $R$ is the Rossby radius of deformation given by $R
-  \equiv \sqrt{gH}/f$. Taking the the Coriolis parameter to be $f = 10^{-4}$
-  s$^{-1}$ then we have $H \approx 0.16$ m for the inertial limit and $H \approx
-  10$ m for the gravity wave limit. Choosing the time step to be $\Delta t = 100$ s for the inertial limit
-  and $\Delta t = 800$ s for the gravity wave limit, results in nearly the same
-  Gravitational Courant number, $C_g = \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. To
-  convert to the non-dimensional parameters, given in Equations
-  \ref{eqn:Rossby}-\ref{eqn:Theta}, we take the characteristic velocity scale to
-  be 
+  simulations were performed for both inertial ($R/\Delta x = 1/4$) and gravity
+  wave ($R/\Delta x = 2$) limits, where $R$ is the Rossby radius of deformation
+  is given by $R \equiv \sqrt{gH}/f$. Taking the the Coriolis parameter to be $f
+  = 10^{-4}$ s$^{-1}$ then we have $H \approx 0.16$ m for the inertial limit and
+  $H \approx 10$ m for the gravity wave limit. Choosing the time step to be
+  $\Delta t = 100$ s for the inertial limit and $\Delta t = 800$ s for the
+  gravity wave limit, results in nearly the same Gravitational Courant number,
+  $C_g = \sqrt{gH}\,k/h$, \cite{Le-Roux1998}. To convert to the non-dimensional
+  parameters, given in Equations \ref{eqn:Rossby}-\ref{eqn:Theta}, we take the
+  characteristic velocity scale to be
   \begin{equation}
     U = \sqrt{g\,H_0}
     \label{eqn:VelocityScale}
@@ -92,7 +92,7 @@ considering long time integration, such as what would be seen in a OGCM
     \end{center}
   \end{table}
 
-  As was noted in Hanert et al \cite{Hanert2002} the $P_1P_1$ element, with no
+  As was noted in Hanert et al \cite{Hanert2002} the $P_1-P_1$ element, with no
   stabilization, results in a noisy elevation pattern when applied to this
   problem. %This can clearly be seen in \autoref{fig:P1P1HighFrequencyElevation}.
 %  However, using the cG(1)cG(1) method results in a solution which is not noisy,
