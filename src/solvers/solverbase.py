@@ -127,7 +127,7 @@ class SolverBase:
         F = self.weak_residual(U, U_, eta, eta_, v, chi) \
             - inner(F1,v)*dx - F2*chi*dx
 
-        if(self.options['stabilize'] && s in StableSolvers):
+        if(self.options['stabilize'] and s in StableSolvers):
           # Stabilization parameters
           d1, d2 = self.stabilization_parameters(U_,eta_,h)
 
