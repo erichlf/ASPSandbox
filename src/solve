@@ -15,7 +15,8 @@ from problems import Problem, problems
 from solvers import Solver, solvers
 
 # Default options
-OPTIONS = { "N": 20, #number of elements along an axis
+OPTIONS = { "Nx": 20, #number of elements along x axis
+	    "Ny" : 20, #number of elements along y axis
             "dt": 0.01, #time-step
             "T": 1.0, #final-time
             "Re": 1000, #Reynolds number

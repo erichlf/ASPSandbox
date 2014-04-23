@@ -28,9 +28,10 @@ class Solver(SolverBase):
         #U is the speed of the moving object
         Lx = (self.x1 - self.x0)
         Ly = (self.y1 - self.y0)
-
-        zeta0 = 'a0*exp(-pow(x[0]-xh-vh*t,2)/(bh*bh))'
-        zeta = Expression(zeta0, a0=0.1, xh=0.3, vh=1, bh=0.02,t=t)
+	
+	
+        zeta0 = 'hd - epsilon*ad*exp(-pow(lambda0*(x[0]-xh)-vh*t,2)/(bh*bh))'
+        zeta = Expression(zeta0, ad=0.4, xh=0.0, vh=1, bh=0.7,t=t, hd=1, epsilon=0.4, lambda0=20)
 
         zeta = self.Q_project(zeta,W)
 
@@ -52,8 +53,13 @@ class Solver(SolverBase):
         alpha = self.alpha #time stepping method
 
         #parameters
-        eps = self.eps
-        sigma = self.sigma
+        g = 9.8 #Gravity
+        lambda0 = 20. #typical wavelength
+	a0 = 0.4 #Typical wave height
+	h0 = 1. #Typical depth
+	sigma = h0/lambda0
+	c0 = (h0*g)**(0.5)
+	epsilon = a0/h0
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
@@ -61,33 +67,21 @@ class Solver(SolverBase):
         #p_(k+alpha)
         eta_alpha = (1.0-alpha)*eta_ + alpha*eta
 
-        zeta_t = 1./dt*(zeta - zeta_)
-        zeta_tt = 1./dt**2*(zeta - 2*zeta_ + zeta__)
+        zeta_t = 1./(dt*epsilon)*(zeta - zeta_)
+        zeta_tt = 1./(dt**2*epsilon)*(zeta - 2*zeta_ + zeta__)
 
         #weak form of the equations
         
-        r = (1./dt)*(eta - eta_)*chi*dx \
-            + (1. + zeta + eps*eta_alpha)*div(U_alpha)*chi*dx \
-            + inner(grad(1 + zeta + eps*eta_alpha),U_alpha)*chi*dx
-        """
-        r = (1./dt)*(eta - eta_)*chi*dx \
-	    - inner(U_alpha,grad(chi))*(eps*eta_alpha+1. + zeta)*dx 
-	"""
-        r += zeta_t*chi*dx
-        #r += zeta_t*chi*dx
-        r += (1./dt)*inner(U - U_,v)*dx \
-            + inner(grad(eta_alpha),v)*dx \
-            + eps*inner(grad(U_alpha)*U_alpha,v)*dx \
-            + 1./dt*sigma**2*(1. + zeta)**2/3.*inner(grad(U - U_),grad(v))*dx
-        
-         
-        r -= (1. + zeta)/2.*inner(grad(zeta_tt),v)*dx
-	"""
-	r += 1/dt*inner(U-U_,v)*dx + eps*inner(grad(U_alpha)*U_alpha,v)*dx - div(v)*eta*dx \
-	  + 1/2*(sigma**2)*(1/dt)*div(v)*div((1. + zeta)*(U-U_))*(1. + zeta)*dx + sigma*sigma/2*1/dt*inner(v,grad((1. + zeta)))*div((1. + zeta)*(U-U_))*dx \
-	  - sigma*sigma/6*1/dt*div(v)*div(U-U_)*(1. + zeta)**2*dx - sigma*sigma/6*1/dt*inner(v,grad((1. + zeta)))*2*(1. + zeta)*div(U-U_)*dx \
-	  +sigma*sigma/2*div(v)*(1. + zeta)*(zeta_tt)*dx+sigma*sigma/2*inner(v,grad((1. + zeta)))*(zeta_tt)*dx
-	"""	
+	r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U)*U,v)*dx \
+	    - div(v)*eta*dx
+
+	r += sigma**2.*1./dt*div(zeta*(U-U_))*div(zeta*v/2.)*dx \
+	      - sigma**2.*1./dt*div(U-U_)*div(zeta*zeta*v/6.)*dx \
+	      + sigma**2.*zeta_tt*div(zeta*v/2.)*dx
+
+	r += 1./dt*(eta-eta_)*chi*dx + zeta_t*chi*dx \
+	      - inner(U,grad(chi))*(epsilon*eta+zeta)*dx 
+    
         return r
 
     def stabilization_parameters(self,U_,eta_,h):
