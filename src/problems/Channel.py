@@ -32,8 +32,9 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        N = options["N"]
-        self.mesh = UnitSquare(N, N)
+        Nx = options["Nx"]
+        Ny = options["Ny"]
+        self.mesh = UnitSquare(Nx, Ny)
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))

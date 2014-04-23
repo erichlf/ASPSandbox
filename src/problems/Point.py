@@ -27,14 +27,15 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        N = options["N"]
+        Nx = options["Nx"]
+        Ny = options["Ny"]
         x0 = 0
         x1 = 1
         y0 = 0
         y1 = 1
         self.p1 = Point(x0 + 0.25*(x1-x0),y0 + 0.5*(y1-y0))
         self.p2 = Point(x1 - 0.25*(x1-x0),y0 + 0.5*(y1-y0))
-        self.mesh = RectangleMesh(x0,y0,x1,y1,N, N)
+        self.mesh = RectangleMesh(x0,y0,x1,y1,Nx, Ny)
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))

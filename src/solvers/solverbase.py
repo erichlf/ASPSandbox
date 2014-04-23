@@ -33,6 +33,7 @@ class SolverBase:
         self.Ro = None #Rossby number
         self.Fr = None #Froude number
         self.Th = None #average wave height
+        self.zeta = None #average wave height
 
         #initialize the time stepping method parameters
         self.t0 = 0 #initial time
@@ -96,7 +97,8 @@ class SolverBase:
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        Q = FunctionSpace(mesh, 'CG', self.Pp)
+        self.Q = FunctionSpace(mesh, 'CG', self.Pp)
+        Q = self.Q
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
@@ -148,6 +150,11 @@ class SolverBase:
 
         while t<T:
             t += dt
+
+            if(self.zeta is not None):
+              self.zeta__.t = t - 2*dt
+              self.zeta_.t = t - dt
+              self.zeta.t = t
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
@@ -242,9 +249,13 @@ class SolverBase:
                             elevate=0.0)
                 else :
                     self.vizP = plot(p, title='Height', rescale=True)
+                if(self.zeta is not None):
+                    self.vizZ = plot(interpolate(self.zeta,self.Q), title='Wave Object', rescale=True)
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
+                if(self.zeta is not None):
+                    self.vizZ.plot(interpolate(self.zeta,self.Q))
 
         # Check memory usage
         if self.options['check_mem_usage']:

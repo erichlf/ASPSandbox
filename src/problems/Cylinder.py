@@ -46,7 +46,8 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Load mesh
-        N = options["N"]
+        Nx = options["Nx"]
+        Ny = options["Ny"]
         self.mesh = Mesh('data/cylinder_4.xml.gz')
 
     def initial_conditions(self, V, Q):
@@ -58,9 +59,7 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, V, Q, t):
         # Create inflow boundary condition
-        self.g0 = Expression(
-                ('4*Um*(x[1]*(ymax-x[1]))/(ymax*ymax)*4*t*t/(4*t*t+1)', '0.0'), 
-                Um=1.5, ymax=ymax, t=t)
+        self.g0 = Expression( ('4*Um*(x[1]*(ymax-x[1]))/(ymax*ymax)*4*t*t/(4*t*t+1)', '0.0'), Um=1.5, ymax=ymax, t=t)
         self.b0 = InflowBoundary()
         bc0 = DirichletBC(V, self.g0, self.b0)
 
