@@ -50,7 +50,6 @@ class Solver(SolverBase):
 
         #Definition of the wave_object
         vfinal = 1.5 #Maximal velocity of the moving object [m.s^(-1)]
-        self.velocity = lambda tt: 0.5*vfinal*(tanh(3*(lambda0/c0*tt-2))+tanh(3*(4-(lambda0/c0)*tt)))
         intvh = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
 
         zeta0 = 'hd - epsilon*ad*exp(-pow((lambda0*x[0]+' + intvh + ')/bh,2))'
