@@ -12,6 +12,9 @@ class Solver(SolverBase):
 
         #parameters
         self.Re = None
+        
+    def intvh(self, v, t):
+        return si.quad(v, self.t0, t)[0]
 
     def weak_residual(self,U,U_,eta,eta_,v,chi):
         alpha = self.alpha #time stepping method
@@ -46,18 +49,14 @@ class Solver(SolverBase):
         ad = ad/a0 #height of the moving object
             
         #Definition of the wave_object
-        #self.zeta = self.wave_object(self.t0)
-        #Definition of the object velocity
         vfinal = 1.5 #Maximal velocity of the moving object [m.s^(-1)]
-        self.velocity = lambda tt: 0.5*vfinal*(tanh(3*(lambda0/c0*tt-2))+tanh(3*(4-(lambda0/c0)*tt)))
-        intvh = si.quad(self.velocity, 0, self.t0)[0]
-        intvh_=intvh
-        intvh__=intvh
+        velocity = lambda tt: 0.5*vfinal*(tanh(3*(lambda0/c0*tt-2))+tanh(3*(4-(lambda0/c0)*tt)))
         
         zeta0 = 'hd - epsilon*ad*exp(-pow((lambda0*x[0]-intvh)/bh,2))'
-        self.zeta = Expression(zeta0, ad=ad, intvh=intvh, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, intvh=intvh_, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, intvh=intvh__, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
+        self.zeta = Expression(zeta0, ad=ad, t=self.t0, intvh=self.intvh(velocity,self.t0), bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
+        self.zeta_ = Expression(zeta0, ad=ad, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
+        self.zeta__ = Expression(zeta0, ad=ad, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
+       
 
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
@@ -75,6 +74,7 @@ class Solver(SolverBase):
         r -= inner(U,grad(chi))*(epsilon*eta+self.zeta)*dx
 
         return r
+    
 
     def __str__(self):
           return 'Dimensioinless_Peregrine'

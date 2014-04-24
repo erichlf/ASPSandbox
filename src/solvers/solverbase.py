@@ -155,9 +155,9 @@ class SolverBase:
             t += dt
 
             if(self.zeta is not None):
-                self.zeta.intvh = si.quad(self.velocity, 0, t)[0]
-                self.zeta_.intvh = si.quad(self.velocity, 0, t - dt)[0]
-                self.zeta__.intvh = si.quad(self.velocity, 0, t - 2*dt)[0]
+                self.zeta.t = t
+                self.zeta_.t = t - dt
+                self.zeta__.t = t - 2*dt
 
 
             #evaluate bcs again (in case they are time-dependent)
