@@ -26,10 +26,11 @@ OPTIONS = { "Nx": 20, #number of elements along x axis
             "H": 1, #water depth
             "F1": '(0,0)', #momentum forcing function
             "F2": '0', #mass source/sink
-            "x0": '0', #x-coordinate of the bottom-left corner
-            "x1": '1', #x-coordinate of the top-right corner
-            "y0": '0', #y-coordinate of the bottom-left corner
-            "y1": '1', #y-coordinate of the top-right corner
+            "x0": '-5', #x-coordinate of the bottom-left corner
+            "x1": '10', #x-coordinate of the top-right corner
+            "y0": '-2', #y-coordinate of the bottom-left corner
+            "y1": '2', #y-coordinate of the top-right corner
+            "lambda0": '20', #Typical wavelength for scaling
             "alpha": 0.5, #time-stepping method
             "save_solution": True,
             "save_frequency": 1,
