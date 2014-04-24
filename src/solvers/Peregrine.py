@@ -12,6 +12,9 @@ class Solver(SolverBase):
 
         #parameters
         self.Re = None
+        
+    def intvh(self, v, t):
+        return si.quad(v, self.t0, t)[0]
 
     def weak_residual(self,U,U_,eta,eta_,v,chi):
         alpha = self.alpha #time stepping method
@@ -46,8 +49,6 @@ class Solver(SolverBase):
         ad = ad/a0 #height of the moving object
 
         #Definition of the wave_object
-        #self.zeta = self.wave_object(self.t0)
-        #Definition of the object velocity
         vfinal = 1.5 #Maximal velocity of the moving object [m.s^(-1)]
         self.velocity = lambda tt: 0.5*vfinal*(tanh(3*(lambda0/c0*tt-2))+tanh(3*(4-(lambda0/c0)*tt)))
         intvh = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
@@ -74,6 +75,7 @@ class Solver(SolverBase):
         r -= inner(U,grad(chi))*(epsilon*eta+self.zeta)*dx
 
         return r
+    
 
     def __str__(self):
           return 'Dimensioinless_Peregrine'
