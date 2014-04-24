@@ -23,9 +23,9 @@ class NoslipBoundary(SubDomain):
 	x1=10./20.
 	y0=-2./20.
 	y1=2./20.
-        return on_boundary and \
-               (x[1] < y0 +bmarg or x[1] > y1 - bmarg or \
-                x[0] < x0 + bmarg or x[0] > x1 - bmarg)
+        return on_boundary #and \
+               #(x[1] < y0 +bmarg or x[1] > y1 - bmarg or \
+                #x[0] < x0 + bmarg or x[0] > x1 - bmarg)
 
 # Problem definition
 class Problem(ProblemBase):
