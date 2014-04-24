@@ -8,7 +8,6 @@ __license__  = "GNU GPL version 3 or any later version"
 
 from dolfin import *
 
-import scipy.integrate as si
 from time import time
 from os import getpid
 from commands import getoutput
@@ -18,8 +17,6 @@ import sys
 # Common solver parameters
 maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
-
-StableSolvers = ['NSE', 'SWE']
 
 class SolverBase:
 #   Base class for all solvers.
@@ -132,7 +129,7 @@ class SolverBase:
         F = self.weak_residual(U, U_, eta, eta_, v, chi) \
             - inner(F1,v)*dx - F2*chi*dx
 
-        if(self.options['stabilize'] and s in StableSolvers):
+        if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
           # Stabilization parameters
           d1, d2 = self.stabilization_parameters(U_,eta_,h)
 
@@ -155,9 +152,9 @@ class SolverBase:
             t += dt
 
             if(self.zeta is not None):
-                self.zeta.intvh = si.quad(self.velocity, 0, t)[0]
-                self.zeta_.intvh = si.quad(self.velocity, 0, t - dt)[0]
-                self.zeta__.intvh = si.quad(self.velocity, 0, t - 2*dt)[0]
+                self.zeta.t = t
+                self.zeta_.t = t - dt
+                self.zeta__.t = t - 2*dt
 
 
             #evaluate bcs again (in case they are time-dependent)
@@ -182,7 +179,7 @@ class SolverBase:
         #Return file prefix for output files
         p = problem.__module__.split('.')[-1]
         s = self.__module__.split('.')[-1]
-        if(self.options['stabilize'] and s in StableSolvers):
+        if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
             s += 'Stabilized'
         if(self.options['inviscid']):
             s = 'Inviscid' + s
@@ -245,7 +242,7 @@ class SolverBase:
         # Plot solution
         if self.options['plot_solution']:
             if self.vizU is None:
-                regex = re.compile('SWE')
+                regex = re.compile('NSE')
                 # Plot velocity and pressure
                 self.vizU = plot(u, title='Velocity', rescale=True)
                 if regex.search(self.prefix(problem)) is None:

@@ -32,32 +32,31 @@ class Solver(SolverBase):
         sigma = h0/lambda0
         c0 = (h0*g)**(0.5)
         epsilon = a0/h0
-        
+
         #Physical Parameters
         hd = 1. #Depth [m]
         ad = 0.2 #height of the moving object [m]
-        bh = 0.7 #width of the moving object 
-        
+        bh = 0.7 #width of the moving object
+
         #Scaled Parameters
         self.dt = self.dt*c0/lambda0 #time step
         dt = self.dt
         self.T = self.T*c0/lambda0 #Final time
         hd = hd/h0 #depth
         ad = ad/a0 #height of the moving object
-            
+
         #Definition of the wave_object
         #self.zeta = self.wave_object(self.t0)
         #Definition of the object velocity
         vfinal = 1.5 #Maximal velocity of the moving object [m.s^(-1)]
         self.velocity = lambda tt: 0.5*vfinal*(tanh(3*(lambda0/c0*tt-2))+tanh(3*(4-(lambda0/c0)*tt)))
-        intvh = si.quad(self.velocity, 0, self.t0)[0]
-        intvh_=intvh
-        intvh__=intvh
-        
-        zeta0 = 'hd - epsilon*ad*exp(-pow((lambda0*x[0]-intvh)/bh,2))'
-        self.zeta = Expression(zeta0, ad=ad, intvh=intvh, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, intvh=intvh_, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, intvh=intvh__, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
+        intvh = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
+
+        zeta0 = 'hd - epsilon*ad*exp(-pow((lambda0*x[0]+' + intvh + ')/bh,2))'
+
+        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vfinal=vfinal, element=self.Q.ufl_element())
+        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vfinal=vfinal, element=self.Q.ufl_element())
+        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vfinal=vfinal, element=self.Q.ufl_element())
 
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
