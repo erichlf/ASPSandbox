@@ -30,7 +30,9 @@ OPTIONS = { "Nx": 20, #number of elements along x axis
             "x1": '10', #x-coordinate of the top-right corner
             "y0": '-2', #y-coordinate of the bottom-left corner
             "y1": '2', #y-coordinate of the top-right corner
-            "lambda0": '20', #Typical wavelength for scaling
+            "lambda0": 20., #Typical wavelength for scaling
+            "a0": 0.4, #Typical wave height
+            "h0": 1., #Typical depth
             "alpha": 0.5, #time-stepping method
             "save_solution": True,
             "save_frequency": 1,
