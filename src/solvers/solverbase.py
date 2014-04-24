@@ -155,22 +155,10 @@ class SolverBase:
             t += dt
 
             if(self.zeta is not None):
-              #self.zeta__.t = t - 2*dt
-              #self.zeta_.t = t - dt
-              #self.zeta.t = t
-              g = 9.8   
-              vfinal = 15
-              lambda0 = self.options['lambda0'] #typical wavelength
-              a0 = self.options['a0'] #Typical wave height
-              h0 = self.options['h0'] #Typical depth
-              sigma = h0/lambda0
-              c0 = (h0*g)**(0.5)
-              velocity = lambda tt: 0.5*vfinal*(tanh(3*(lambda0/c0*tt-2))+tanh(3*(4-(lambda0/c0)*tt)))
-              self.zeta.intvh = si.quad(velocity, 0, t)[0]
-              self.zeta_.intvh = si.quad(velocity, 0, t - dt)[0]
-              self.zeta__.intvh = si.quad(velocity, 0, t - 2*dt)[0]
-              #print "t = ", t
-              #print "intvh = ", intvh
+                self.zeta.intvh = si.quad(self.velocity, 0, t)[0]
+                self.zeta_.intvh = si.quad(self.velocity, 0, t - dt)[0]
+                self.zeta__.intvh = si.quad(self.velocity, 0, t - 2*dt)[0]
+
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)

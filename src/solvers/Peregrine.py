@@ -49,8 +49,8 @@ class Solver(SolverBase):
         #self.zeta = self.wave_object(self.t0)
         #Definition of the object velocity
         vfinal = 1.5 #Maximal velocity of the moving object [m.s^(-1)]
-        velocity = lambda tt: 0.5*vfinal*(tanh(3*(lambda0/c0*tt-2))+tanh(3*(4-(lambda0/c0)*tt)))
-        intvh = si.quad(velocity, 0, self.t0)[0]
+        self.velocity = lambda tt: 0.5*vfinal*(tanh(3*(lambda0/c0*tt-2))+tanh(3*(4-(lambda0/c0)*tt)))
+        intvh = si.quad(self.velocity, 0, self.t0)[0]
         intvh_=intvh
         intvh__=intvh
         
