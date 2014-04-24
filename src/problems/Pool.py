@@ -14,18 +14,18 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
+x0 = -5
+x1 = 10
+y0 = -2
+y1 = 2
+
 # No-slip boundary
 
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
-	bmarg = 1.e-10 + DOLFIN_EPS
-	x0=-5./20.
-	x1=10./20.
-	y0=-2./20.
-	y1=2./20.
-        return on_boundary #and \
-               #(x[1] < y0 +bmarg or x[1] > y1 - bmarg or \
-                #x[0] < x0 + bmarg or x[0] > x1 - bmarg)
+        return on_boundary and \
+               (x[1] < y0 + DOLFIN_EPS or x[1] > y1 - DOLFIN_EPS or \
+                    x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
 
 # Problem definition
 class Problem(ProblemBase):
@@ -34,15 +34,17 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
+        global x0, x1, y0, y1
+
         # Create mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
-        x0 = float(options["x0"])
-        x1 = float(options["x1"])
-        y0 = float(options["y0"])
-        y1 = float(options["y1"])
         lambda0 = float(options["lambda0"])
-        self.mesh = RectangleMesh(x0/lambda0, y0/lambda0, x1/lambda0, y1/lambda0, Nx, Ny, 'crossed')
+        x0 = x0/lambda0
+        x1 = x1/lambda0
+        y0 = y0/lambda0
+        y1 = y1/lambda0
+        self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny, 'crossed')
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))
@@ -65,4 +67,4 @@ class Problem(ProblemBase):
         return Expression(self.options['F2'],t=t)
 
     def __str__(self):
-        return 'Square'
+        return 'Pool'

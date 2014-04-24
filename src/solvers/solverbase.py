@@ -191,7 +191,7 @@ class SolverBase:
         s = ''
 
         #Return file suffix for output files
-        if(not self.options['inviscid']):
+        if(not self.options['inviscid'] and self.Re is not None):
             s = 'Re' + str(int(self.Re))
         if(self.Ro is not None):
             s += 'Ro' + str(self.Ro)

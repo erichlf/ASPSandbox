@@ -27,7 +27,7 @@ class Solver(SolverBase):
 
         #parameters
         g = 9.8 #Gravity
-        lambda0 = 20. #typical wavelength
+        lambda0 = self.options['lambda0'] #typical wavelength
         a0 = 0.4 #Typical wave height
         h0 = 1. #Typical depth
         sigma = h0/lambda0
@@ -35,17 +35,15 @@ class Solver(SolverBase):
         epsilon = a0/h0
 
         ad = 0.4
-        xh = 0.0
         vh = 1.
         bh = 0.7
         hd = 1.
-        lamda0=20.
 
         #self.zeta = self.wave_object(self.t0)
-        zeta0 = 'hd - epsilon*ad*exp(-pow(lambda0*(x[0]-xh)-vh*t,2)/(bh*bh))'
-        self.zeta = Expression(zeta0, ad=ad, xh=xh, vh=vh, bh=bh, t=self.t0, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, xh=xh, vh=vh, bh=bh, t=self.t0, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, xh=xh, vh=vh, bh=bh, t=self.t0, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
+        zeta0 = 'hd - epsilon*ad*exp(-pow(lambda0*x[0]-vh*t,2)/(bh*bh))'
+        self.zeta = Expression(zeta0, ad=ad, vh=vh, bh=bh, t=self.t0, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
+        self.zeta_ = Expression(zeta0, ad=ad, vh=vh, bh=bh, t=self.t0, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
+        self.zeta__ = Expression(zeta0, ad=ad, vh=vh, bh=bh, t=self.t0, hd=hd, epsilon=epsilon, lambda0=lambda0, element=self.Q.ufl_element())
 
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
