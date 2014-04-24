@@ -13,8 +13,6 @@ class Solver(SolverBase):
         #parameters
         self.Re = None
         
-    def intvh(self, v, t):
-        return si.quad(v, self.t0, t)[0]
 
     def weak_residual(self,U,U_,eta,eta_,v,chi):
         alpha = self.alpha #time stepping method
@@ -38,7 +36,7 @@ class Solver(SolverBase):
 
         #Physical Parameters
         hd = 1. #Depth [m]
-        ad = 0.2 #height of the moving object [m]
+        ad = 0.4 #height of the moving object [m]
         bh = 0.7 #width of the moving object
 
         #Scaled Parameters
@@ -49,14 +47,14 @@ class Solver(SolverBase):
         ad = ad/a0 #height of the moving object
 
         #Definition of the wave_object
-        vfinal = 1.5 #Maximal velocity of the moving object [m.s^(-1)]
-        intvh = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
+        xfinal = 4. #Final Position of the moving object [m]
+        #traj = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
+        traj = 'xfinal/2.*(tanh(lambda0/c0*t-2.)+1.)'
+        zeta0 = 'hd - epsilon*ad*exp(-pow((lambda0*x[0] -' + traj + ')/bh,2))'
 
-        zeta0 = 'hd - epsilon*ad*exp(-pow((lambda0*x[0]+' + intvh + ')/bh,2))'
-
-        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vfinal=vfinal, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vfinal=vfinal, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vfinal=vfinal, element=self.Q.ufl_element())
+        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, xfinal=xfinal, element=self.Q.ufl_element())
+        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, xfinal=xfinal, element=self.Q.ufl_element())
+        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, xfinal=xfinal, element=self.Q.ufl_element())
 
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
@@ -68,7 +66,7 @@ class Solver(SolverBase):
 
         r += sigma**2*1./dt*div(self.zeta*(U-U_))*div(self.zeta*v/2.)*dx \
               - sigma**2*1./dt*div(U-U_)*div(self.zeta**2*v/6.)*dx
-        r += sigma**2/epsilon*zeta_tt*div(self.zeta*v/2.)*dx
+        r += sigma**2*zeta_tt/epsilon*div(self.zeta*v/2.)*dx
 
         r += 1./dt*(eta-eta_)*chi*dx + 1./epsilon*zeta_t*chi*dx
         r -= inner(U,grad(chi))*(epsilon*eta+self.zeta)*dx
