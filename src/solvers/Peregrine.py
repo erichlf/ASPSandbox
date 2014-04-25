@@ -36,7 +36,7 @@ class Solver(SolverBase):
 
         #Physical Parameters
         hd = 1. #Depth [m]
-        ad = 0.3 #height of the moving object [m]
+        ad = 0.4 #height of the moving object [m]
         bh = 0.7 #width of the moving object
 
         #Scaled Parameters
@@ -47,16 +47,20 @@ class Solver(SolverBase):
         ad = ad/a0 #height of the moving object
 
         #Definition of the wave_object
-        xfinal = 10. #Final Position of the moving object [m]
+        xfinal = 30. #Final Position of the moving object [m]
+        vmax = 3 #Max Speed of the moving object [m.s^(-1)]
         #traj = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
-        traj = 'xfinal/2.*(tanh(lambda0/c0*t-2.)+1.)'
+        traj = 'xfinal/2.*(tanh((lambda0/c0*t-2.)*2*vmax/xfinal)+1.-tanh(4.*2.*3./30.))'
         D = 'hd - 0.5/3.*(x[1]>-1./lambda0 ? 1. : 0.)*(lambda0*x[1]+1.)'
         zeta0 = D + ' - epsilon*ad*exp(-pow((lambda0*x[0] -' + traj + ')/bh,2))*exp(-pow((lambda0*x[1]+2)/2,2))'
 
-        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, xfinal=xfinal, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, xfinal=xfinal, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, xfinal=xfinal, element=self.Q.ufl_element())
-
+        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
+        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element()) 
+        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
+        
+        self.z = interpolate(self.zeta, self.Q)
+        self.zz_ = interpolate(self.zeta, self.Q)
+        
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
 
@@ -74,6 +78,12 @@ class Solver(SolverBase):
 
         return r
     
+    def obj(self, t, dt):
+        self.zeta.t = t
+        self.zeta_.t = t - dt
+        self.zeta__.t = t - 2*dt
+        self.zz_.assign(self.z)
+        self.z = interpolate(self.zeta, self.Q)        
 
     def __str__(self):
           return 'Dimensioinless_Peregrine'

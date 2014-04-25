@@ -152,11 +152,8 @@ class SolverBase:
         while t<T:
             t += dt
 
-            if(self.zeta is not None):
-                self.zeta.t = t
-                self.zeta_.t = t - dt
-                self.zeta__.t = t - 2*dt
-
+            if('obj' in dir(self)):
+                self.obj(t, dt)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
@@ -239,7 +236,7 @@ class SolverBase:
                     self._bfile = File(s + '_b.pvd')
                 self._ufile << u
                 self._pfile << p
-                self._bfile << interpolate(self.zeta,self.Q)
+                self._bfile << self.zz_
         else:
             self.options['plot_solution'] = True
 
@@ -254,12 +251,12 @@ class SolverBase:
                             elevate=0.0)
                 else :
                     self.vizP = plot(p, title='Height', rescale=True)
-                if(self.zeta is not None):
+                if('obj' in dir(self)):
                     self.vizZ = plot(interpolate(self.zeta,self.Q), title='Wave Object', rescale=True)
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
-                if(self.zeta is not None):
+                if('obj' in dir(self)):
                     self.vizZ.plot(interpolate(self.zeta,self.Q))
 
         # Check memory usage
