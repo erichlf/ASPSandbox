@@ -15,7 +15,7 @@ from problembase import *
 from numpy import array
 
 x0 = -5
-x1 = 10
+x1 = 20
 y0 = -2
 y1 = 2
 

@@ -51,6 +51,7 @@ class SolverBase:
         # Reset files for storing solution
         self._ufile = None
         self._pfile = None
+        self._bfile = None
 
         # Reset storage for functional values and errors
         self._t = []
@@ -234,8 +235,11 @@ class SolverBase:
                     self._ufile = File(s + '_u.pvd')
                 if self._pfile is None:
                     self._pfile = File(s + '_p.pvd')
+                if self._bfile is None:
+                    self._bfile = File(s + '_b.pvd')
                 self._ufile << u
                 self._pfile << p
+                self._bfile << interpolate(self.zeta,self.Q)
         else:
             self.options['plot_solution'] = True
 
