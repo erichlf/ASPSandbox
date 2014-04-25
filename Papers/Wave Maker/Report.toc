@@ -1,0 +1,6 @@
+\contentsline {section}{Introduction}{1}
+\contentsline {section}{\numberline {1}Physical modelization of waves}{3}
+\contentsline {subsection}{\numberline {1.1}Shallow water equations}{3}
+\contentsline {subsection}{\numberline {1.2}Peregrine System}{4}
+\contentsline {section}{\numberline {2}Weak Formulation of the Peregrine system}{6}
+\contentsline {section}{Annexe}{8}
