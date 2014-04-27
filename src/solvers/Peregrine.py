@@ -12,7 +12,7 @@ class Solver(SolverBase):
 
         #parameters
         self.Re = None
-        
+
 
     def weak_residual(self,U,U_,eta,eta_,v,chi):
         alpha = self.alpha #time stepping method
@@ -55,12 +55,12 @@ class Solver(SolverBase):
         zeta0 = D + ' - epsilon*ad*exp(-pow((lambda0*x[0] -' + traj + ')/bh,2))*exp(-pow((lambda0*x[1]+2)/2,2))'
 
         self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element()) 
+        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
         self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
-        
+
         self.z = interpolate(self.zeta, self.Q)
         self.zz_ = interpolate(self.zeta, self.Q)
-        
+
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
 
@@ -77,13 +77,13 @@ class Solver(SolverBase):
         r -= inner(U,grad(chi))*(epsilon*eta+self.zeta)*dx
 
         return r
-    
+
     def obj(self, t, dt):
         self.zeta.t = t
         self.zeta_.t = t - dt
         self.zeta__.t = t - 2*dt
         self.zz_.assign(self.z)
-        self.z = interpolate(self.zeta, self.Q)        
+        self.z = interpolate(self.zeta, self.Q)
 
     def __str__(self):
-          return 'Dimensioinless_Peregrine'
+          return 'Peregrine'
