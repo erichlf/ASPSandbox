@@ -48,13 +48,17 @@ class Solver(SolverBase):
 
         #Definition of the wave_object
         xfinal = 30. #Final Position of the moving object [m]
-        vmax = 3 #Max Speed of the moving object [m.s^(-1)]
+        vmax = (hd*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
         #traj = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
-        traj = 'xfinal/2.*(tanh((lambda0/c0*t-2.)*2*vmax/xfinal)+1.-tanh(4.*2.*3./30.))'
+        #traj = 'xfinal/2.*(tanh((lambda0/c0*t-2.)*2*vmax/xfinal)+1.-tanh(4.*2.*3./30.))'
+        traj = 'vmax*lambda0/c0*t'
         D = 'hd - 0.5/3.*(x[1]>0 ? 1. : 0.)*(lambda0*x[1])'
         #zeta0 = D + ' - epsilon*ad*exp(-pow((lambda0*x[0] -' + traj + ')/bh,2))*exp(-pow((lambda0*x[1]+2)/2,2))'
-        zeta0 = D + ' - epsilon*ad*0.5*0.5*(1. - tanh(lambda0*x[1]))*(tanh(3*(1. - lambda0*x[0] + ' + traj + ')) + tanh(lambda0*x[0] - ' + traj + ' + 1)) ' 
-    
+        zeta0 = D + ' - epsilon*ad*0.5*0.5*(1. - tanh(lambda0*x[1]))*(tanh(15*(1. - lambda0*x[0] + ' + traj + ')) + tanh(lambda0*x[0] - ' + traj + ' + 1)) ' 
+        
+        #Solitary wave
+        #zeta0 = 'hd - epsilon*0.5*pow(1./cosh(pow(3./8.,0.5)*(lambda0*x[0]-lambda0*t)),2)'
+        
         self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
         self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
         self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
@@ -70,9 +74,9 @@ class Solver(SolverBase):
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U)*U,v)*dx \
             - div(v)*eta*dx
 
-        r += sigma**2*1./dt*div(self.zeta*(U-U_))*div(self.zeta*v/2.)*dx \
-              - sigma**2*1./dt*div(U-U_)*div(self.zeta**2*v/6.)*dx
-        r += sigma**2*zeta_tt/epsilon*div(self.zeta*v/2.)*dx
+        #r += sigma**2*1./dt*div(self.zeta*(U-U_))*div(self.zeta*v/2.)*dx \
+        #      - sigma**2*1./dt*div(U-U_)*div(self.zeta**2*v/6.)*dx
+        #r += sigma**2*zeta_tt/epsilon*div(self.zeta*v/2.)*dx
 
         r += 1./dt*(eta-eta_)*chi*dx + 1./epsilon*zeta_t*chi*dx
         r -= inner(U,grad(chi))*(epsilon*eta+self.zeta)*dx

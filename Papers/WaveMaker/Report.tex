@@ -25,21 +25,34 @@ This report aims at providing a mathematical and computational framework to the 
 \pagebreak
 \section{Physical modelization of waves}
 The first step is to find an appropriate model to represent our problem. 
-We want to modelize the creation and propagation of breaking waves to surf, which occurs near the shore where the seabed rises. We will therefor make some assumptions so as to find an accurate model as simple as possible. We only consider Neutonian incompressible fluid.
+We want to modele the creation and propagation of breaking waves to surf, which occurs near the shore where the seabed rises. We will therefor make some assumptions so as to find an accurate model as simple as possible. We only consider Neutonian incompressible fluid.
 
 \subsection{Shallow water equations}
 
-The first model we shall consider are the shallow water equations, or Saint-Venant equations).
-We use \cite{JMC2013}
+The first model we shall consider are the shallow water equations, or Saint-Venant equations), which we will establish using \cite{JMC2013}.
 Starting from the Navier-Stokes equations for an incompressible unviscid fluid : 
 
-\begin{center}
-$\left\lbrace
-\begin{array}{rll}
+\begin{equation}
+	\left\lbrace
+		\begin{array}{rll}
 \displaystyle (\frac{\partial}{\partial t} + \mathbf{u} \cdot \mathbf{\nabla}) \; \mathbf{u} & = & \displaystyle -\frac{1}{\rho} + \mathbf{g} \\
 \mathbf{\nabla} \cdot \mathbf{u} & = & 0 
-\end{array} \right.$
-\end{center}
+		\end{array}
+	\right.
+\end{equation}
+we will derive the shallow water system in a generic context, with only the following assumptions: 
+\begin{itemize}
+\item The typical water depth $h_0$ is small compare to the horizontal scale $\lambda_0$, i.e. $\epsilon = \frac{h_0}{\lambda_0} \ll 1 $
+\item The
+\end{itemize}
+The kinematic and dynamic boundary conditions are : 
+\begin{align}
+\frac{\mathrm{d}}{\mathrm{d} t} \eta(x,y,t) & = w(x,y,\eta) \\
+p & = p_a \: \: \:  \: \: \: \mathrm{at} \: \mathrm{the} \:  \mathrm{free} \: \mathrm{surface}\\
+-\frac{\mathrm{d}}{\mathrm{d}t} h(x,y,t) & = w(x,y,h)
+\end{align}
+
+
 
 \pagebreak
 
