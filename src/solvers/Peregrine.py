@@ -51,9 +51,10 @@ class Solver(SolverBase):
         vmax = 3 #Max Speed of the moving object [m.s^(-1)]
         #traj = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
         traj = 'xfinal/2.*(tanh((lambda0/c0*t-2.)*2*vmax/xfinal)+1.-tanh(4.*2.*3./30.))'
-        D = 'hd - 0.5/3.*(x[1]>-1./lambda0 ? 1. : 0.)*(lambda0*x[1]+1.)'
-        zeta0 = D + ' - epsilon*ad*exp(-pow((lambda0*x[0] -' + traj + ')/bh,2))*exp(-pow((lambda0*x[1]+2)/2,2))'
-
+        D = 'hd - 0.5/3.*(x[1]>0 ? 1. : 0.)*(lambda0*x[1])'
+        #zeta0 = D + ' - epsilon*ad*exp(-pow((lambda0*x[0] -' + traj + ')/bh,2))*exp(-pow((lambda0*x[1]+2)/2,2))'
+        zeta0 = D + ' - epsilon*ad*0.5*0.5*(1. - tanh(lambda0*x[1]))*(tanh(3*(1. - lambda0*x[0] + ' + traj + ')) + tanh(lambda0*x[0] - ' + traj + ' + 1)) ' 
+    
         self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
         self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
         self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
