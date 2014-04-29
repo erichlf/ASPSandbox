@@ -14,10 +14,10 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
-x0 = -5
+x0 = -4
 x1 = 20
-y0 = -2
-y1 = 4
+y0 = -6
+y1 = 6
 
 # No-slip boundary
 

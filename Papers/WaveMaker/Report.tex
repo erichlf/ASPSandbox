@@ -20,17 +20,17 @@
 \addcontentsline{toc}{section}{Introduction}
 \pagebreak
 \section*{Introduction}
-This report aims at providing a mathematical and computational framework to the problem of wave generation. Our interest is in the modelization of the generation of a wave by an underwater moving object, to develop a computational framework for this problem and then to use it in order to optimize the shape and trajectory of the underwater moving object.
+This report aims at providing a mathematical and computational framework to the problem of wave generation. Our interest is in the modelling of the generation of a wave by an underwater moving object, to develop a computational framework for this problem and then to use it in order to optimize the shape and trajectory of the underwater moving object.
 
 \pagebreak
-\section{Physical modelization of waves}
+\section{Physical modelling of waves}
 The first step is to find an appropriate model to represent our problem. 
-We want to modele the creation and propagation of breaking waves to surf, which occurs near the shore where the seabed rises. We will therefor make some assumptions so as to find an accurate model as simple as possible. We only consider Neutonian incompressible fluid.
+We want to model the creation and propagation of breaking waves to surf, which occurs near the shore where the seabed rises. We will therefore make some assumptions so as to find an accurate model as simple as possible. We only consider Newtonian incompressible fluid.
 
 \subsection{Shallow water equations}
 
 The first model we shall consider are the shallow water equations, or Saint-Venant equations), which we will establish using \cite{JMC2013}.
-Starting from the Navier-Stokes equations for an incompressible unviscid fluid : 
+Starting from the Navier-Stokes equations for an incompressible inviscid fluid : 
 
 \begin{equation}
 	\left\lbrace
@@ -57,7 +57,7 @@ p & = p_a \: \: \:  \: \: \: \mathrm{at} \: \mathrm{the} \:  \mathrm{free} \: \m
 \pagebreak
 
 \subsection{Peregrine System}
-(Cf. \cite{DM2013}).\\ We consider $(\tilde{x},\tilde{y},\tilde{z})$ a cartesien coordinate system, with $\tilde{z}$ measuring upwards from the still water level. We call $\tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$ the height of the free surface at a time $\tilde{t}$, and $\tilde{h}(\tilde{x},\tilde{y},\tilde{t}) = \tilde{D}(\tilde{x},\tilde{y}) + \tilde{\zeta}(\tilde{x},\tilde{y},\tilde{t})$ the seabed profil, which is assumed to be the sum of a time-independant part $\tilde{D}$ - the seabed -, and a time-dependant part $\tilde{\zeta}$ - the underwater moving object.
+(Cf. \cite{DM2013}).\\ We consider $(\tilde{x},\tilde{y},\tilde{z})$ a Cartesian coordinate system, with $\tilde{z}$ measuring upwards from the still water level. We call $\tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$ the height of the free surface at a time $\tilde{t}$, and $\tilde{h}(\tilde{x},\tilde{y},\tilde{t}) = \tilde{D}(\tilde{x},\tilde{y}) + \tilde{\zeta}(\tilde{x},\tilde{y},\tilde{t})$ the seabed profile, which is assumed to be the sum of a time-independent part $\tilde{D}$ - the seabed -, and a time-dependant part $\tilde{\zeta}$ - the underwater moving object.
 
 Assumptions:
 \begin{itemize}
@@ -91,7 +91,7 @@ $ x = \displaystyle \frac{\tilde{x}}{\lambda_0}$, $\displaystyle y = \frac{\tild
 \begin{center}
 $ u = \displaystyle \frac{h_0}{a_0 c_0} \tilde{u}$, $ v = \displaystyle \frac{h_0}{a_0 c_0} \tilde{v}$, $ w = \displaystyle \frac{\lambda_0}{a_0 c_0} \tilde{w}$, $\displaystyle \eta = \frac{\tilde{\eta}}{a_0}$, $\displaystyle h = \frac{\tilde{h}}{h_0}$, $\displaystyle D = \frac{\tilde{D}}{h_0}$, $\displaystyle \zeta = \frac{\tilde{\zeta}}{a_0}$
 \end{center}
-We separate the vertical and horizontal velocity, such as $\mathbf{u} = (u,v)$ and $\nabla = (\partial_x,\partial_y)$, and we consider that $\epsilon = a_0 / h_0$ and $\sigma = h_0 / \lambda_0$ are small. The dimensionless equations verified by the fluid are therefor: 
+We separate the vertical and horizontal velocity, such as $\mathbf{u} = (u,v)$ and $\nabla = (\partial_x,\partial_y)$, and we consider that $\epsilon = a_0 / h_0$ and $\sigma = h_0 / \lambda_0$ are small. The dimensionless equations verified by the fluid are therefore: 
 \begin{align}
 \displaystyle \epsilon \mathbf{u}_t + \epsilon^2((\mathbf{u} \cdot \nabla) \mathbf{u} + w \mathbf{u}_z) + \frac{1}{\rho c_0^2} \nabla P & = 0 \label{MConsxy}\\
 \displaystyle \epsilon \sigma^2 w_t + \epsilon^2 \sigma^2 ((\mathbf{u} \cdot \nabla w) + w w_z) + \frac{1}{\rho c_0^2} P_z & = -1 \label{MConsz}\\
@@ -178,7 +178,7 @@ $\left\lbrace
 \section{Weak Formulation of the Peregrine system}
 
 
-Denoting $\mathbf{u}$ the depth-average velocity, $h(x,y,t) = D(x,y) + \epsilon \zeta(x,y,t)$ the bottom where  $D(x,y)$ is the natural profil of the bottom whereas $\zeta$ characterize the shape of the moving underwater object. We can immediatly notice that the $\frac{\partial h}{\partial t} = \epsilon \frac{\partial \zeta}{\partial t}$, which will be subsequently used. We are looking for the corresponding variational formulation of the following system: 
+Denoting $\mathbf{u}$ the depth-average velocity, $h(x,y,t) = D(x,y) + \epsilon \zeta(x,y,t)$ the bottom where  $D(x,y)$ is the natural profile of the bottom whereas $\zeta$ characterize the shape of the moving underwater object. We can immediately notice that the $\frac{\partial h}{\partial t} = \epsilon \frac{\partial \zeta}{\partial t}$, which will be subsequently used. We are looking for the corresponding variational formulation of the following system: 
 \begin{center}
 $\left\lbrace
 \begin{array}{rll}
@@ -191,47 +191,38 @@ Let $(\mathbf{v},\xi) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega)$.
 
 
 \begin{equation}
-	\left\lbrace
-		\begin{array}{l}
 			\begin{split}
 0 = &\int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} + \int_{\Omega} \! \nabla \eta \cdot \mathbf{v} \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla (\nabla \cdot (h \mathbf{u}_t)) \cdot \mathbf{v} \: \mathrm{dx} \\
 &+ \sigma^2 \! \int_{\Omega} \! \frac{h^2}{6} \nabla (\nabla \cdot \mathbf{u}_t) \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla \zeta_{tt} \cdot \mathbf{v} \: \mathrm{dx}
-			\end{split} \\
-\displaystyle 0 = \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx}
+ \\
+\displaystyle 0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx}
 +\int_{\Omega}\! \nabla \cdot [(h+\epsilon\eta) \mathbf{u}] \; \xi \: \mathrm{dx}
-		\end{array}
-	\right.
+			\end{split}
 \end{equation}
-Integrating by part and using the fact that $\mathbf{v}$ and $\mathbf{u}$ vanishe on the boundaries, we get: 
+Integrating by part and using the fact that $\mathbf{v}$ and $\mathbf{u}$ vanish on the boundaries, we get: 
 
 \begin{equation}
-	\left\lbrace
-		\begin{array}{l}
 			\begin{split}
-0 = &\int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \mathbf{u}_t)) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} \\
-&- \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \mathbf{u}_t) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  \zeta_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx}
-			\end{split} \\
-\displaystyle 0 = \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx}
+0 &= \int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \mathbf{u}_t)) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} \\
+&\quad - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \mathbf{u}_t) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  \zeta_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx}
+\\
+\displaystyle 0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx}
 -\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
-		\end{array}
-	\right.
+			\end{split} 
 \end{equation}
 
 Using $\displaystyle \frac{\partial h}{\partial t} = \epsilon \frac{\partial \zeta}{\partial t}$, we finally obtain: 
 \begin{equation}
-	\left\lbrace
-		\begin{array}{l}
 			\begin{split}
 0 = &\int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \mathbf{u}_t)) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} \\
 &- \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \mathbf{u}_t) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} + \frac{\sigma^2}{2 \epsilon} \! \int_{\Omega} \!  h_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx} 
-			\end{split}\\
-\displaystyle 0 = \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx}
+\\
+\displaystyle 0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx}
 -\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
-		\end{array}
-	\right.
+			\end{split}
 \end{equation}
 
-Let $\mathrm{dt}$ be a small timestep, the second part is to discretize the time dependency, using the following schemas:	
+Let $\mathrm{dt}$ be a small time-step, the second part is to discretize the time dependency, using the following schemas:	
 \begin{equation}
 \left\lbrace
 		\begin{array}{l}
@@ -241,18 +232,17 @@ Let $\mathrm{dt}$ be a small timestep, the second part is to discretize the time
 	\right.
 \end{equation}
 
-For each timestep, knowing $\mathbf{u}^{n-1}$ and $\eta^{n-1}$, our weak formulation is therefor: Find $(u,\eta) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega), \forall (v,\xi) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega)$: 
+For each time-step, knowing $\mathbf{u}^{n-1}$ and $\eta^{n-1}$, our weak formulation is therefore: Find $(u,\eta) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega), \forall (v,\xi) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega)$: 
 \begin{equation}
-	\left\lbrace
-		\begin{array}{l}
 			\begin{split}
-0 = &\int_{\Omega} \! \frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}} \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2 \epsilon} \! \int_{\Omega} \!  h_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx} \\ 
-&+ \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}})) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}}) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} \\
-			\end{split}\\
-\displaystyle 0 = \int_{\Omega}\! \frac{\eta - \eta^{n-1}}{\mathrm{dt}} \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx}
+				0 &= \int_{\Omega} \! \frac{\mathbf{u} 
+					- \mathbf{u}^{n-1}}{\mathrm{dt}} \cdot
+					\mathbf{v} \: \mathrm{dx} 
+					- \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2 \epsilon} \! \int_{\Omega} \!  h_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx} \\ 
+&\quad + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}})) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}}) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} \\
+\displaystyle 0 &= \int_{\Omega}\! \frac{\eta - \eta^{n-1}}{\mathrm{dt}} \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx}
 -\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
-		\end{array}
-	\right.
+			\end{split}
 \end{equation}
 The non-linear terms are computed by FEniCS, using a Newton Method.
 
