@@ -51,7 +51,7 @@ class Solver(SolverBase):
         vmax = (hd*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
         #traj = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
         #traj = 'xfinal/2.*(tanh((lambda0/c0*t-2.)*2*vmax/xfinal)+1.-tanh(4.*2.*3./30.))'
-        seabed = 'hd - 0.5/4.*(x[1]>2./lambda0 ? 1. : 0.)*(lambda0*x[1]-2.) + 0.5/4.*(x[1]<(-2./lambda0) ? 1. : 0.)*(lambda0*x[1]+2.)'
+        seabed = 'hd - 0.5/8.*(x[1]>2./lambda0 ? 1. : 0.)*(lambda0*x[1]-2.) + 0.5/8.*(x[1]<(-2./lambda0) ? 1. : 0.)*(lambda0*x[1]+2.)'
         traj = 'vmax*lambda0/c0*t*exp(-0.001/pow(lambda0/c0*t,2))'
         movigObject = ' - (x[1]>0 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. - tanh(lambda0*x[1]-2.))*(tanh(10*(1. - lambda0*x[0] + ' + traj + ')) + tanh(lambda0*x[0] - ' + traj + ' + 1)) ' \
                   + ' - (x[1]<=0 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. + tanh(lambda0*x[1]+2.))*(tanh(10*(1. - lambda0*x[0] + ' + traj + ')) + tanh(lambda0*x[0] - ' + traj + ' + 1)) ' 
@@ -76,9 +76,9 @@ class Solver(SolverBase):
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U)*U,v)*dx \
             - div(v)*eta*dx
 
-        #r += sigma**2*1./dt*div(self.zeta*(U-U_))*div(self.zeta*v/2.)*dx \
-        #      - sigma**2*1./dt*div(U-U_)*div(self.zeta**2*v/6.)*dx
-        #r += sigma**2*zeta_tt/epsilon*div(self.zeta*v/2.)*dx
+        r += sigma**2*1./dt*div(self.zeta*(U-U_))*div(self.zeta*v/2.)*dx \
+              - sigma**2*1./dt*div(U-U_)*div(self.zeta**2*v/6.)*dx
+        r += sigma**2*zeta_tt/epsilon*div(self.zeta*v/2.)*dx
 
         r += 1./dt*(eta-eta_)*chi*dx + 1./epsilon*zeta_t*chi*dx
         r -= inner(U,grad(chi))*(epsilon*eta+self.zeta)*dx

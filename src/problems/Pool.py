@@ -15,9 +15,9 @@ from problembase import *
 from numpy import array
 
 x0 = -4
-x1 = 20
-y0 = -6
-y1 = 6
+x1 = 30
+y0 = -15
+y1 = 15
 
 # No-slip boundary
 

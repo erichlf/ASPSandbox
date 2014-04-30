@@ -14,251 +14,275 @@
 \title{Optimal shape design of wave makers}
 
 \begin{document}
-\maketitle
+	\maketitle
 
-\tableofcontents
-\addcontentsline{toc}{section}{Introduction}
-\pagebreak
-\section*{Introduction}
-This report aims at providing a mathematical and computational framework to the problem of wave generation. Our interest is in the modelling of the generation of a wave by an underwater moving object, to develop a computational framework for this problem and then to use it in order to optimize the shape and trajectory of the underwater moving object.
+	\tableofcontents
+	\addcontentsline{toc}{section}{Introduction}
+	
+	\pagebreak
+	
+	\section*{Introduction}
+	The aim of this report is to provide a mathematical and computational framework for the problem of wave generation. Our interest is in modelling the generation of wave by an underwater moving object, to develop a computational framework for this problem and then to use it in order to optimize the shape and trajectory of the underwater moving object.
+		
+		\pagebreak
+		
+	\section{Physical modelling of waves}
+		The first step is to find an appropriate model to represent our problem. We want to model the creation and propagation of breaking waves to surf, which occurs near the shore where the seabed rises. We will therefore make some assumptions so as to find an accurate model as simple as possible. We only consider Newtonian incompressible fluid.
+		
+		\subsection{Shallow water equations}
+			The first model we shall consider are the shallow water equations, or Saint 
+			Venant equations), which we will establish using \cite{JMC2013}. Starting from 
+			the Navier-Stokes equations for an incompressible inviscid fluid: 
+			\begin{align}
+						\displaystyle (\frac{\partial}{\partial t} + \mathbf{u} \cdot \mathbf{\nabla}) \; \mathbf{u} & = \displaystyle -\frac{1}{\rho} + \mathbf{g} \\
+						\mathbf{\nabla} \cdot \mathbf{u} & = 0 
+			\end{align}
+			We will derive the shallow water system in a generic context, with only the following assumptions:
+			\begin{itemize}
+				\item The typical water depth $h_0$ is small compare to the horizontal scale $\lambda_0$, i.e. $\epsilon = \frac{h_0}{\lambda_0} \ll 1 $
+			\end{itemize}
+			The kinematic and dynamic boundary conditions are : 
+			\begin{align}
+				\frac{\mathrm{d}}{\mathrm{d} t} \eta(x,y,t) & = w(x,y \eta) \\
+				p & = p_a \: \: \:  \: \: \: \mathrm{for} \: z=\eta \\ 
+				-\frac{\mathrm{d}}{\mathrm{d}t} h(x,y,t) & = w(x,y,h)
+			\end{align}
+			
+			... We finally obtain the following system: 
+			\begin{align}
+				\mathbf{u}_t + \nabla\eta + \epsilon (\mathbf{u} \cdot \nabla) \mathbf{u} &= 0 \label{SWE1}\\
+				\eta_t + \zeta_t + \nabla \cdot [(h+\epsilon \eta) \mathbf{u}] &= 0 \label{SWE2}
+			\end{align}						
 
-\pagebreak
-\section{Physical modelling of waves}
-The first step is to find an appropriate model to represent our problem. 
-We want to model the creation and propagation of breaking waves to surf, which occurs near the shore where the seabed rises. We will therefore make some assumptions so as to find an accurate model as simple as possible. We only consider Newtonian incompressible fluid.
-
-\subsection{Shallow water equations}
-
-The first model we shall consider are the shallow water equations, or Saint-Venant equations), which we will establish using \cite{JMC2013}.
-Starting from the Navier-Stokes equations for an incompressible inviscid fluid : 
-
-\begin{equation}
-	\left\lbrace
-		\begin{array}{rll}
-\displaystyle (\frac{\partial}{\partial t} + \mathbf{u} \cdot \mathbf{\nabla}) \; \mathbf{u} & = & \displaystyle -\frac{1}{\rho} + \mathbf{g} \\
-\mathbf{\nabla} \cdot \mathbf{u} & = & 0 
-		\end{array}
-	\right.
-\end{equation}
-we will derive the shallow water system in a generic context, with only the following assumptions: 
-\begin{itemize}
-\item The typical water depth $h_0$ is small compare to the horizontal scale $\lambda_0$, i.e. $\epsilon = \frac{h_0}{\lambda_0} \ll 1 $
-\item The
-\end{itemize}
-The kinematic and dynamic boundary conditions are : 
-\begin{align}
-\frac{\mathrm{d}}{\mathrm{d} t} \eta(x,y,t) & = w(x,y,\eta) \\
-p & = p_a \: \: \:  \: \: \: \mathrm{at} \: \mathrm{the} \:  \mathrm{free} \: \mathrm{surface}\\
--\frac{\mathrm{d}}{\mathrm{d}t} h(x,y,t) & = w(x,y,h)
-\end{align}
-
-
-
-\pagebreak
-
-\subsection{Peregrine System}
-(Cf. \cite{DM2013}).\\ We consider $(\tilde{x},\tilde{y},\tilde{z})$ a Cartesian coordinate system, with $\tilde{z}$ measuring upwards from the still water level. We call $\tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$ the height of the free surface at a time $\tilde{t}$, and $\tilde{h}(\tilde{x},\tilde{y},\tilde{t}) = \tilde{D}(\tilde{x},\tilde{y}) + \tilde{\zeta}(\tilde{x},\tilde{y},\tilde{t})$ the seabed profile, which is assumed to be the sum of a time-independent part $\tilde{D}$ - the seabed -, and a time-dependant part $\tilde{\zeta}$ - the underwater moving object.
-
-Assumptions:
-\begin{itemize}
-\item Fluid inviscid and incompressible
-\item Flow irrotational
-\end{itemize}
-Denoting $\mathbf{\hat{u}} = (\tilde{u},\tilde{v}, \tilde{w})$ the fluid velocity, $\hat{P}$ the pressure field, $\rho$ the density and $\mathbf{g} = (0,0,g)$ the gravity, the Euler equations are written: 
-\begin{equation}
-	\left\lbrace
-		\begin{array}{rll}
-\displaystyle \mathbf{\hat{u}}_{\tilde{t}} + (\mathbf{\hat{u}} \cdot \tilde{\nabla}) \mathbf{\hat{u}} + \frac{1}{\rho} \tilde{\nabla}\tilde{P} & =  -\mathbf{g} \\
-\tilde{\nabla} \cdot \mathbf{\hat{u}} & = 0 \\
-\tilde{\nabla} \times \mathbf{\hat{u}} & = 0
-		\end{array}
-	\right.
-\end{equation}
-The kinematic boundary condition at the free surface expresses the equality between the vertical velocity and the total derivative of $\tilde{\eta}$, whereas the kinematic boundary condition at the bottom expresses the equality between the vertical velocity and the total derivative of $\tilde{h}$:
-\begin{align}
-\frac{\mathrm{d}}{\mathrm{d}\tilde{t}} \tilde{\eta}(\tilde{x},\tilde{y},\tilde{t}) & = \tilde{w}(\tilde{x},\tilde{y},\tilde{\eta}) \\
--\frac{\mathrm{d}}{\mathrm{d}\tilde{t}} \tilde{h}(\tilde{x},\tilde{y},\tilde{t}) & = \tilde{w}(\tilde{x},\tilde{y},-\tilde{h})
-\end{align}
-At the free surface $\tilde{z} = \tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$, the fluid is also assumed to satisfy the dynamic boundary condition $\tilde{P}
-(\tilde{x},\tilde{y},\tilde{t}) = \tilde{P}_0(\tilde{x},\tilde{y})$.
-
-Considering a characteristic water depth $h_0$ and the corresponding characteristic velocity $c_0 = \sqrt{g h_0}$, a typical wavelength $\lambda_0$ and a typical wave height $a_0$, we scale the variables as in \cite{DM2013}: 
-
-\begin{center}
-$ x = \displaystyle \frac{\tilde{x}}{\lambda_0}$, $\displaystyle y = \frac{\tilde{y}}{\lambda_0}$, $ \displaystyle z = \frac{\tilde{z}}{h_0}$, $\displaystyle t = \frac{c_0}{\lambda_0}\tilde{t}$
-\end{center}
-
-\begin{center}
-$ u = \displaystyle \frac{h_0}{a_0 c_0} \tilde{u}$, $ v = \displaystyle \frac{h_0}{a_0 c_0} \tilde{v}$, $ w = \displaystyle \frac{\lambda_0}{a_0 c_0} \tilde{w}$, $\displaystyle \eta = \frac{\tilde{\eta}}{a_0}$, $\displaystyle h = \frac{\tilde{h}}{h_0}$, $\displaystyle D = \frac{\tilde{D}}{h_0}$, $\displaystyle \zeta = \frac{\tilde{\zeta}}{a_0}$
-\end{center}
-We separate the vertical and horizontal velocity, such as $\mathbf{u} = (u,v)$ and $\nabla = (\partial_x,\partial_y)$, and we consider that $\epsilon = a_0 / h_0$ and $\sigma = h_0 / \lambda_0$ are small. The dimensionless equations verified by the fluid are therefore: 
-\begin{align}
-\displaystyle \epsilon \mathbf{u}_t + \epsilon^2((\mathbf{u} \cdot \nabla) \mathbf{u} + w \mathbf{u}_z) + \frac{1}{\rho c_0^2} \nabla P & = 0 \label{MConsxy}\\
-\displaystyle \epsilon \sigma^2 w_t + \epsilon^2 \sigma^2 ((\mathbf{u} \cdot \nabla w) + w w_z) + \frac{1}{\rho c_0^2} P_z & = -1 \label{MConsz}\\
-\nabla \cdot \mathbf{u} + w_z & =  0 \label{MassCons}\\
-u_y-v_x & = 0 \label{Irrxy}\\
-\mathbf{u}_z - \sigma^2 \nabla w & = 0 \label{Irrz}
-\end{align}
-and the dimensionless boundary conditions are: 
-\begin{align}
-\eta_t + \epsilon (\mathbf{u} \cdot \nabla \eta ) & = w & \mathrm{on} \: z = \epsilon \eta \label{BCH}\\
-- \zeta_t - \mathbf{u} \cdot \nabla h & = w & \mathrm{on} \:  z = -h \label{BCB}
-\end{align}
-where $h = D + \epsilon \zeta $.
-
-Integrating equation \eqref{MassCons} with respect to $z$ from $-h$ to $z$, and using \eqref{BCB} we have: 
-\begin{equation}
-w = -\mathbf{u} \cdot \nabla h - \int^z_{-h} \nabla \cdot \mathbf{u} - \zeta_t \label{Eq1}
-\end{equation}
-After integration of equation \eqref{Irrz} and using \eqref{Eq1}, we observe that
-\begin{equation}
-\mathbf{u} = \mathbf{u}_b + O(\sigma^2) \label{ApproxVelocity}
-\end{equation}
-where $\mathbf{u}_b$ is the horizontal velocity of the fluid at the bottom $z=-h$. Substitution of \eqref{Eq1} into the irrotationality condition \eqref{Irrz}, and using \eqref{ApproxVelocity}, yields:
-\begin{equation}
-\mathbf{u}_z = -\sigma^2\nabla(\nabla \cdot (h \mathbf{u}_b)) - \sigma^2 z \nabla(\nabla \cdot \mathbf{u}_b) - \sigma^2 \nabla \zeta_t + O(\sigma^4) \label{Eq:u_z}
-\end{equation}
-Integration of \eqref{Eq:u_z} with respect to $z$ from $-h$ to $z$ gives
-\begin{equation}
-\mathbf{u} = \mathbf{u}_b - \sigma^2(z+h)\nabla (\nabla \cdot (h \mathbf{u}_b)) - \sigma^2 \frac{z^2-h^2}{2}\nabla ( \nabla \cdot \mathbf{u}_b) - \sigma^2(z+h)\nabla \zeta_t + O(\sigma^4) \label{ApproxVelocity2}
-\end{equation}
-We note than \eqref{ApproxVelocity} and \eqref{Eq1} lead to: 
-\begin{equation}
-w = - \nabla \cdot (h \mathbf{u}_b) - z \nabla \cdot \mathbf{u}_b - \zeta_t + O(\sigma^2)
-\end{equation}
-and then:
-\begin{equation}
-w_t = - \nabla \cdot (h \mathbf{u}_b)_t - z \nabla \cdot (\mathbf{u}_b)_t - \zeta_{tt} + O(\sigma^2) \label{Eq:2} 
-\end{equation}
-Assuming that $P = 0$ at $z = \epsilon\eta$, integrating \eqref{MConsz} with respect to $z$ from $z$ to $\epsilon\eta$, and using \eqref{Eq:2} we obtain
-\begin{equation}
-\frac{P}{\rho c_0^2} = \epsilon \sigma^2(z\nabla \cdot (h \mathbf{u}_b)_t + \frac{z^2}{2} \nabla \cdot (\mathbf{u}_b)_t + \epsilon \sigma^2z \zeta_{tt} + \epsilon \eta - z + O(\epsilon\sigma^4, \epsilon^2 \sigma^2)
-\end{equation}
-
-Using the equation \eqref{MConsxy} with \eqref{ApproxVelocity2}, for $z = -h$, and considering the fact that $h_t = O(\epsilon)$, we have
-\begin{equation}
-(\mathbf{u}_b)_t + \nabla \eta + \epsilon (\mathbf{u}_b \cdot \nabla)\mathbf{u}_b - \sigma^2 h \nabla (\nabla \cdot (h (\mathbf{u}_b)_t)) + \sigma^2 \frac{h^2}{2} \nabla (\nabla \cdot (\mathbf{u}_b)_t) - \sigma^2 h \nabla \zeta_{tt} = O(\sigma^4, \epsilon \sigma ^2) \label{Eq:3}
-\end{equation}
-
-Integration of the conservation of mass \eqref{MassCons} with respect to $z$ from $-h$ to $\epsilon\eta$ yields
-\begin{equation}
-w(\epsilon\eta) - w(-h) = - \int^{\epsilon\eta}_{-h} \! \nabla \cdot \mathbf{u} \; \mathrm{dz}
-\end{equation}
-and thus, adding the boundary conditions \eqref{BCB} and \eqref{BCH} we have
-\begin{equation}
-\eta_t + \nabla \cdot \int^{\epsilon\eta}_{-h}\!\mathbf{u} \; \mathrm{dz} \label{BoundaryEq}
-\end{equation}
-
-Denote the depth-average horizontal velocity of the fluid by 
-\begin{equation}
-\bar{\mathbf{u}} = \frac{1}{h+\epsilon \eta} \int^{\epsilon\eta}_{-h}\! \mathbf{u} \; \mathrm{dz} \label{AverageVelocity}
-\end{equation}
-then \eqref{BoundaryEq} becomes 
-\begin{equation}
-\eta_t + \zeta_t + \nabla \cdot [(h + \epsilon \zeta) \bar{\mathbf{u}}] = 0 \label{Eq:Sys2}
-\end{equation}
-Using the depth-average velocity \eqref{AverageVelocity} in \eqref{ApproxVelocity2} we obtain: 
-\begin{equation}
-\mathbf{u}_b = \bar{\mathbf{u}} + \sigma^2\frac{h}{2} \nabla (\nabla \cdot (h \bar{\mathbf{u}}) - \sigma^2 \frac{h^2}{3} \nabla (\nabla \cdot \bar{\mathbf{u}}) + \sigma^2 \frac{h}{2} \nabla \zeta_t + O(\sigma^4, \epsilon \sigma^2) 
-\end{equation}
-and thus, the equation \eqref{Eq:3} gives: 
-\begin{equation}
-\bar{\mathbf{u}}_t + \nabla \eta + \epsilon(\bar{\mathbf{u}} \cdot \nabla) \bar{\mathbf{u}} - \sigma^2 \frac{h}{2} \nabla ( \nabla \cdot (h\bar{\mathbf{u}}_t)) + \sigma^2 \frac{h^2}{6}\nabla ( \nabla \cdot \bar{\mathbf{u}}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt} = O(\epsilon \sigma^2, \sigma^4) \label{Eq:Sys1}
-\end{equation}
-
-To reduce the amount of notation, the depth-average velocity will subsequently be denoted $\mathbf{u}$. With equations \eqref{Eq:Sys1} and \eqref{Eq:Sys2}, we obtain the Boussinesq system of equations derived by Peregrine:
-\begin{center}
-$\left\lbrace
-\begin{array}{rll}
-\displaystyle \mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  & = & \displaystyle O(\epsilon \sigma^2, \sigma^4) \\
-\displaystyle \eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] & = & 0
-\end{array} \right.$
-\end{center}
-
-\section{Weak Formulation of the Peregrine system}
-
-
-Denoting $\mathbf{u}$ the depth-average velocity, $h(x,y,t) = D(x,y) + \epsilon \zeta(x,y,t)$ the bottom where  $D(x,y)$ is the natural profile of the bottom whereas $\zeta$ characterize the shape of the moving underwater object. We can immediately notice that the $\frac{\partial h}{\partial t} = \epsilon \frac{\partial \zeta}{\partial t}$, which will be subsequently used. We are looking for the corresponding variational formulation of the following system: 
-\begin{center}
-$\left\lbrace
-\begin{array}{rll}
-\displaystyle \mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  & = & \displaystyle O(\epsilon \sigma^2, \sigma^4) \\
-\displaystyle \eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] & = & 0
-\end{array} \right.$
-\end{center}
-
-Let $(\mathbf{v},\xi) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega)$. Integrating over the domain $\Omega$, we obtain:   
-
-
-\begin{equation}
+			\pagebreak
+			
+		\subsection{Peregrine System}
+			(Cf. \cite{DM2013}).\\ We consider $(\tilde{x},\tilde{y},\tilde{z})$ a Cartesian 
+			coordinate system, with $\tilde{z}$ measuring upwards from the still water 
+			level. We call $\tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$ the height of the 
+			free surface at a time $\tilde{t}$, and $\tilde{h}(\tilde{x},\tilde{y},
+			\tilde{t}) = \tilde{D}(\tilde{x},\tilde{y}) + \tilde{\zeta}(\tilde{x},\tilde{y},
+			\tilde{t})$ the seabed profile, which is assumed to be the sum of a time-
+			independent part $\tilde{D}$ - the seabed -, and a time-dependant part 
+			$\tilde{\zeta}$ - the underwater moving object.
+			Assumptions:
+			\begin{itemize}
+				\item Fluid inviscid and incompressible
+				\item Flow irrotational
+			\end{itemize}
+			Denoting $\mathbf{\hat{u}} = (\tilde{u},\tilde{v}, \tilde{w})$ the fluid 
+			velocity, $\hat{P}$ the pressure field, $\rho$ the density and $\mathbf{g} = 
+			(0,0,g)$ the gravity, the Euler equations are written: 
+			\begin{align}
+						\displaystyle \mathbf{\hat{u}}_{\tilde{t}} + (\mathbf{\hat{u}} \cdot \tilde{\nabla}) \mathbf{\hat{u}} + \frac{1}{\rho} \tilde{\nabla}\tilde{P} &=  -\mathbf{g} \label{Euler1} \\
+						\tilde{\nabla} \cdot \mathbf{\hat{u}} & = 0 \\
+						\tilde{\nabla} \times \mathbf{\hat{u}} & = 0 \label{Euler3}
+			\end{align}
+			The kinematic boundary condition at the free surface expresses the equality between the vertical velocity and the total derivative of $\tilde{\eta}$, whereas the kinematic boundary condition at the bottom expresses the equality between the vertical velocity and the total derivative of $\tilde{h}$:
+			\begin{align}
+				\frac{\mathrm{d}}{\mathrm{d}\tilde{t}} \tilde{\eta}(\tilde{x},\tilde{y},\tilde{t}) & = \tilde{w}(\tilde{x},tilde{y},\tilde{\eta}) \label{BC1} \\
+				-\frac{\mathrm{d}}{\mathrm{d}\tilde{t}} \tilde{h}(\tilde{x},\tilde{y},\tilde{t}) & = \tilde{w}(\tilde{x},\tilde{y},-\tilde{h}) \label{BC2}
+			\end{align}
+			At the free surface $\tilde{z} = \tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$,	the fluid is also assumed to satisfy the dynamic boundary condition $\tilde{P}(\tilde{x},\tilde{y},\tilde{t}) = \tilde{P}_0(\tilde{x},\tilde{y})$.
+			
+			Considering a characteristic water depth $h_0$ and the corresponding 	characteristic velocity $c_0 = \sqrt{g h_0}$, a typical wavelength $\lambda_0$ and a typical wave height $a_0$, we scale the variables as in \cite{DM2013}: 
+			\begin{equation*}
+				x = \frac{\tilde{x}}{\lambda_0},\: 
+				y = \frac{\tilde{y}}{\lambda_0}, \:
+				z = \frac{\tilde{z}}{h_0}, \: 
+				t = \frac{c_0}{\lambda_0}\tilde{t}
+			\end{equation*}
+			\begin{equation*}
+				u = \frac{h_0}{a_0 c_0} \tilde{u},\:
+				v = \dfrac{h_0}{a_0 c_0} \tilde{v},\:
+				w = \dfrac{\lambda_0}{a_0 c_0} \tilde{w},\: 
+				\eta = \dfrac{\tilde{\eta}}{a_0},\: 
+				h = \dfrac{\tilde{h}}{h_0},\:
+				D = \dfrac{\tilde{D}}{h_0}, \:
+				\zeta = \dfrac{\tilde{\zeta}}{a_0},\:
+				P = \dfrac{\tilde{P}}{\rho c_0^2}				
+			\end{equation*}
+			We separate the vertical and horizontal velocity, such as $\mathbf{u} = (u,v)$ and $\nabla = (\partial_x,\partial_y)$, and we consider $\epsilon = a_0 / h_0$ and $\sigma = h_0 / \lambda_0$ to be small. The dimensionless form of the equations \eqref{Euler1} - \eqref{Euler3} are therefore given by: 
+			\begin{align}
+				\epsilon \mathbf{u}_t + \epsilon^2((\mathbf{u} \cdot \nabla) \mathbf{u} + w \mathbf{u}_z) + \nabla P & = 0 \label{MConsxy}\\
+				\epsilon \sigma^2 w_t + \epsilon^2 \sigma^2 ((\mathbf{u} \cdot \nabla w) + w w_z) + P_z & = -1 \label{MConsz}\\
+				\nabla \cdot \mathbf{u} + w_z & =  0 \label{MassCons}\\
+				u_y-v_x & = 0 \label{Irrxy}\\
+				\mathbf{u}_z - \sigma^2 \nabla w & = 0 \label{Irrz}
+			\end{align}
+			and the dimensionless form of the boundary conditions \eqref{BC1} - \eqref{BC2} are: 
+			\begin{align}
+				\eta_t + \epsilon (\mathbf{u} \cdot \nabla \eta ) & = w & \mathrm{on} \: z =
+				\epsilon \eta \label{BCH}\\
+				- \zeta_t - \mathbf{u} \cdot \nabla h & = w & \mathrm{on} \:  z = -h
+				\label{BCB}
+			\end{align}
+			where $h = D + \epsilon \zeta $.
+			
+			Integrating equation \eqref{MassCons} with respect to $z$ from $-h$ to $z$, and using \eqref{BCB} we have: 
+			\begin{equation}
+				w = -\mathbf{u} \cdot \nabla h - \int^z_{-h} \nabla \cdot \mathbf{u} - \zeta_t 
+				\label{Eq1}
+			\end{equation}
+			After integration of equation \eqref{Irrz} and using \eqref{Eq1}, we observe 
+			\begin{equation}
+				\mathbf{u} = \mathbf{u}_b + O(\sigma^2) \label{ApproxVelocity}
+			\end{equation}
+			where $\mathbf{u}_b$ is the horizontal velocity of the fluid at the bottom $z=-h$. Substitution of \eqref{Eq1} into the irrotationality condition \eqref{Irrz}, and using \eqref{ApproxVelocity}, yields:
+			\begin{equation}
+				\mathbf{u}_z = -\sigma^2\nabla(\nabla \cdot (h \mathbf{u}_b)) - \sigma^2 z \nabla(\nabla \cdot \mathbf{u}_b) - \sigma^2 \nabla \zeta_t + O(\sigma^4) 
+				\label{Eq:u_z}
+			\end{equation}
+			Integration of \eqref{Eq:u_z} with respect to $z$ from $-h$ to $z$ gives
+			\begin{equation}
+				\mathbf{u} = \mathbf{u}_b - \sigma^2(z+h)\nabla (\nabla \cdot (h \mathbf{u}_b)) - \sigma^2 \frac{z^2-h^2}{2}\nabla ( \nabla \cdot \mathbf{u}_b) - \sigma^2(z+h)\nabla \zeta_t + O(\sigma^4) \label{ApproxVelocity2}
+			\end{equation}
+			We note than \eqref{ApproxVelocity} and \eqref{Eq1} lead to: 
+			\begin{equation}
+				w = - \nabla \cdot (h \mathbf{u}_b) - z \nabla \cdot \mathbf{u}_b - \zeta_t + O(\sigma^2)
+			\end{equation}
+			and then:
+			\begin{equation}
+				w_t = - \nabla \cdot (h \mathbf{u}_b)_t - z \nabla \cdot (\mathbf{u}_b)_t - \zeta_{tt} + O(\sigma^2) \label{Eq:2} 
+			\end{equation}
+			Assuming that $P = 0$ at $z = \epsilon\eta$, integrating \eqref{MConsz} with respect to $z$ from $z$ to $\epsilon\eta$, and using \eqref{Eq:2} we obtain
+			\begin{equation}
+				P = \epsilon \sigma^2(z\nabla \cdot (h \mathbf{u}_b)_t + \frac{z^2}{2} \nabla \cdot (\mathbf{u}_b)_t) + \epsilon \sigma^2z \zeta_{tt} + \epsilon \eta - z + O(\epsilon\sigma^4, \epsilon^2 \sigma^2)
+			\end{equation}
+			Using equations \eqref{MConsxy} and \eqref{ApproxVelocity2}, for $z = -h$, and considering the fact that $h_t = O(\epsilon)$, we have
+			\begin{equation}
+				(\mathbf{u}_b)_t + \nabla \eta + \epsilon (\mathbf{u}_b \cdot \nabla)\mathbf{u}_b - \sigma^2 h \nabla (\nabla \cdot (h (\mathbf{u}_b)_t)) + \sigma^2 \frac{h^2}{2} \nabla (\nabla \cdot (\mathbf{u}_b)_t) - \sigma^2 h \nabla \zeta_{tt} = O(\sigma^4, \epsilon \sigma ^2) \label{Eq:3}
+			\end{equation}
+			Integration of the conservation of mass \eqref{MassCons} with respect to $z$ from $-h$ to $\epsilon\eta$ yields
+			\begin{equation}
+				w(\epsilon\eta) - w(-h) = - \int^{\epsilon\eta}_{-h} \! \nabla \cdot \mathbf{u} \; \mathrm{dz}
+			\end{equation}
+			and thus, adding the boundary conditions \eqref{BCB} and \eqref{BCH} we have
+			\begin{equation}
+				\eta_t + \nabla \cdot \int^{\epsilon\eta}_{-h}\ \mathbf{u} \; \mathrm{dz} 
+				\label{BoundaryEq}
+			\end{equation}
+			
+			Denote the depth-average horizontal velocity of the fluid by 
+			\begin{equation}
+				\bar{\mathbf{u}} = \frac{1}{h+\epsilon \eta} \int^{\epsilon\eta}_{-h}\! \mathbf{u} \; \mathrm{dz} \label{AverageVelocity}
+			\end{equation}
+			then \eqref{BoundaryEq} becomes 
+			\begin{equation}
+				\eta_t + \zeta_t + \nabla \cdot [(h + \epsilon \zeta) \bar{\mathbf{u}}] = 0 
+				\label{Eq:Sys2}
+			\end{equation}
+			Using the depth-average velocity \eqref{AverageVelocity} in
+			\eqref{ApproxVelocity2} we obtain: 
+			\begin{equation}
+				\mathbf{u}_b = \bar{\mathbf{u}} + \sigma^2\frac{h}{2} \nabla (\nabla \cdot (h \bar{\mathbf{u}}) - \sigma^2 \frac{h^2}{3} \nabla (\nabla \cdot \bar{\mathbf{u}}) + \sigma^2 \frac{h}{2} \nabla \zeta_t + O(\sigma^4, \epsilon \sigma^2) 
+			\end{equation}
+			and thus, the equation \eqref{Eq:3} gives: 
+			\begin{equation}
+				\bar{\mathbf{u}}_t + \nabla \eta + \epsilon(\bar{\mathbf{u}} \cdot \nabla) \bar{\mathbf{u}} - \sigma^2 \frac{h}{2} \nabla ( \nabla \cdot (h\bar{\mathbf{u}}_t)) + \sigma^2 \frac{h^2}{6}\nabla ( \nabla \cdot \bar{\mathbf{u}}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt} = O(\epsilon \sigma^2, \sigma^4) \label{Eq:Sys1}
+			\end{equation}
+			
+			To reduce the amount of notation, the depth-average velocity will subsequently be denoted $\mathbf{u}$. With equations \eqref{Eq:Sys1} and \eqref{Eq:Sys2}, we obtain the Boussinesq system of equations similar to \cite{Peregrine}.
+			\begin{center}
+				$\left\lbrace
+					\begin{array}{rll}
+						\displaystyle \mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  & = & \displaystyle O(\epsilon \sigma^2, \sigma^4) \\
+						\displaystyle \eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] & = & 0
+					\end{array}
+				\right.$
+			\end{center}
+			
+			\pagebreak
+			
+	\section{Equations in the moving object's referential}
+		\subsection{Shallow water equations}
+		\pagebreak
+		
+	\section{Weak Formulation of the Peregrine system}
+	Denoting $\mathbf{u}$ the depth-average velocity, $h(x,y,t) = D(x,y) + \epsilon \zeta(x,y,t)$ the bottom, where  $D(x,y)$ is the natural profile of the bottom, whereas $\zeta$ characterize the shape of the moving underwater object. We look for the corresponding variational formulation of the following system: 
+	\begin{align}
+		\mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  &= O(\epsilon \sigma^2, \sigma^4) \label{Peregrine1}\\
+		\eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] &= 0 \label{Peregrine2}
+	\end{align}
+		
+		Let $(\mathbf{v},\xi) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega)$, then multiplying \eqref{Peregrine1} by $v$ and \eqref{Peregrine2} by $\xi$ and integrating over the domain $\Omega$, we obtain:   
+		\begin{equation}
 			\begin{split}
-0 = &\int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} + \int_{\Omega} \! \nabla \eta \cdot \mathbf{v} \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla (\nabla \cdot (h \mathbf{u}_t)) \cdot \mathbf{v} \: \mathrm{dx} \\
-&+ \sigma^2 \! \int_{\Omega} \! \frac{h^2}{6} \nabla (\nabla \cdot \mathbf{u}_t) \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla \zeta_{tt} \cdot \mathbf{v} \: \mathrm{dx}
- \\
-\displaystyle 0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx}
-+\int_{\Omega}\! \nabla \cdot [(h+\epsilon\eta) \mathbf{u}] \; \xi \: \mathrm{dx}
+				\int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} + \int_{\Omega} \! \nabla \eta \cdot \mathbf{v} \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla (\nabla \cdot (h \mathbf{u}_t)) \cdot \mathbf{v} \: \mathrm{dx} \\
+				+ \sigma^2 \! \int_{\Omega} \! \frac{h^2}{6} \nabla (\nabla \cdot \mathbf{u}_t) \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla \zeta_{tt} \cdot \mathbf{v} \: \mathrm{dx} = 0\\
+				\int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \nabla \cdot [(h+\epsilon\eta) \mathbf{u}] \; \xi \: \mathrm{dx} = 0
 			\end{split}
-\end{equation}
-Integrating by part and using the fact that $\mathbf{v}$ and $\mathbf{u}$ vanish on the boundaries, we get: 
-
-\begin{equation}
+		\end{equation}
+		Using divergence theorem and the fact that $\mathbf{v}$ and $\mathbf{u}$ vanish on the boundaries, we get: 
+		\begin{equation}
 			\begin{split}
-0 &= \int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \mathbf{u}_t)) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} \\
-&\quad - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \mathbf{u}_t) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  \zeta_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx}
-\\
-\displaystyle 0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx}
--\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
+				0 &= \int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \mathbf{u}_t)) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} \\
+				&\quad - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \mathbf{u}_t) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  \zeta_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx}\\
+				0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx} -\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
 			\end{split} 
-\end{equation}
-
-Using $\displaystyle \frac{\partial h}{\partial t} = \epsilon \frac{\partial \zeta}{\partial t}$, we finally obtain: 
-\begin{equation}
+		\end{equation}
+		Noticing that $\dfrac{\partial h}{\partial t} = \epsilon \dfrac{\partial 
+		\zeta}{\partial t}$, we finally obtain: 
+		\begin{equation}
 			\begin{split}
-0 = &\int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \mathbf{u}_t)) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} \\
-&- \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \mathbf{u}_t) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} + \frac{\sigma^2}{2 \epsilon} \! \int_{\Omega} \!  h_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx} 
-\\
-\displaystyle 0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx}
--\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
+				0 &= \int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h 
+\mathbf{u}_t)) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} \\ 
+				&\quad - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \mathbf{u}_t) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} + \frac{\sigma^2}{2 \epsilon} \! \int_{\Omega} \!  h_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx}\\
+				0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx} -\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
 			\end{split}
-\end{equation}
-
-Let $\mathrm{dt}$ be a small time-step, the second part is to discretize the time dependency, using the following schemas:	
-\begin{equation}
-\left\lbrace
-		\begin{array}{l}
-\displaystyle \forall n > 0, \mathbf{u}_t \simeq \frac{\mathbf{u}^n - \mathbf{u}^{n-1}}{\mathrm{dt}}  \\
-\displaystyle \forall n > 0, \eta_t \simeq \frac{\eta^n - \eta^{n-1}}{\mathrm{dt}}  
-		\end{array}
-	\right.
-\end{equation}
-
-For each time-step, knowing $\mathbf{u}^{n-1}$ and $\eta^{n-1}$, our weak formulation is therefore: Find $(u,\eta) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega), \forall (v,\xi) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega)$: 
-\begin{equation}
+		\end{equation}
+		
+	\section{Discretization and FEM}	
+		Let $\mathrm{dt}$ be a small time-step, the second part is to discretize the time 
+		dependency, using the following schemas:	
+		\begin{equation}
+			\left\lbrace
+				\begin{array}{l}
+					\displaystyle \forall n > 0, \mathbf{u}_t \simeq
+					\frac{\mathbf{u}^n-\mathbf{u}^{n-1}}{\mathrm{dt}}  \\
+					\displaystyle \forall n > 0, \eta_t \simeq \frac{\eta^n - \eta^{n-1}}
+					{\mathrm{dt}}  
+				\end{array}
+			\right.
+		\end{equation}
+		For each time-step, knowing $\mathbf{u}^{n-1}$ and $\eta^{n-1}$, our weak 
+		formulation is therefore: Find $(u,\eta) \in \mathbb{H}^1_0(\Omega)^2 \times 
+		\mathbb{H}^1(\Omega), \forall (v,\xi) \in \mathbb{H}^1_0(\Omega)^2 \times 
+		\mathbb{H}^1(\Omega)$: 
+		\begin{equation}
 			\begin{split}
 				0 &= \int_{\Omega} \! \frac{\mathbf{u} 
 					- \mathbf{u}^{n-1}}{\mathrm{dt}} \cdot
 					\mathbf{v} \: \mathrm{dx} 
-					- \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2 \epsilon} \! \int_{\Omega} \!  h_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx} \\ 
-&\quad + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}})) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla \cdot \frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}}) \; (\nabla  \cdot (h^2  \mathbf{v})) \: \mathrm{dx} \\
-\displaystyle 0 &= \int_{\Omega}\! \frac{\eta - \eta^{n-1}}{\mathrm{dt}} \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx}
--\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
-			\end{split}
-\end{equation}
-The non-linear terms are computed by FEniCS, using a Newton Method.
-
-
-\pagebreak
-\section*{Annexes}
-\addcontentsline{toc}{section}{Annexe}
-\pagebreak
-
-\bibliographystyle{apalike} 
-\bibliography{Biblio}
-
-\appendix
-
-
-
+					- \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} +
+					\epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot 
+					\mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2 \epsilon} \! \int_{\Omega} \!  
+					h_{tt}  \; (\nabla \cdot( h \mathbf{v})) \: \mathrm{dx} \\ 
+					&\quad + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h 
+					\frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}})) \; (\nabla \cdot (h 
+					\mathbf{v}) )\: \mathrm{dx} - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla 
+					\cdot \frac{\mathbf{u} - \mathbf{u}^{n-1}}{\mathrm{dt}}) \; (\nabla  \cdot 
+					(h^2  \mathbf{v})) \: \mathrm{dx} \\
+					\displaystyle 0 &= \int_{\Omega}\! \frac{\eta - \eta^{n-1}}{\mathrm{dt}} \; 
+					\xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: 
+					\mathrm{dx}
+					-\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: 
+					\mathrm{dx}
+				\end{split}
+			\end{equation}
+			The non-linear terms are computed by FEniCS, using a Newton Method.
+			
+			\pagebreak
+			
+	\section*{Annexes}
+		\addcontentsline{toc}{section}{Annexe}
+		
+		\pagebreak
+		
+		\bibliographystyle{apalike} 
+		\bibliography{Biblio}
+		
+		\appendix
 
 \end{document}
 
