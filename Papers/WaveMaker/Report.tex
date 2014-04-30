@@ -47,8 +47,10 @@
 				p & = p_a \: \: \:  \: \: \: \mathrm{for} \: z=\eta \\ 
 				-\frac{\mathrm{d}}{\mathrm{d}t} h(x,y,t) & = w(x,y,h)
 			\end{align}
-			
-			... We finally obtain the following system: 
+			...\\
+			...\\
+			...\\
+			 We finally obtain the following system: 
 			\begin{align}
 				\mathbf{u}_t + \nabla\eta + \epsilon (\mathbf{u} \cdot \nabla) \mathbf{u} &= 0 \label{SWE1}\\
 				\eta_t + \zeta_t + \nabla \cdot [(h+\epsilon \eta) \mathbf{u}] &= 0 \label{SWE2}
@@ -195,7 +197,66 @@
 			\pagebreak
 			
 	\section{Equations in the moving object's referential}
+	The aim of this section is to derive the systems introduced in the previous section into the referential of the moving object, assuming that it moves at constant velocity $\tilde{\mathbf{U}}_o = (\tilde{U}_{ox},\tilde{U}_{oy})$. The physical change of	variable would therefore be:
+	\begin{equation*}
+		\tilde{X} = \tilde{x} - \tilde{U}_{ox} \tilde t, \:
+		\tilde{Y} = \tilde{y} - \tilde{U}_{oy} \tilde{t}, \:
+		\tilde{Z} = \tilde{z}, \:
+		\tilde{T} = \tilde{t}	
+	\end{equation*}
+	Scaling the variables as described in the previous section and using the dimensionless variables:
+	\begin{equation*}
+		X = \frac{\tilde{X}}{\lambda_0}, \;
+		Y = \frac{\tilde{Y}}{\lambda_0}, \;
+		Z = \frac{\tilde{Z}}{h_0}, \;
+		\mathbf{U}_o = \frac{h_0}{a_0 c_0} \tilde{\mathbf{U}_o}
+	\end{equation*}
+	the change of variables for our dimensionless systems is therefore: 
+	\begin{equation*}
+		X = x - \epsilon U_{ox} t, \:
+		Y = y - \epsilon U_{oy} t, \:
+		Z = z, \:
+		T = t	
+	\end{equation*}
+	
+	Let $F(x,y,z,t)$ be a differentiable function. The total differentiable is: 
+	\begin{align*}
+		\mathrm{d}F &= \frac{\partial F}{\partial x} \mathrm{d}x + \frac{\partial F}{\partial y} \mathrm{d}y + \frac{\partial F}{\partial z} \mathrm{d}z + \frac{\partial F}{\partial t} \mathrm{d}t \\
+		&= \frac{\partial F}{\partial X} \mathrm{d}X + \frac{\partial F}{\partial Y} \mathrm{d}Y + \frac{\partial F}{\partial Z} \mathrm{d}Z + \frac{\partial F}{\partial T} \mathrm{d}T	\\
+		&= \frac{\partial F}{\partial X} (\mathrm{d}x - \epsilon U_{ox} \mathrm{d}t) + \frac{\partial F}{\partial Y} \mathrm{d}(y - \epsilon U_{oy} \mathrm{d}t) + \frac{\partial F}{\partial Z} \mathrm{d}z + \frac{\partial F}{\partial T} \mathrm{d}t\\
+		&= \frac{\partial F}{\partial X} \mathrm{d}x + \frac{\partial F}{\partial Y} \mathrm{d}y + \frac{\partial F}{\partial Z} \mathrm{d}z + (\frac{\partial F}{\partial T} -\epsilon U_{yx}\frac{\partial F}{\partial X} - U_{oy}\frac{\partial F}{\partial Y})\mathrm{d}t
+	\end{align*}
+	We therefore get:
+	\begin{equation}
+		\partial_x = \partial_X, \;
+		\partial_y = \partial_Y, \;
+		\partial_z = \partial_Z, \;
+		\partial_t = \partial_T - \epsilon \mathbf{U}_o \cdot \nabla \label{ChangeOfReferential}
+	\end{equation}
+	
 		\subsection{Shallow water equations}
+		Assumption: 
+		\begin{itemize}
+			\item Constant object's velocity $\mathbf{U}_o$
+			\item $D_T = 0$ (the seabed does not change in the object's motion direction)
+		\end{itemize}
+		Starting from the equations \eqref{SWE1} and \eqref{SWE2} and using \eqref{ChangeOfReferential} and the fact that $h_t = \epsilon \zeta_t$, we obtain:
+		\begin{align}
+			\eta_T + \nabla \cdot [(\epsilon \eta + h)(\mathbf{u} - \mathbf{U}_o)] &= 0 \\
+			\mathbf{u}_T + \nabla \eta		+ \epsilon ((\mathbf{u} - \mathbf{U}_o)\cdot \nabla) \mathbf{u} &= 0
+		\end{align}
+		With $\mathbf{u_\Delta} = \mathbf{u} - \mathbf{U}_o$, the system becomes:
+		\begin{align}
+			\eta_T + \nabla \cdot [(\epsilon \eta + h)\mathbf{u_\Delta}] &= 0 \\
+			(\mathbf{u_\Delta})_T + \nabla \eta		+ \epsilon (\mathbf{u_\Delta}\cdot \nabla) \mathbf{u_\Delta} &= 0
+		\end{align}
+		
+		
+		\pagebreak
+		
+		\subsection{Peregrine system}
+		
+		
 		\pagebreak
 		
 	\section{Weak Formulation of the Peregrine system}
@@ -231,6 +292,8 @@
 				0 &= \int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx} -\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
 			\end{split}
 		\end{equation}
+		
+		\pagebreak
 		
 	\section{Discretization and FEM}	
 		Let $\mathrm{dt}$ be a small time-step, the second part is to discretize the time 
