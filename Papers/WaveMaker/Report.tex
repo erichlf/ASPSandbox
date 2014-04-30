@@ -255,7 +255,17 @@
 		\pagebreak
 		
 		\subsection{Peregrine system}
-		
+			Starting from the equations \eqref{SWE1} and \eqref{SWE2} and using \eqref{ChangeOfReferential} and the fact that $h_t = \epsilon \zeta_t$, we obtain:
+			\begin{align}
+				\mathbf{u}_T + \nabla \eta		+ \epsilon ((\mathbf{u} - \mathbf{U}_o)\cdot \nabla) \mathbf{u}  - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_T)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_T) &= O(\epsilon \sigma^2, \sigma^4)\\
+				\eta_T + \nabla \cdot [(\epsilon \eta + h)(\mathbf{u} - \mathbf{U}_o)] &= 0
+	\end{align}
+	
+		With $\mathbf{u_\Delta} = \mathbf{u} - \mathbf{U}_o$, the system becomes:
+		\begin{align}
+			(\mathbf{u_\Delta})_T + \nabla \eta		+ \epsilon (\mathbf{u_\Delta}\cdot \nabla) \mathbf{u_\Delta} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u_\Delta}_T)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u_\Delta}_T) &= O(\epsilon \sigma^2, \sigma^4)\\
+			\eta_T + \nabla \cdot [(\epsilon \eta + h)\mathbf{u_\Delta}] &= 0
+		\end{align}
 		
 		\pagebreak
 		
