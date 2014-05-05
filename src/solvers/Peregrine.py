@@ -48,7 +48,7 @@ class Solver(SolverBase):
 
         #Definition of the wave_object
         xfinal = 30. #Final Position of the moving object [m]
-        vmax = (hd*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
+        vmax = ((hd*h0+2*ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
         #traj = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
         #traj = 'xfinal/2.*(tanh((lambda0/c0*t-2.)*2*vmax/xfinal)+1.-tanh(4.*2.*3./30.))'
         seabed = 'hd - 0.5/8.*(x[1]>2./lambda0 ? 1. : 0.)*(lambda0*x[1]-2.) + 0.5/8.*(x[1]<(-2./lambda0) ? 1. : 0.)*(lambda0*x[1]+2.)'

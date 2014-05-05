@@ -14,10 +14,10 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
-x0 = -4
-x1 = 30
-y0 = -15
-y1 = 15
+x0 = -4.
+x1 = 30.
+y0 = -15.
+y1 = 15.
 
 # No-slip boundary
 
@@ -44,7 +44,19 @@ class Problem(ProblemBase):
         x1 = x1/lambda0
         y0 = y0/lambda0
         y1 = y1/lambda0
-        self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny, 'crossed')
+        mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny, 'crossed')
+        
+        #Refine the mesh along the object's trajectory
+        cell_markers = CellFunction("bool", mesh)
+        cell_markers.set_all(False)
+
+        for cell in cells(mesh):
+            p = cell.midpoint()
+            if p.y() > -2.5 and p.y() < 2.5:
+                cell_markers[cell] = True
+            
+        self.mesh = refine(mesh, cell_markers)
+        
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))
