@@ -15,7 +15,7 @@ from problembase import *
 from numpy import array
 
 x0 = -4.
-x1 = 30.
+x1 = 40.
 y0 = -15.
 y1 = 15.
 
@@ -44,7 +44,7 @@ class Problem(ProblemBase):
         x1 = x1/lambda0
         y0 = y0/lambda0
         y1 = y1/lambda0
-        mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny, 'crossed')
+        mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
         
         #Refine the mesh along the object's trajectory
         cell_markers = CellFunction("bool", mesh)
@@ -52,11 +52,20 @@ class Problem(ProblemBase):
 
         for cell in cells(mesh):
             p = cell.midpoint()
-            if p.y() > -2.5 and p.y() < 2.5:
+            if p.y() > -3.5 and p.y() < 3.5:
                 cell_markers[cell] = True
             
         self.mesh = refine(mesh, cell_markers)
         
+        cell_markers2 = CellFunction("bool", self.mesh)
+        cell_markers2.set_all(False)
+
+        for cell in cells(self.mesh):
+            p = cell.midpoint()
+            if p.y() > -3.5 and p.y() < 3.5:
+                cell_markers2[cell] = True
+            
+        self.mesh = refine(self.mesh, cell_markers2)
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))

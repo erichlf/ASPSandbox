@@ -48,14 +48,14 @@ class Solver(SolverBase):
 
         #Definition of the wave_object
         xfinal = 30. #Final Position of the moving object [m]
-        vmax = ((hd*h0+2*ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
+        vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
         #traj = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
         #traj = 'xfinal/2.*(tanh((lambda0/c0*t-2.)*2*vmax/xfinal)+1.-tanh(4.*2.*3./30.))'
-        seabed = 'hd - 0.5/8.*(x[1]>2./lambda0 ? 1. : 0.)*(lambda0*x[1]-2.) + 0.5/8.*(x[1]<(-2./lambda0) ? 1. : 0.)*(lambda0*x[1]+2.)'
+        seabed = 'hd - 0.5/7.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.) + 0.5/7.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
         traj = 'vmax*lambda0/c0*t*exp(-0.001/pow(lambda0/c0*t,2))'
-        movigObject = ' - (x[1]>0 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. - tanh(lambda0*x[1]-2.))*(tanh(10*(1. - lambda0*x[0] + ' + traj + ')) + tanh(lambda0*x[0] - ' + traj + ' + 1)) ' \
-                  + ' - (x[1]<=0 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. + tanh(lambda0*x[1]+2.))*(tanh(10*(1. - lambda0*x[0] + ' + traj + ')) + tanh(lambda0*x[0] - ' + traj + ' + 1)) ' 
-        zeta0 = seabed + movigObject
+        movingObject = ' - (x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. - tanh(0.5*lambda0*x[1]-2.))*(tanh(2*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/2)) + tanh((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/2 + 1)) ' \
+                  + ' - (x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. + tanh(0.5*lambda0*x[1]+2.))*(tanh(2*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/2)) + tanh((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/2 + 1)) ' 
+        zeta0 = seabed + movingObject
         #zeta0 = D + ' - epsilon*ad*exp(-pow((lambda0*x[0] -' + traj + ')/bh,2))*exp(-pow((lambda0*x[1]+2)/2,2))'
 
         #Solitary wave
