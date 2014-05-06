@@ -47,7 +47,6 @@ class Solver(SolverBase):
         ad = ad/a0 #height of the moving object
 
         #Definition of the wave_object
-        xfinal = 30. #Final Position of the moving object [m]
         vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
         #traj = '(c0*vfinal*(log(tanh((3*lambda0*t)/c0 - 6) + 1) - log(tanh((3*lambda0*t)/c0 - 12) + 1) - log(tanh((3*lambda0*t0)/c0 - 6) + 1) + log(tanh((3*lambda0*t0)/c0 - 12) + 1)))/(6*lambda0)'
         #traj = 'xfinal/2.*(tanh((lambda0/c0*t-2.)*2*vmax/xfinal)+1.-tanh(4.*2.*3./30.))'
@@ -61,9 +60,9 @@ class Solver(SolverBase):
         #Solitary wave
         #zeta0 = 'hd - epsilon*0.5*pow(1./cosh(pow(3./8.,0.5)*(lambda0*x[0]-lambda0*t)),2)'
         
-        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, xfinal=xfinal, element=self.Q.ufl_element())
+        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
 
         self.z = interpolate(self.zeta, self.Q)
         self.zz_ = interpolate(self.zeta, self.Q)

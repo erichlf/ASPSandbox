@@ -62,10 +62,20 @@ class Problem(ProblemBase):
 
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3.5 and p.y() < 3.5:
+            if p.y() > -3. and p.y() < 3.:
                 cell_markers2[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers2)
+        
+        cell_markers3 = CellFunction("bool", self.mesh)
+        cell_markers3.set_all(False)
+        
+        for cell in cells(self.mesh):
+            p = cell.midpoint()
+            if p.y() > -2.5 and p.y() < 2.5:
+                cell_markers3[cell] = True
+            
+        self.mesh = refine(self.mesh, cell_markers3)
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))
