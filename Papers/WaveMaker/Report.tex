@@ -55,22 +55,16 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			\pagebreak
 			
 		\subsection{Peregrine System}
-			(Cf. \cite{DM2013}).\\ We consider $(\tilde{x},\tilde{y},\tilde{z})$ a Cartesian 
-			coordinate system, with $\tilde{z}$ measuring upwards from the still water 
-			level. We call $\tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$ the height of the 
-			free surface at a time $\tilde{t}$, and $\tilde{h}(\tilde{x},\tilde{y},
-			\tilde{t}) = \tilde{D}(\tilde{x},\tilde{y}) + \tilde{\zeta}(\tilde{x},\tilde{y},
-			\tilde{t})$ the seabed profile, which is assumed to be the sum of a time-
-			independent part $\tilde{D}$ - the seabed -, and a time-dependant part 
-			$\tilde{\zeta}$ - the underwater moving object.
-			Assumptions:
-			\begin{itemize}
-				\item Fluid inviscid and incompressible
-				\item Flow irrotational
-			\end{itemize}
-			Denoting $\mathbf{\hat{u}} = (\tilde{u},\tilde{v}, \tilde{w})$ the fluid 
-			velocity, $\hat{P}$ the pressure field, $\rho$ the density and $\mathbf{g} = 
-			(0,0,g)$ the gravity, the Euler equations are written: 
+			(Cf. \cite{DM2013}).\\ 
+			As illustrated in Figure \ref{Coordinates}, we consider $(\tilde{x},\tilde{y},\tilde{z})$ a Cartesian coordinate system, with $\tilde{z}$ measuring upwards from the still water level. We call $\tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$ the height of the free surface at a time $\tilde{t}$, and $\tilde{h}(\tilde{x},\tilde{y},\tilde{t}) = \tilde{D}(\tilde{x},\tilde{y}) + \tilde{\zeta}(\tilde{x},\tilde{y}, \tilde{t})$ the seabed profile, which is assumed to be the sum of a time-independent part $\tilde{D}$ - the seabed -, and a time-dependant part $\tilde{\zeta}$ - the underwater moving object.
+			\begin{figure}[h]
+				\centering
+				\includegraphics[height=6cm]{CartesianCoordinates.png}
+				\caption{Reference}
+				\label{Coordinates}
+			\end{figure}
+			
+			Denoting $\mathbf{\hat{u}} = (\tilde{u},\tilde{v}, \tilde{w})$ the fluid velocity, $\hat{P}$ the pressure field, $\rho$ the density and $\mathbf{g} = (0,0,g)$ the gravity, the Euler equations are written: 
 			\begin{align}
 						\displaystyle \mathbf{\hat{u}}_{\tilde{t}} + (\mathbf{\hat{u}} \cdot \tilde{\nabla}) \mathbf{\hat{u}} + \frac{1}{\rho} \tilde{\nabla}\tilde{P} &=  -\mathbf{g} \label{Euler1} \\
 						\tilde{\nabla} \cdot \mathbf{\hat{u}} & = 0 \\
@@ -110,8 +104,7 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			\end{align}
 			and the dimensionless form of the boundary conditions \eqref{BC1} - \eqref{BC2} are: 
 			\begin{align}
-				\eta_t + \epsilon (\mathbf{u} \cdot \nabla \eta ) & = w & \mathrm{on} \: z =
-				\epsilon \eta \label{BCH}\\
+				\eta_t + \epsilon (\mathbf{u} \cdot \nabla \eta ) & = w & \mathrm{on} \: z =\epsilon \eta \label{BCH}\\
 				- \zeta_t - \mathbf{u} \cdot \nabla h & = w & \mathrm{on} \:  z = -h
 				\label{BCB}
 			\end{align}
@@ -214,15 +207,7 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 		Z = z, \:
 		T = t	
 	\end{equation*}
-	
-	Let $F(x,y,z,t)$ be a differentiable function. The total differential is: 
-	\begin{align*}
-		\mathrm{d}F &= \frac{\partial F}{\partial x} \mathrm{d}x + \frac{\partial F}{\partial y} \mathrm{d}y + \frac{\partial F}{\partial z} \mathrm{d}z + \frac{\partial F}{\partial t} \mathrm{d}t \\
-		&= \frac{\partial F}{\partial X} \mathrm{d}X + \frac{\partial F}{\partial Y} \mathrm{d}Y + \frac{\partial F}{\partial Z} \mathrm{d}Z + \frac{\partial F}{\partial T} \mathrm{d}T	\\
-		&= \frac{\partial F}{\partial X} (\mathrm{d}x - \epsilon U_{ox} \mathrm{d}t) + \frac{\partial F}{\partial Y} \mathrm{d}(y - \epsilon U_{oy} \mathrm{d}t) + \frac{\partial F}{\partial Z} \mathrm{d}z + \frac{\partial F}{\partial T} \mathrm{d}t\\
-		&= \frac{\partial F}{\partial X} \mathrm{d}x + \frac{\partial F}{\partial Y} \mathrm{d}y + \frac{\partial F}{\partial Z} \mathrm{d}z + (\frac{\partial F}{\partial T} -\epsilon U_{yx}\frac{\partial F}{\partial X} - U_{oy}\frac{\partial F}{\partial Y})\mathrm{d}t
-	\end{align*}
-	We therefore get:
+	And we have:
 	\begin{equation}
 		\partial_x = \partial_X, \;
 		\partial_y = \partial_Y, \;
@@ -343,6 +328,10 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			
 			\pagebreak
 			
+	\section{Optimization}			
+	
+		\pagebreak	
+	
 	\section*{Annexes}
 		\addcontentsline{toc}{section}{Annexe}
 		
