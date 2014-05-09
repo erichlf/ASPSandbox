@@ -22,40 +22,36 @@
 	\pagebreak
 	
 	\section*{Introduction}
-	The aim of this report is to provide a mathematical and computational framework for the problem of wave generation. Our interest is in modelling the generation of wave by an underwater moving object, to develop a computational framework for this problem and then to use it in order to optimize the shape and trajectory of the underwater moving object.
+	The aim of this report is to provide a mathematical and computational framework for the problem of water wave generation. Our interest is in modelling the generation of wave by an underwater moving object, to develop a computational framework for this problem and then to use it in order to optimize the shape and trajectory of the underwater moving object.
 		
 		\pagebreak
 		
 	\section{Physical modelling of waves}
-		The first step is to find an appropriate model to represent our problem. We want to model the creation and propagation of breaking waves to surf, which occurs near the shore where the seabed rises. We will therefore make some assumptions so as to find an accurate model as simple as possible. We only consider Newtonian incompressible fluid.
+		The first step is to find an appropriate model to represent our problem. We aim at modelling the creation and propagation of breaking waves to surf, which occurs near the shore where the seabed rises. We will therefore make some assumptions so as to find an accurate model as simple as possible. We will consider water as an incompressible and inviscid fluid.
 		
 		\subsection{Shallow water equations}
-			The first model we shall consider are the shallow water equations, or Saint 
-			Venant equations), which we will establish using \cite{JMC2013}. Starting from 
-			the Navier-Stokes equations for an incompressible inviscid fluid: 
+			The first model we shall consider are the shallow water equations, or Saint Venant equations). Starting from 
+the Euler equations and the kinematic and dynamic boundary conditions:
 			\begin{align}
-						\displaystyle (\frac{\partial}{\partial t} + \mathbf{u} \cdot \mathbf{\nabla}) \; \mathbf{u} & = \displaystyle -\frac{1}{\rho} + \mathbf{g} \\
-						\mathbf{\nabla} \cdot \mathbf{u} & = 0 
+				\displaystyle (\frac{\partial}{\partial t} + \mathbf{u} \cdot \mathbf{\nabla}) \; \mathbf{u} & = \displaystyle -\frac{1}{\rho}\nabla p + \mathbf{g} \\
+				\mathbf{\nabla} \cdot \mathbf{u} & = 0 
 			\end{align}
-			We will derive the shallow water system in a generic context, with only the following assumptions:
-			\begin{itemize}
-				\item The typical water depth $h_0$ is small compare to the horizontal scale $\lambda_0$, i.e. $\epsilon = \frac{h_0}{\lambda_0} \ll 1 $
-			\end{itemize}
-			The kinematic and dynamic boundary conditions are : 
 			\begin{align}
 				\frac{\mathrm{d}}{\mathrm{d} t} \eta(x,y,t) & = w(x,y \eta) \\
-				p & = p_a \: \: \:  \: \: \: \mathrm{for} \: z=\eta \\ 
+				p  = p_a & = 0 \: \: \:  \: \: \: \mathrm{for} \: z=\eta \\ 
 				-\frac{\mathrm{d}}{\mathrm{d}t} h(x,y,t) & = w(x,y,h)
 			\end{align}
-			...\\
-			...\\
-			...\\
-			 We finally obtain the following system: 
+			the following assumptions:
+			\begin{itemize}
+				\item The typical water depth $h_0$ is small compare to the horizontal scale $\lambda_0$, i.e. $\sigma = \frac{h_0}{\lambda_0} \ll 1 $;
+				\item The horizontal velocity $\mathbf{u}_h = (u,v)$ is independent of z. We have therefore $\mathbf{u}_h =$
+			\end{itemize}			
+			 lead us to the following system, which are the Shallow water equation (or Saint-Venant equations)
 			\begin{align}
 				\mathbf{u}_t + \nabla\eta + \epsilon (\mathbf{u} \cdot \nabla) \mathbf{u} &= 0 \label{SWE1}\\
 				\eta_t + \zeta_t + \nabla \cdot [(h+\epsilon \eta) \mathbf{u}] &= 0 \label{SWE2}
 			\end{align}						
-
+			The detail of the derivation for can be found in \cite{JMC2013}.
 			\pagebreak
 			
 		\subsection{Peregrine System}
@@ -196,7 +192,7 @@
 			
 			\pagebreak
 			
-	\section{Equations in the moving object's referential}
+	\subsection{Equations in the moving object's referential}
 	The aim of this section is to derive the systems introduced in the previous section into the referential of the moving object, assuming that it moves at constant velocity $\tilde{\mathbf{U}}_o = (\tilde{U}_{ox},\tilde{U}_{oy})$. The physical change of	variable would therefore be:
 	\begin{equation*}
 		\tilde{X} = \tilde{x} - \tilde{U}_{ox} \tilde t, \:
@@ -234,7 +230,7 @@
 		\partial_t = \partial_T - \epsilon \mathbf{U}_o \cdot \nabla \label{ChangeOfReferential}
 	\end{equation}
 	
-		\subsection{Shallow water equations}
+		\subsubsection{Shallow water equations}
 		Assumption: 
 		\begin{itemize}
 			\item Constant object's velocity $\mathbf{U}_o$
@@ -254,7 +250,7 @@
 		
 		\pagebreak
 		
-		\subsection{Peregrine system}
+		\subsubsection{Peregrine system}
 			Starting from the equations \eqref{SWE1} and \eqref{SWE2} and using \eqref{ChangeOfReferential} and the fact that $h_t = \epsilon \zeta_t$, we obtain:
 			\begin{align}
 				\mathbf{u}_T + \nabla \eta		+ \epsilon ((\mathbf{u} - \mathbf{U}_o)\cdot \nabla) \mathbf{u}  - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_T)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_T) &= O(\epsilon \sigma^2, \sigma^4)\\
@@ -268,8 +264,8 @@
 		\end{align}
 		
 		\pagebreak
-		
-	\section{Weak Formulation of the Peregrine system}
+	\section{Numerical solver for the Peregrine system}	
+		\subsection{Weak Formulation of the Peregrine system}
 	Denoting $\mathbf{u}$ the depth-average velocity, $h(x,y,t) = D(x,y) + \epsilon \zeta(x,y,t)$ the bottom, where  $D(x,y)$ is the natural profile of the bottom, whereas $\zeta$ characterize the shape of the moving underwater object. We look for the corresponding variational formulation of the following system: 
 	\begin{align}
 		\mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  &= O(\epsilon \sigma^2, \sigma^4) \label{Peregrine1}\\
@@ -305,7 +301,7 @@
 		
 		\pagebreak
 		
-	\section{Discretization and FEM}	
+		\subsection{Discretization and FEM}	
 		Let $\mathrm{dt}$ be a small time-step, the second part is to discretize the time 
 		dependency, using the following schemas:	
 		\begin{equation}

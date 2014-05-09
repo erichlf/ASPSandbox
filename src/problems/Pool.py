@@ -15,7 +15,7 @@ from problembase import *
 from numpy import array
 
 x0 = -4.
-x1 = 40.
+x1 = 80.
 y0 = -15.
 y1 = 15.
 
@@ -72,10 +72,20 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -2.5 and p.y() < 2.5:
+            if p.y() > -3. and p.y() < 3.:
                 cell_markers3[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers3)
+        
+        cell_markers4 = CellFunction("bool", self.mesh)
+        cell_markers4.set_all(False)
+        
+        for cell in cells(self.mesh):
+            p = cell.midpoint()
+            if p.y() > -2.5 and p.y() < 2.5:
+                cell_markers4[cell] = True
+            
+        self.mesh = refine(self.mesh, cell_markers4)
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))
