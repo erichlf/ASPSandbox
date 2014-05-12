@@ -15,7 +15,7 @@ from problembase import *
 from numpy import array
 
 x0 = -4.
-x1 = 80.
+x1 = 40.
 y0 = -15.
 y1 = 15.
 
