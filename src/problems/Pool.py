@@ -21,12 +21,16 @@ y1 = 15.
 
 # No-slip boundary
 
-class NoslipBoundary(SubDomain):
+class Y_SlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and \
-               (x[1] < y0 + DOLFIN_EPS or x[1] > y1 - DOLFIN_EPS or \
-                    x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
-
+               (x[1] < y0 + DOLFIN_EPS or x[1] > y1 - DOLFIN_EPS)
+           
+class X_SlipBoundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and \
+               (x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
+           
 # Problem definition
 class Problem(ProblemBase):
 #   2D channel flow.
@@ -95,8 +99,14 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, V, Q, t):
         # Create no-slip boundary condition for velocity
-        bcs = DirichletBC(V, [0.0, 0.0], NoslipBoundary())
-
+        bc_X = DirichletBC(V.sub(0), 0.0, X_SlipBoundary())
+        
+    def boundary_conditions(self, V, Q, t):
+        # Create no-slip boundary condition for velocity
+        bc_Y = DirichletBC(V.sub(1), 0.0, Y_NoslipBoundary())
+        
+        bcs = [bc_X,bc_Y]
+        
         return bcs
 
     def F1(self, t):
