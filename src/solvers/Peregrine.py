@@ -79,7 +79,7 @@ class Solver(SolverBase):
 
         return r
 
-    def obj(self, t, dt):
+    def wave_object(self, t, dt):
         self.zeta.t = t
         self.zeta_.t = t - dt
         self.zeta__.t = t - 2*dt

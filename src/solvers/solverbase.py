@@ -152,8 +152,8 @@ class SolverBase:
         while t<T:
             t += dt
 
-            if('obj' in dir(self)):
-                self.obj(t, dt)
+            if('wave_object' in dir(self)):
+                self.wave_object(t, dt)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
@@ -251,12 +251,12 @@ class SolverBase:
                             elevate=0.0)
                 else :
                     self.vizP = plot(p, title='Height', rescale=True)
-                if('obj' in dir(self)):
+                if('wave_object' in dir(self)):
                     self.vizZ = plot(interpolate(self.zeta,self.Q), title='Wave Object', rescale=True)
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
-                if('obj' in dir(self)):
+                if('wave_object' in dir(self)):
                     self.vizZ.plot(interpolate(self.zeta,self.Q))
 
         # Check memory usage
