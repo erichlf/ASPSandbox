@@ -13,6 +13,9 @@ from os import getpid
 from commands import getoutput
 import re
 import sys
+#from numpy import *
+from scipy.interpolate import interp1d
+import numpy as np
 
 # Common solver parameters
 maxiter = default_maxiter = 200
@@ -312,6 +315,9 @@ class SolverBase:
     def InitialConditions(self,problem,W):
         #project the given initial condition into W
         U0, p0 = problem.initial_conditions(W.sub(0),W.sub(1))
-        W0 = self.W_project(U0,p0,W)
-
+        U0 = interpolate(U0, W.sub(0))
+        p0 = interpolate(p0, W.sub(1))
+        W0 = U0,p0
+        #W0 = self.W_project(U0,p0,W)
+            
         return W0

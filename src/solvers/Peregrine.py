@@ -26,7 +26,7 @@ class Solver(SolverBase):
         self.y1 = problem.mesh.coordinates()[-1][1]
 
         #Scaling Parameters
-        g = 9.8 #Gravity
+        g = 1. #Gravity
         lambda0 = self.options['lambda0'] #typical wavelength
         a0 = self.options['a0'] #Typical wave height
         h0 = self.options['h0'] #Typical depth
@@ -47,18 +47,13 @@ class Solver(SolverBase):
         ad = ad/a0 #height of the moving object
 
         #Definition of the wave_object
-        vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
-        seabed = 'hd - 0.5/10.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.) + 0.5/10.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
-        #traj = 'vmax*lambda0/c0*t*exp(-0.001/pow(lambda0/c0*t,2))'
-        traj = 'vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))'
-        movingObject = ' - (x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. - tanh(0.5*lambda0*x[1]-2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' \
-                  + ' - (x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. + tanh(0.5*lambda0*x[1]+2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' 
-        zeta0 = seabed + movingObject
+        seabed = 'hd'
+        zeta0 = seabed
         
-        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-
+        self.zeta = Expression(zeta0, hd=hd, t=self.t0)
+        self.zeta_ = Expression(zeta0, hd=hd, t=self.t0)
+        self.zeta__ = Expression(zeta0, hd=hd,t=self.t0)
+        
         self.z = interpolate(self.zeta, self.Q)
         self.zz_ = interpolate(self.zeta, self.Q)
 
