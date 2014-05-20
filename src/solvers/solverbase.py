@@ -257,12 +257,12 @@ class SolverBase:
                 else :
                     self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
                 if('wave_object' in dir(self)):
-                    self.vizZ = plot(interpolate(self.zeta,self.Q), title='Wave Object', rescale=True)
+                    self.vizZ = plot(interpolate(self.h,self.Q), title='Wave Object', rescale=True)
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
                 if('wave_object' in dir(self)):
-                    self.vizZ.plot(interpolate(self.zeta,self.Q))
+                    self.vizZ.plot(interpolate(self.h,self.Q))
 
         # Check memory usage
         if self.options['check_mem_usage']:

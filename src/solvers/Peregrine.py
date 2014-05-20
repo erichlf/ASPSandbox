@@ -71,18 +71,21 @@ class Solver(SolverBase):
         #Definition of the wave_object
         vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
         seabed = 'hd - 0.5/10.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.) + 0.5/10.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
-        #traj = 'vmax*lambda0/c0*t*exp(-0.001/pow(lambda0/c0*t,2))'
         traj = 'vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))'
-        movingObject = ' - (x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. - tanh(0.5*lambda0*x[1]-2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' \
-                  + ' - (x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*epsilon*ad*0.5*0.5*(1. + tanh(0.5*lambda0*x[1]+2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' 
-        zeta0 = seabed + movingObject
+        movingObject = ' - (x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*ad*0.5*0.5*(1. - tanh(0.5*lambda0*x[1]-2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' \
+                  + ' - (x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*ad*0.5*0.5*(1. + tanh(0.5*lambda0*x[1]+2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' 
+        D = seabed
+        zeta0 = movingObject
         
-        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, epsilon=epsilon, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-
-        self.z = interpolate(self.zeta, self.Q)
-        self.zz_ = interpolate(self.zeta, self.Q)
+        D = Expression(seabed, hd=hd, lambda0=lambda0, element=self.Q.ufl_element())
+        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        
+        self.h = Expression(seabed + ' + epsilon*(' + movingObject +')', epsilon=epsilon, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        
+        self.z = interpolate(self.h, self.Q)
+        self.zz_ = interpolate(self.h, self.Q)
 
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
@@ -92,12 +95,12 @@ class Solver(SolverBase):
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U)*U,v)*dx \
             - div(v)*eta*dx
 
-        r += sigma**2*1./dt*div(self.zeta*(U-U_))*div(self.zeta*v/2.)*dx \
-              - sigma**2*1./dt*div(U-U_)*div(self.zeta**2*v/6.)*dx
-        r += sigma**2*zeta_tt/epsilon*div(self.zeta*v/2.)*dx
+        r += sigma**2*1./dt*div((D + epsilon*self.zeta)*(U-U_))*div((D + epsilon*self.zeta)*v/2.)*dx \
+              - sigma**2*1./dt*div(U-U_)*div((D + epsilon*self.zeta)**2*v/6.)*dx
+        r += sigma**2*zeta_tt*div((D + epsilon*self.zeta)*v/2.)*dx
 
-        r += 1./dt*(eta-eta_)*chi*dx + 1./epsilon*zeta_t*chi*dx
-        r -= inner(U,grad(chi))*(epsilon*eta+self.zeta)*dx
+        r += 1./dt*(eta-eta_)*chi*dx + zeta_t*chi*dx
+        r -= inner(U,grad(chi))*(epsilon*eta + D + epsilon*self.zeta)*dx
 
         return r
 
@@ -114,7 +117,8 @@ class Solver(SolverBase):
         self.zeta_.t = t - dt
         self.zeta__.t = t - 2*dt
         self.zz_.assign(self.z)
-        self.z = interpolate(self.zeta, self.Q)
+        self.h.t = t
+        self.z = interpolate(self.h, self.Q)
 
     def __str__(self):
           return 'Peregrine'
