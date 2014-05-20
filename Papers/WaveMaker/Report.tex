@@ -257,7 +257,7 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 		\eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] &= 0 \label{Peregrine2}
 	\end{align}
 		
-		Let $(\mathbf{v},\xi) \in \mathbb{H}^1_0(\Omega)^2 \times \mathbb{H}^1(\Omega)$, then multiplying \eqref{Peregrine1} by $v$ and \eqref{Peregrine2} by $\xi$ and integrating over the domain $\Omega$, we obtain:   
+		Considering the fluid to be in a pool, we impose slip boundary conditions for the velocity on $\delta \Omega$, and introduce the space $\mathbb{V} = \left\lbrace \mathbf{w} \in \mathbb{H}^1(\Omega)^2, \mathbf{w} \cdot \mathbf{n} = 0 \: \mathrm{on} \: \delta \Omega \right\rbrace $, where $\mathbf{n}$ represent the normal to the boundary. Let $(\mathbf{v},\xi) \in \mathbb{V} \times \mathbb{H}^1(\Omega)$, then multiplying \eqref{Peregrine1} by $\mathbf{v}$ and \eqref{Peregrine2} by $\xi$ and integrating over the domain $\Omega$, we obtain:   
 		\begin{equation}
 			\begin{split}
 				\int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} + \int_{\Omega} \! \nabla \eta \cdot \mathbf{v} \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla (\nabla \cdot (h \mathbf{u}_t)) \cdot \mathbf{v} \: \mathrm{dx} \\
@@ -265,7 +265,7 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 				\int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \nabla \cdot [(h+\epsilon\eta) \mathbf{u}] \; \xi \: \mathrm{dx} = 0
 			\end{split}
 		\end{equation}
-		Using divergence theorem and the fact that $\mathbf{v}$ and $\mathbf{u}$ vanish on the boundaries, we get: 
+		Using divergence theorem and the fact that $\mathbf{v} \cdot \mathbf{n}$ and $\mathbf{u} \cdot \mathbf{n}$ vanish on the boundaries, we get: 
 		\begin{equation}
 			\begin{split}
 				0 &= \int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} - \int_{\Omega} \! \eta \; (\nabla \cdot \mathbf{v}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot (h \mathbf{u}_t)) \; (\nabla \cdot (h \mathbf{v}) )\: \mathrm{dx} \\
@@ -300,8 +300,8 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			\right.
 		\end{equation}
 		For each time-step, knowing $\mathbf{u}^{n-1}$ and $\eta^{n-1}$, our weak 
-		formulation is therefore: Find $(u,\eta) \in \mathbb{H}^1_0(\Omega)^2 \times 
-		\mathbb{H}^1(\Omega), \forall (v,\xi) \in \mathbb{H}^1_0(\Omega)^2 \times 
+		formulation is therefore: Find $(\mathbf{u},\eta) \in \mathbb{V} \times 
+		\mathbb{H}^1(\Omega), \forall (\mathbf{v},\xi) \in \mathbb{V} \times 
 		\mathbb{H}^1(\Omega)$: 
 		\begin{equation}
 			\begin{split}
