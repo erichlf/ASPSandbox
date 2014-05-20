@@ -135,7 +135,7 @@ class SolverBase:
           d1, d2 = self.stabilization_parameters(U_,eta_,h)
 
           #add stabilization
-          if 'object' in dir(self):
+          if 'wave_object' in dir(self):
               #R1, R2, z1, z2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
               #Rv1, Rv2, zv1, zv2 = self.strong_residual(U_alpha,v,chi)
               #F += d1*inner(R1 + z1 - F1, Rv1)*dx + d2*(R2 + z2 - F2)*Rv2*dx
@@ -253,10 +253,9 @@ class SolverBase:
                 # Plot velocity and pressure
                 self.vizU = plot(u, title='Velocity', rescale=True)
                 if regex.search(self.prefix(problem)) is None:
-                    self.vizP = plot(p, title='Pressure', rescale=True,
-                            elevate=0.0)
-                else :
                     self.vizP = plot(p, title='Height', rescale=True)
+                else :
+                    self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
                 if('wave_object' in dir(self)):
                     self.vizZ = plot(interpolate(self.zeta,self.Q), title='Wave Object', rescale=True)
             else :
