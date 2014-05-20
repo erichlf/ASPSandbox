@@ -21,12 +21,16 @@ y1 = 15.
 
 # No-slip boundary
 
-class NoslipBoundary(SubDomain):
+class Y_SlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and \
-               (x[1] < y0 + DOLFIN_EPS or x[1] > y1 - DOLFIN_EPS or \
-                    x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
-
+               (x[1] < y0 + DOLFIN_EPS or x[1] > y1 - DOLFIN_EPS)
+           
+class X_SlipBoundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and \
+               (x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
+           
 # Problem definition
 class Problem(ProblemBase):
 #   2D channel flow.
@@ -52,7 +56,7 @@ class Problem(ProblemBase):
 
         for cell in cells(mesh):
             p = cell.midpoint()
-            if p.y() > -3.5 and p.y() < 3.5:
+            if p.y() > -3.5/lambda0 and p.y() < 3.5/lambda0:
                 cell_markers[cell] = True
             
         self.mesh = refine(mesh, cell_markers)
@@ -62,7 +66,7 @@ class Problem(ProblemBase):
 
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3. and p.y() < 3.:
+            if p.y() > -3./lambda0 and p.y() < 3./lambda0:
                 cell_markers2[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers2)
@@ -72,7 +76,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3. and p.y() < 3.:
+            if p.y() > -3./lambda0 and p.y() < 3./lambda0:
                 cell_markers3[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers3)
@@ -82,7 +86,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -2.5 and p.y() < 2.5:
+            if p.y() > -2.5/lambda0 and p.y() < 2.5/lambda0:
                 cell_markers4[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers4)
@@ -95,8 +99,11 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, V, Q, t):
         # Create no-slip boundary condition for velocity
-        bcs = DirichletBC(V, [0.0, 0.0], NoslipBoundary())
-
+        bc_X = DirichletBC(V.sub(0), 0.0, X_SlipBoundary())
+        bc_Y = DirichletBC(V.sub(1), 0.0, Y_SlipBoundary())
+        
+        bcs = [bc_X, bc_Y]
+        
         return bcs
 
     def F1(self, t):
