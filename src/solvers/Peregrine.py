@@ -13,6 +13,28 @@ class Solver(SolverBase):
         #parameters
         self.Re = None
 
+    def strong_residual(self,u,U,eta):
+        #Scaling Parameters
+        g = 9.8 #Gravity
+        lambda0 = self.options['lambda0'] #typical wavelength
+        a0 = self.options['a0'] #Typical wave height
+        h0 = self.options['h0'] #Typical depth
+        sigma = h0/lambda0
+        c0 = (h0*g)**(0.5)
+        epsilon = a0/h0
+
+        zeta_tt = 1./self.dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
+        zeta_t = 1./self.dt*(self.zeta - self.zeta_)
+
+        #strong form for stabilization
+        R1 = epsilon*grad(u)*U + grad(eta)
+        z1 = -sigma**2/2.*epsilon*self.zeta*grad(zeta_tt)
+
+        R2 = div(u)*(epsilon*eta) + inner(u,grad(epsilon*eta)) \
+            + div(U)*epsilon*self.zeta + inner(U,grad(epsilon*self.zeta))
+        z2 = zeta_t
+
+        return R1, R2, z1, z2
 
     def weak_residual(self,U,U_,eta,eta_,v,chi):
         alpha = self.alpha #time stepping method
@@ -78,6 +100,14 @@ class Solver(SolverBase):
         r -= inner(U,grad(chi))*(epsilon*eta+self.zeta)*dx
 
         return r
+
+    def stabilization_parameters(self,U_,eta_,h):
+        k1  = 2.
+        k2  = 2.
+        d1 = k1*(self.dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+        d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
+
+        return d1, d2
 
     def wave_object(self, t, dt):
         self.zeta.t = t
