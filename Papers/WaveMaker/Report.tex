@@ -246,8 +246,8 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 		\begin{align}
 			(\mathbf{u_\Delta})_T + \nabla \eta		+ \epsilon (\mathbf{u_\Delta}\cdot \nabla) \mathbf{u_\Delta} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u_\Delta}_T)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u_\Delta}_T) &= O(\epsilon \sigma^2, \sigma^4)\\
 			\eta_T + \nabla \cdot [(\epsilon \eta + h)\mathbf{u_\Delta}] &= 0
-		\end{align}
-		
+		\end{align}			
+			
 		\pagebreak
 	\section{Numerical solver for the Peregrine system}	
 		\subsection{Weak Formulation of the Peregrine system}
@@ -257,13 +257,14 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 		\eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] &= 0 \label{Peregrine2}
 	\end{align}
 		
-		Considering the fluid to be in a pool, we impose slip boundary conditions for the velocity on $\delta \Omega$, and introduce the space $\mathbb{V} = \left\lbrace \mathbf{w} \in \mathbb{H}^1(\Omega)^2, \mathbf{w} \cdot \mathbf{n} = 0 \: \mathrm{on} \: \delta \Omega \right\rbrace $, where $\mathbf{n}$ represent the normal to the boundary. Let $(\mathbf{v},\xi) \in \mathbb{V} \times \mathbb{H}^1(\Omega)$, then multiplying \eqref{Peregrine1} by $\mathbf{v}$ and \eqref{Peregrine2} by $\xi$ and integrating over the domain $\Omega$, we obtain:   
+		Considering the fluid to be in a pool, we impose slip boundary conditions for the velocity on $\partial \Omega$, and introduce the space $\mathbb{V} = \left\lbrace \mathbf{w} \in \mathbb{H}^1(\Omega)^2, \mathbf{w} \cdot \mathbf{n} = 0 \: \mathrm{on} \: \partial \Omega \right\rbrace $, where $\mathbf{n}$ represent the normal to the boundary. Let $(\mathbf{v},\xi) \in \mathbb{V} \times \mathbb{H}^1(\Omega)$, then multiplying \eqref{Peregrine1} by $\mathbf{v}$ and \eqref{Peregrine2} by $\xi$ and integrating over the domain $\Omega$, we obtain:   
 		\begin{equation}
 			\begin{split}
 				\int_{\Omega} \! \mathbf{u}_t \cdot \mathbf{v} \: \mathrm{dx} + \int_{\Omega} \! \nabla \eta \cdot \mathbf{v} \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u} \cdot \nabla ) \mathbf{u} \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla (\nabla \cdot (h \mathbf{u}_t)) \cdot \mathbf{v} \: \mathrm{dx} \\
 				+ \sigma^2 \! \int_{\Omega} \! \frac{h^2}{6} \nabla (\nabla \cdot \mathbf{u}_t) \cdot \mathbf{v} \: \mathrm{dx} - \sigma^2 \! \int_{\Omega} \! \frac{h}{2} \nabla \zeta_{tt} \cdot \mathbf{v} \: \mathrm{dx} = 0\\
 				\int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \nabla \cdot [(h+\epsilon\eta) \mathbf{u}] \; \xi \: \mathrm{dx} = 0
 			\end{split}
+			\label{PeregrineWeakForm1}
 		\end{equation}
 		Using divergence theorem and the fact that $\mathbf{v} \cdot \mathbf{n}$ and $\mathbf{u} \cdot \mathbf{n}$ vanish on the boundaries, we get: 
 		\begin{equation}
@@ -285,7 +286,16 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 		\end{equation}
 		
 		\pagebreak
-		
+			\subsection{Weak Formulation with inhomogeneous boundary conditions}
+
+				The main inconvenient of the previous model is that, as the object is moving along the mesh, we need to compute the simulation on a really large domain if we want to model the wave for a long time. A solution to that problem is to consider the object as a static object in a stream of velocity $\mathbf{\tilde U} = \tilde{U} \: \mathbf{e_x} $. In that framework, the previous Peregrine system still apply but the weak formulation is slightly different as the boundary conditions have changed.\\
+				
+				With $\mathbf{U} = \frac{h_0}{a_0 c_0} \mathbf{\tilde{U}}$, we introduce  $\mathbb{V}' = \left\lbrace \mathbf{w} \in \mathbb{H}^1(\Omega)^2, \mathbf{w} \cdot \mathbf{n} = 0 \: \mathrm{on} \: \partial \Omega_y, \mathbf{w} = \mathbf{0} \: \mathrm{on} \: \partial \Omega_x\right\rbrace $ and $\mathbb{U}' = \left\lbrace \mathbf{w} \in \mathbb{H}^1(\Omega)^2, \mathbf{w} \cdot \mathbf{n} = 0 \: \mathrm{on} \: \partial \Omega_y, \mathbf{w} = -\mathbf{U} \: \mathrm{on} \: \partial \Omega_x\right\rbrace $. As we still have $\mathbf{v} \cdot \mathbf{n} = 0 \: \forall \: \mathbf{v} \in \mathbb{V}'$, the boundary terms resulting from the divergence theorem apply to the last terms of the first equation of \eqref{PeregrineWeakForm1} are still null, but this is not the case for the second equation where we have: 
+				\begin{equation}
+					\int_{\Omega}\! \nabla \cdot [(h+\epsilon\eta) \mathbf{u}] \; \xi \: \mathrm{dx} = - \int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx} + \int_{\partial \Omega_x} \! \xi (h+\epsilon \eta) \mathbf{u} \cdot \mathbf{n} \; \mathrm{ds}
+				\end{equation}				
+			
+			\pagebreak
 		\subsection{Discretization and FEM}	
 		Let $\mathrm{dt}$ be a small time-step, the second part is to discretize the time 
 		dependency, using the following schemas:	
