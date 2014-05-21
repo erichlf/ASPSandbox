@@ -14,11 +14,10 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
-x0 = -4.
-x1 = 40.
+x0 = -20.
+x1 = 10.
 y0 = -15.
 y1 = 15.
-
 # No-slip boundary
 
 class Y_SlipBoundary(SubDomain):
@@ -30,7 +29,10 @@ class VelocityStream_Boundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and \
                (x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
-               (x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
+
+class Entry_Boundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and (x[0] > x1 - DOLFIN_EPS)
            
 # Problem definition
 class Problem(ProblemBase):
@@ -91,19 +93,29 @@ class Problem(ProblemBase):
                 cell_markers4[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers4)
-
+           
+        g = 9.8 #Gravity
+        lambda0 = self.options['lambda0'] #typical wavelength
+        a0 = self.options['a0'] #Typical wave height
+        h0 = self.options['h0'] #Typical depth
+        c0 = (h0*g)**(0.5)
+        U = (g*(h0+0.4))**0.5
+        self.U = h0/a0*U/c0
+        
+        
     def initial_conditions(self, V, Q):
-        u0 = Expression(("0.0", "0.0"))
+        u0 = Expression(("-U", "0.0"),U=self.U)
         eta0 = Expression("0.0")
 
         return u0, eta0
 
     def boundary_conditions(self, V, Q, t):
         # Create no-slip boundary condition for velocity
-        bc_X = DirichletBC(V.sub(0), 0.0, X_SlipBoundary())
-        bc_Y = DirichletBC(V.sub(1), 0.0, Y_SlipBoundary())
+        bc_X_u = DirichletBC(V, Expression(("-U","0.0"),U=self.U), VelocityStream_Boundary())
+        bc_X_eta = DirichletBC(Q, 0.0, Entry_Boundary())
+        bc_Y_u = DirichletBC(V.sub(1), 0.0, Y_SlipBoundary())
         
-        bcs = [bc_X, bc_Y]
+        bcs = [bc_X_u, bc_Y_u, bc_X_eta]
         
         return bcs
 
@@ -116,4 +128,4 @@ class Problem(ProblemBase):
         return Expression(self.options['F2'],t=t)
 
     def __str__(self):
-        return 'Pool'
+        return 'PoolInMotion'
