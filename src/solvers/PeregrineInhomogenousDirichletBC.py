@@ -23,16 +23,13 @@ class Solver(SolverBase):
         c0 = (h0*g)**(0.5)
         epsilon = a0/h0
 
-        zeta_tt = 1./self.dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
-        zeta_t = 1./self.dt*(self.zeta - self.zeta_)
-
         #strong form for stabilization
         R1 = epsilon*grad(u)*U + grad(eta)
-        z1 = -sigma**2/2.*epsilon*self.zeta*grad(zeta_tt)
+        z1 = 0.
 
         R2 = div(u)*(epsilon*eta) + inner(u,grad(epsilon*eta)) \
             + div(U)*epsilon*self.zeta + inner(U,grad(epsilon*self.zeta))
-        z2 = zeta_t
+        z2 = 0.
 
         return R1, R2, z1, z2
 
