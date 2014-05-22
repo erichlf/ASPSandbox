@@ -15,7 +15,7 @@ import re
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
-
+import scipy
 
 # Common solver parameters
 maxiter = default_maxiter = 200
@@ -218,8 +218,8 @@ class SolverBase:
         
         plt.plot(error_array, 'ro')
         #plt.axis([0,problem.N_iter,0,0.2])
-        plt.show()
-        
+        #plt.show()
+        plt.savefig('error.png')
         return U_, eta_
 
     def prefix(self, problem):
