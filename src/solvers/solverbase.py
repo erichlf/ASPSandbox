@@ -13,6 +13,9 @@ from os import getpid
 from commands import getoutput
 import re
 import sys
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 # Common solver parameters
 maxiter = default_maxiter = 200
@@ -120,20 +123,21 @@ class SolverBase:
         #w_ = self.InitialConditions(problem, W)
         U_, eta_ = w_.split()
         #U, eta = (as_vector((w[0], w[1])), w[2])
-        U, eta = w.split()
+        U, eta = w.split(True)
         U_, eta_ = self.InitialConditions(problem, W)
-        #plot(eta_, interactive=True) #OK
+        
+        
         
         #U_(k+alpha)
         U_alpha = (1.0-self.alpha)*U_ + self.alpha*U
 
         #p_(k+alpha)
         eta_alpha = (1.0-self.alpha)*eta_ + self.alpha*eta
-        #plot(eta_alpha, interactive=True) #OK
 
-        F = self.weak_residual(U, U_, eta, eta_, v, chi)# \
+        F = self.weak_residual(U, U_, eta, eta_, v, chi) \
+            - inner(F1,v)*dx - F2*chi*dx
         F = action(F,w)
-           # - inner(F1,v)*dx - F2*chi*dx
+           
         
         if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
           # Stabilization parameters
@@ -156,10 +160,15 @@ class SolverBase:
     def timeStepper(self, problem, t, T, dt, W, w, w_, U_, eta_, F):
         # Time loop
         self.start_timing()
-        #plot(eta_, title='Test', interactive=True)#OK
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
-
+        
+        #Things added to compute the error
+        eta_0 = Function(self.Q)
+        U_0 = Function(self.V)
+        U_0, eta_0 = self.InitialConditions(problem, self.W)
+        U_0, eta_c_0 = self.InitialConditions(problem, self.W)
+        error_array = []
         
         while t<T:
             t += dt
@@ -179,13 +188,38 @@ class SolverBase:
             #w_.vector()[:] = w.vector()
 
             #U_, eta_ = w_.split()
-            (U, eta) = w.split()
+            (U, eta) = w.split(True)
             U_.assign(U)
             eta_.assign(eta)
 
             # Update
             self.update(problem, t, U_, eta_)
-
+            
+            #COMPUTATION OF THE ERROR
+            #Computing eta_centered, the translated of eta
+            N_traj = np.argmax(eta.vector()) - problem.n_0 #Checking position of eta
+            eta_centered = np.zeros(4096) #Create the array of dimension 4096
+            j=4095
+            while(j>=0):
+                if(j+N_traj <= 4095):
+                    eta_centered[j] = eta.vector()[j+N_traj]
+                j -= 1
+                
+            eta_c = Function(self.Q)
+            eta_c.vector()[:] = eta_centered
+            eta_moved = Expression("eta_c",eta_c=eta_c)
+            eta_moved = interpolate(eta_moved,self.Q)
+            eta_c_0.assign(eta_moved)
+            error = inner(eta_c_0 - eta_0, eta_c_0 - eta_0)*dx 
+            print(assemble(error))
+            E = sqrt(assemble(error))/sqrt(assemble(inner(eta_0,eta_0)*dx))
+            error_array.append(E)
+            #print(error_array)
+        
+        plt.plot(error_array, 'ro')
+        #plt.axis([0,problem.N_iter,0,0.2])
+        plt.show()
+        
         return U_, eta_
 
     def prefix(self, problem):

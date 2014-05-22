@@ -15,7 +15,7 @@ class Solver(SolverBase):
 
     def strong_residual(self,u,U,eta):
         #Scaling Parameters
-        g = 9.8 #Gravity
+        g = 1. #Gravity
         lambda0 = self.options['lambda0'] #typical wavelength
         a0 = self.options['a0'] #Typical wave height
         h0 = self.options['h0'] #Typical depth
@@ -48,7 +48,7 @@ class Solver(SolverBase):
         self.y1 = problem.mesh.coordinates()[-1][1]
 
         #Scaling Parameters
-        g = 9.8 #Gravity
+        g = 1. #Gravity
         lambda0 = self.options['lambda0'] #typical wavelength
         a0 = self.options['a0'] #Typical wave height
         h0 = self.options['h0'] #Typical depth

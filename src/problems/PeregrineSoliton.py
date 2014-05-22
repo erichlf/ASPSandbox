@@ -42,6 +42,7 @@ class X_SlipBoundary(SubDomain):
 class Problem(ProblemBase):
 #   2D channel flow.
 
+
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
@@ -50,13 +51,14 @@ class Problem(ProblemBase):
         # Create mesh
         Nx = 2047
         Ny = 1
-        lambda0 = float(options["lambda0"])
+        lambda0 = 1.
         x0 = x0/lambda0
         x1 = x1/lambda0
         y0 = y0/lambda0
         y1 = y1/lambda0
         mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
         self.mesh = mesh
+        self.N_iter = floor(float(options["T"])/float(options["dt"]))
         
     def initial_conditions(self, V, Q):
 
@@ -82,9 +84,9 @@ class Problem(ProblemBase):
 
         u_initial = Function(Q)
         u_initial.vector()[:]=u00
+        self.n_0 = np.argmax(eta_initial.vector())
         u_0 = Function(V)
         u_0=Expression(("u_initial","0.0"),u_initial=u_initial, element=V.ufl_element())
-
         #u_0 = Expression(("0.0","0.0"))
         #eta_0 = Expression("0.0")
         return u_0, eta_0
