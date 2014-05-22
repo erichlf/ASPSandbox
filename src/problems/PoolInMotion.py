@@ -14,7 +14,7 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
-x0 = -20.
+x0 = -30.
 x1 = 10.
 y0 = -15.
 y1 = 15.
@@ -59,7 +59,7 @@ class Problem(ProblemBase):
 
         for cell in cells(mesh):
             p = cell.midpoint()
-            if p.y() > -3.5/lambda0 and p.y() < 3.5/lambda0:
+            if p.y() > -3.5/lambda0 and p.y() < 3.5/lambda0: 
                 cell_markers[cell] = True
             
         self.mesh = refine(mesh, cell_markers)
@@ -69,7 +69,7 @@ class Problem(ProblemBase):
 
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 3./lambda0:
+            if p.y() > -3./lambda0 and p.y() < 3./lambda0 and p.x() > -12./lambda0:
                 cell_markers2[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers2)
@@ -79,7 +79,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 3./lambda0:
+            if p.y() > -3./lambda0 and p.y() < 3./lambda0 and p.x() > -10./lambda0 and p.x() < 6./lambda0:
                 cell_markers3[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers3)
@@ -89,7 +89,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -2.5/lambda0 and p.y() < 2.5/lambda0:
+            if p.y() > -2.5/lambda0 and p.y() < 2.5/lambda0 and p.x() > -8./lambda0 and p.x() < 4./lambda0:
                 cell_markers4[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers4)

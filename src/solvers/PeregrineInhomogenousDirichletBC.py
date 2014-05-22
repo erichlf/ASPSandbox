@@ -75,7 +75,7 @@ class Solver(SolverBase):
         D = Expression(seabed, hd=hd, lambda0=lambda0, element=self.Q.ufl_element())
         self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())       
         self.h = Expression(seabed + ' + epsilon*(' + movingObject +')', epsilon=epsilon, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-
+        self.zz_ = interpolate(self.h, self.Q)
         #weak form of the equations
         
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U)*U,v)*dx \
