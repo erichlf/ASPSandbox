@@ -59,8 +59,7 @@ class Problem(ProblemBase):
         self.mesh = mesh
         
     def initial_conditions(self, V, Q):
-        #W = MixedFunctionSpace([V,Q])
-        #w_initial = Function(W)
+
         eta0 = genfromtxt('eta.txt')[np.newaxis] #Get an array of array with the height solution from the Matlab code
         eta0 = eta0[0] #Get the array with the height solution from the Matlab code
         eta00 = np.zeros(4096) #Create a new array twice as long as eta0
@@ -85,7 +84,9 @@ class Problem(ProblemBase):
         u_initial.vector()[:]=u00
         u_0 = Function(V)
         u_0=Expression(("u_initial","0.0"),u_initial=u_initial, element=V.ufl_element())
-        
+
+        #u_0 = Expression(("0.0","0.0"))
+        #eta_0 = Expression("0.0")
         return u_0, eta_0
 
     def boundary_conditions(self, V, Q, t):

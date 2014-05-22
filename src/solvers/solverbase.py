@@ -101,8 +101,8 @@ class SolverBase:
         V = self.V
         self.Q = FunctionSpace(mesh, 'CG', self.Pp)
         Q = self.Q
-        W = MixedFunctionSpace([V, Q])
-
+        self.W = MixedFunctionSpace([V, Q])
+        W = self.W
         # Get boundary conditions
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
@@ -118,19 +118,23 @@ class SolverBase:
 
         #initial condition
         #w_ = self.InitialConditions(problem, W)
-
-        U, eta = (as_vector((w[0], w[1])), w[2])
+        U_, eta_ = w_.split()
+        #U, eta = (as_vector((w[0], w[1])), w[2])
+        U, eta = w.split()
         U_, eta_ = self.InitialConditions(problem, W)
-
+        #plot(eta_, interactive=True) #OK
+        
         #U_(k+alpha)
         U_alpha = (1.0-self.alpha)*U_ + self.alpha*U
 
         #p_(k+alpha)
         eta_alpha = (1.0-self.alpha)*eta_ + self.alpha*eta
+        #plot(eta_alpha, interactive=True) #OK
 
-        F = self.weak_residual(U, U_, eta, eta_, v, chi) \
-            - inner(F1,v)*dx - F2*chi*dx
-
+        F = self.weak_residual(U, U_, eta, eta_, v, chi)# \
+        F = action(F,w)
+           # - inner(F1,v)*dx - F2*chi*dx
+        
         if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
           # Stabilization parameters
           d1, d2 = self.stabilization_parameters(U_,eta_,h)
@@ -152,10 +156,11 @@ class SolverBase:
     def timeStepper(self, problem, t, T, dt, W, w, w_, U_, eta_, F):
         # Time loop
         self.start_timing()
-
+        #plot(eta_, title='Test', interactive=True)#OK
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
 
+        
         while t<T:
             t += dt
 
@@ -164,16 +169,19 @@ class SolverBase:
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
-
+            
             solve(F==0, w, bcs=bcs)
 
             #update forcing and mass source/sink
             F1 = self.V_project(self.problem.F1(t),W)
             F2 = self.Q_project(self.problem.F2(t),W)
 
-            w_.vector()[:] = w.vector()
+            #w_.vector()[:] = w.vector()
 
-            U_, eta_ = w_.split()
+            #U_, eta_ = w_.split()
+            (U, eta) = w.split()
+            U_.assign(U)
+            eta_.assign(eta)
 
             # Update
             self.update(problem, t, U_, eta_)
@@ -319,8 +327,8 @@ class SolverBase:
         #project the given initial condition into W
         U0, p0 = problem.initial_conditions(self.V,self.Q)
         W0 = Function(W)
-        U_0, p_0 = W.split() 
+        U_0, p_0 = W0.split() 
         U_0 = interpolate(U0, self.V)
         p_0 = interpolate(p0,self.Q)
-        
+
         return U_0, p_0
