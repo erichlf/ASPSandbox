@@ -13,9 +13,6 @@ from os import getpid
 from commands import getoutput
 import re
 import sys
-#from numpy import *
-from scipy.interpolate import interp1d
-import numpy as np
 
 # Common solver parameters
 maxiter = default_maxiter = 200
@@ -138,9 +135,15 @@ class SolverBase:
           d1, d2 = self.stabilization_parameters(U_,eta_,h)
 
           #add stabilization
-          R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
-          Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
-          F += d1*inner(R1 - F1, Rv1)*dx + d2*(R2 - F2)*Rv2*dx
+          if 'wave_object' in dir(self):
+              #R1, R2, z1, z2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
+              #Rv1, Rv2, zv1, zv2 = self.strong_residual(U_alpha,v,chi)
+              #F += d1*inner(R1 + z1 - F1, Rv1)*dx + d2*(R2 + z2 - F2)*Rv2*dx
+              F += h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta),grad(chi)))*dx
+          else:
+              R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
+              Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
+              F += d1*inner(R1 - F1, Rv1)*dx + d2*(R2 - F2)*Rv2*dx
 
         U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, F)
         return U_, eta_
@@ -250,17 +253,16 @@ class SolverBase:
                 # Plot velocity and pressure
                 self.vizU = plot(u, title='Velocity', rescale=True)
                 if regex.search(self.prefix(problem)) is None:
-                    self.vizP = plot(p, title='Pressure', rescale=True,
-                            elevate=0.0)
-                else :
                     self.vizP = plot(p, title='Height', rescale=True)
+                else :
+                    self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
                 if('wave_object' in dir(self)):
-                    self.vizZ = plot(interpolate(self.zeta,self.Q), title='Wave Object', rescale=True)
+                    self.vizZ = plot(interpolate(self.h,self.Q), title='Wave Object', rescale=True)
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
                 if('wave_object' in dir(self)):
-                    self.vizZ.plot(interpolate(self.zeta,self.Q))
+                    self.vizZ.plot(interpolate(self.h,self.Q))
 
         # Check memory usage
         if self.options['check_mem_usage']:
@@ -315,9 +317,6 @@ class SolverBase:
     def InitialConditions(self,problem,W):
         #project the given initial condition into W
         U0, p0 = problem.initial_conditions(W.sub(0),W.sub(1))
-        U0 = interpolate(U0, W.sub(0))
-        p0 = interpolate(p0, W.sub(1))
-        W0 = U0,p0
-        #W0 = self.W_project(U0,p0,W)
-            
+        W0 = self.W_project(U0,p0,W)
+
         return W0

@@ -59,22 +59,23 @@ class Problem(ProblemBase):
         self.mesh = mesh
     def initial_conditions(self, V, Q):
        
-        eta0 = genfromtxt('eta.txt')[np.newaxis] #Get an array with the height solution from the Matlab code
-        eta0 = eta0[0]
+        eta0 = genfromtxt('eta.txt')[np.newaxis] #Get an array of array with the height solution from the Matlab code
+        eta0 = eta0[0] #Get the array with the height solution from the Matlab code
         eta00 = np.zeros(4096) #Create a new array twice as long as eta0
 
         u0 = genfromtxt('u.txt')[np.newaxis]#Get an array with the x-velocity solution from the Matlab code
-        u0 = u0[0]
-        u00 = np.zeros(4096)
-
+        u0 = u0[0]  #Get the array with the x-velocity solution from the Matlab code
+        u00 = np.zeros(4096) #Create a new array twice as long as u0
+        
+        #Fill the longer arrays to get the right values on the 2D-mesh coordinates
         i = 0
         while(i<=4094):
             i += 1
             eta00[i] = eta0[floor(i/2.)]
             u00[i] = u0[floor(i/2.)]
 
-        eta_initial = Function(Q)
-        eta_initial.vector()[:] = eta00
+        eta_initial = Function(Q) #Create an empty function defined on the Q Space
+        eta_initial.vector()[:] = eta00 #Fill the function's nodes with the values of the Matlab solution
         eta_0 = Expression("eta_initial",eta_initial=eta_initial)
 
         u_initial = Function(Q)
@@ -82,9 +83,6 @@ class Problem(ProblemBase):
         u_0=Function(V)
         u_0=Expression(("u_initial","0.0"),u_initial=u_initial)
         
-        #u0 = Expression(("0.0", "0.0"))
-        #eta0 = Expression("0.0")
-
         return u_0, eta_0
 
     def boundary_conditions(self, V, Q, t):
