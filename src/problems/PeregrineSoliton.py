@@ -57,8 +57,10 @@ class Problem(ProblemBase):
         y1 = y1/lambda0
         mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
         self.mesh = mesh
+        
     def initial_conditions(self, V, Q):
-       
+        #W = MixedFunctionSpace([V,Q])
+        #w_initial = Function(W)
         eta0 = genfromtxt('eta.txt')[np.newaxis] #Get an array of array with the height solution from the Matlab code
         eta0 = eta0[0] #Get the array with the height solution from the Matlab code
         eta00 = np.zeros(4096) #Create a new array twice as long as eta0
@@ -74,14 +76,15 @@ class Problem(ProblemBase):
             eta00[i] = eta0[floor(i/2.)]
             u00[i] = u0[floor(i/2.)]
 
-        eta_initial = Function(Q) #Create an empty function defined on the Q Space
+        #u_initial, eta_initial = w_initial.split()#Create an empty function defined on the Q Space
+        eta_initial = Function(Q)
         eta_initial.vector()[:] = eta00 #Fill the function's nodes with the values of the Matlab solution
-        eta_0 = Expression("eta_initial",eta_initial=eta_initial)
+        eta_0 = Expression("eta_initial",eta_initial=eta_initial,element=Q.ufl_element())
 
         u_initial = Function(Q)
         u_initial.vector()[:]=u00
-        u_0=Function(V)
-        u_0=Expression(("u_initial","0.0"),u_initial=u_initial)
+        u_0 = Function(V)
+        u_0=Expression(("u_initial","0.0"),u_initial=u_initial, element=V.ufl_element())
         
         return u_0, eta_0
 

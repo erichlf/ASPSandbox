@@ -97,7 +97,8 @@ class SolverBase:
         F2 = problem.F2(t) #mass source for the continuity equation
 
         # Define function spaces
-        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        self.V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        V = self.V
         self.Q = FunctionSpace(mesh, 'CG', self.Pp)
         Q = self.Q
         W = MixedFunctionSpace([V, Q])
@@ -116,10 +117,10 @@ class SolverBase:
         w_ = Function(W)
 
         #initial condition
-        w_ = self.InitialConditions(problem, W)
+        #w_ = self.InitialConditions(problem, W)
 
         U, eta = (as_vector((w[0], w[1])), w[2])
-        U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
+        U_, eta_ = self.InitialConditions(problem, W)
 
         #U_(k+alpha)
         U_alpha = (1.0-self.alpha)*U_ + self.alpha*U
@@ -316,7 +317,10 @@ class SolverBase:
 
     def InitialConditions(self,problem,W):
         #project the given initial condition into W
-        U0, p0 = problem.initial_conditions(W.sub(0),W.sub(1))
-        W0 = self.W_project(U0,p0,W)
-
-        return W0
+        U0, p0 = problem.initial_conditions(self.V,self.Q)
+        W0 = Function(W)
+        U_0, p_0 = W.split() 
+        U_0 = interpolate(U0, self.V)
+        p_0 = interpolate(p0,self.Q)
+        
+        return U_0, p_0
