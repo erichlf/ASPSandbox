@@ -90,18 +90,18 @@ class Solver(SolverBase):
         zeta_t = 1./dt*(self.zeta - self.zeta_)
 
         #weak form of the equations
-        W_Trial = TrialFunction(self.W)
-        U_Trial,eta_Trial = as_vector((W_Trial[0],W_Trial[1])),W_Trial[2]
+        #W_Trial = TrialFunction(self.W)
+        #U_Trial,eta_Trial = as_vector((W_Trial[0],W_Trial[1])),W_Trial[2]
 
-        r = 1./dt*inner(U_Trial-U_,v)*dx + epsilon*inner(grad(U_Trial)*U_Trial,v)*dx \
-            - div(v)*eta_Trial*dx
+        r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U)*U,v)*dx \
+            - div(v)*eta*dx
 
-        r += sigma**2*1./dt*div((D + epsilon*self.zeta)*(U_Trial-U_))*div((D + epsilon*self.zeta)*v/2.)*dx \
-              - sigma**2*1./dt*div(U_Trial-U_)*div((D + epsilon*self.zeta)**2*v/6.)*dx
+        r += sigma**2*1./dt*div((D + epsilon*self.zeta)*(U-U_))*div((D + epsilon*self.zeta)*v/2.)*dx \
+              - sigma**2*1./dt*div(U-U_)*div((D + epsilon*self.zeta)**2*v/6.)*dx
         r += sigma**2*zeta_tt*div((D + epsilon*self.zeta)*v/2.)*dx
 
-        r += 1./dt*(eta_Trial-eta_)*chi*dx + zeta_t*chi*dx
-        r -= inner(U_Trial,grad(chi))*(epsilon*eta_Trial + D + epsilon*self.zeta)*dx
+        r += 1./dt*(eta-eta_)*chi*dx + zeta_t*chi*dx
+        r -= inner(U,grad(chi))*(epsilon*eta + D + epsilon*self.zeta)*dx
         
         #r = action(r, (U,eta))
         

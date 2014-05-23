@@ -7,7 +7,6 @@ __license__  = "GNU GPL version 3 or any later version"
 #
 
 from dolfin import *
-
 from time import time
 from os import getpid
 from commands import getoutput
@@ -115,19 +114,14 @@ class SolverBase:
 
         #define trial and test function
         v, chi = TestFunctions(W)
-
         w = Function(W)
         w_ = Function(W)
 
         #initial condition
-        #w_ = self.InitialConditions(problem, W)
         U_, eta_ = w_.split()
-        #U, eta = (as_vector((w[0], w[1])), w[2])
-        U, eta = w.split(True)
+        U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = self.InitialConditions(problem, W)
-        
-        
-        
+
         #U_(k+alpha)
         U_alpha = (1.0-self.alpha)*U_ + self.alpha*U
 
@@ -135,9 +129,7 @@ class SolverBase:
         eta_alpha = (1.0-self.alpha)*eta_ + self.alpha*eta
 
         F = self.weak_residual(U, U_, eta, eta_, v, chi) \
-            - inner(F1,v)*dx - F2*chi*dx
-        F = action(F,w)
-           
+            - inner(F1,v)*dx - F2*chi*dx   
         
         if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
           # Stabilization parameters
@@ -168,7 +160,8 @@ class SolverBase:
         U_0 = Function(self.V)
         U_0, eta_0 = self.InitialConditions(problem, self.W)
         U_0, eta_c_0 = self.InitialConditions(problem, self.W)
-        error_array = []
+        error_array = [] #Array to store the error value at each timestep
+        dx_array = [] #Array to store the motion
         
         while t<T:
             t += dt
@@ -188,7 +181,7 @@ class SolverBase:
             #w_.vector()[:] = w.vector()
 
             #U_, eta_ = w_.split()
-            (U, eta) = w.split(True)
+            (U, eta) = w.split(True) #Need to create a deep copy to use .vector() after...
             U_.assign(U)
             eta_.assign(eta)
 
@@ -198,28 +191,26 @@ class SolverBase:
             #COMPUTATION OF THE ERROR
             #Computing eta_centered, the translated of eta
             N_traj = np.argmax(eta.vector()) - problem.n_0 #Checking position of eta
-            eta_centered = np.zeros(4096) #Create the array of dimension 4096
+            eta_centered = np.zeros(4096) #Create the array of dimension 4096 to re-center the computed solution
             j=4095
-            while(j>=0):
+            while(j>=0): #Fill the array
                 if(j+N_traj <= 4095):
                     eta_centered[j] = eta.vector()[j+N_traj]
                 j -= 1
                 
-            eta_c = Function(self.Q)
-            eta_c.vector()[:] = eta_centered
-            eta_moved = Expression("eta_c",eta_c=eta_c)
-            eta_moved = interpolate(eta_moved,self.Q)
-            eta_c_0.assign(eta_moved)
-            error = inner(eta_c_0 - eta_0, eta_c_0 - eta_0)*dx 
-            print(assemble(error))
-            E = sqrt(assemble(error))/sqrt(assemble(inner(eta_0,eta_0)*dx))
-            error_array.append(E)
-            #print(error_array)
+            eta_c = Function(self.Q) #Create the Dolfin:Function which will represent the centered computed solution
+            eta_c.vector()[:] = eta_centered #Fill this function with the values 
+            error = inner(eta_c - eta_0, eta_c - eta_0)*dx  #Compute the L2 norme 
+            E = sqrt(assemble(error))/sqrt(assemble(inner(eta_0,eta_0)*dx)) #Scale the error
+            error_array.append(E) #Fill the array with the error
+            dx_array.append(float(t))
         
-        plt.plot(error_array, 'ro')
-        #plt.axis([0,problem.N_iter,0,0.2])
-        #plt.show()
-        plt.savefig('error.png')
+        #Saving and ploting parameters for the error
+        plt.plot(dx_array, error_array, 'ro')
+        plt.axis([0,T,0,0.2])
+        plt.show()
+        errorname = 'error_dt='+str(dt)+'.png'
+        plt.savefig(errorname)
         return U_, eta_
 
     def prefix(self, problem):
