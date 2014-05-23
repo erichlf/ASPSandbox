@@ -15,9 +15,9 @@ from problembase import *
 from numpy import array
 
 x0 = -4.
-x1 = 40.
-y0 = -15.
-y1 = 15.
+x1 = 60.
+y0 = -25.
+y1 = 25.
 
 # No-slip boundary
 
@@ -55,8 +55,8 @@ class Problem(ProblemBase):
         cell_markers.set_all(False)
 
         for cell in cells(mesh):
-            p = cell.midpoint()
-            if p.y() > -3.5/lambda0 and p.y() < 3.5/lambda0:
+           p = cell.midpoint()
+           if p.y() > -4./lambda0:
                 cell_markers[cell] = True
             
         self.mesh = refine(mesh, cell_markers)
@@ -66,7 +66,7 @@ class Problem(ProblemBase):
 
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 3./lambda0:
+            if p.y() > -3./lambda0 and p.y() < 20./lambda0:
                 cell_markers2[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers2)
@@ -76,7 +76,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 3./lambda0:
+            if p.y() > -3./lambda0 and p.y() < 15./lambda0:
                 cell_markers3[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers3)
@@ -86,7 +86,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -2.5/lambda0 and p.y() < 2.5/lambda0:
+            if p.y() > -2.5/lambda0 and p.y() < 15./lambda0:
                 cell_markers4[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers4)
