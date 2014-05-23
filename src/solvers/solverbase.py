@@ -204,15 +204,11 @@ class SolverBase:
             E = sqrt(assemble(error))/sqrt(assemble(inner(eta_0,eta_0)*dx)) #Scale the error
             error_array.append(E) #Fill the array with the error
             dx_array.append(float(t))
-        
-        #Saving and ploting parameters for the error
-        #plt.plot(dx_array, error_array, 'bo')
-        #plt.axis([0,T,0,0.1])
-        #plt.show()
+            
         errorname = 'results/error/error_dt='+str(dt)
-        #plt.savefig(errorname+'.png')
         np.save(errorname+'.npy', error_array)
         np.save(errorname+'dx.npy',dx_array)
+        
         return U_, eta_
 
     def prefix(self, problem):

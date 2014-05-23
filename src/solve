@@ -15,10 +15,10 @@ from problems import Problem, problems
 from solvers import Solver, solvers
 
 # Default options
-OPTIONS = { "Nx": 20, #number of elements along x axis
-	    "Ny" : 20, #number of elements along y axis
+OPTIONS = { "Nx": 2047, #number of elements along x axis
+	    "Ny" : 1, #number of elements along y axis
             "dt": 0.01, #time-step
-            "T": 1.0, #final-time
+            "T": 3.0, #final-time
             "Re": 1000, #Reynolds number
             "Ro": 0.0125, #Rossby number
             "Fr": 1, #Froude number
@@ -30,8 +30,8 @@ OPTIONS = { "Nx": 20, #number of elements along x axis
             "x1": '10', #x-coordinate of the top-right corner
             "y0": '-2', #y-coordinate of the bottom-left corner
             "y1": '2', #y-coordinate of the top-right corner
-            "lambda0": 20., #Typical wavelength for scaling
-            "a0": 0.4, #Typical wave height
+            "lambda0": 1., #Typical wavelength for scaling
+            "a0": 1., #Typical wave height
             "h0": 1., #Typical depth
             "alpha": 0.5, #time-stepping method
             "save_solution": True,
@@ -42,7 +42,7 @@ OPTIONS = { "Nx": 20, #number of elements along x axis
             "absolute_tolerance": 1e-25,
             "relative_tolerance": 1e-12,
             "monitor_convergence": False,
-            "velocity_order": 1, #order of velocity element
+            "velocity_order": 2, #order of velocity element
             "height_order": 1, #order of height/pressure element
             "stabilize": True, #stabilize?
             "linear": False, #use the linear version?

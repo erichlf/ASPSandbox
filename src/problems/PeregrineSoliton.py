@@ -5,7 +5,6 @@ __license__  = "GNU GPL version 3 or any later version"
 #   adapted from Square.py originally developed 
 #   by Erich L Foster <erichlf@gmail.com>
 #
-
 '''
 This problem allows to assess the Peregrine Code by simulating its 
 solitons solutions.
@@ -87,8 +86,7 @@ class Problem(ProblemBase):
         self.n_0 = np.argmax(eta_initial.vector())
         u_0 = Function(V)
         u_0=Expression(("u_initial","0.0"),u_initial=u_initial, element=V.ufl_element())
-        #u_0 = Expression(("0.0","0.0"))
-        #eta_0 = Expression("0.0")
+
         return u_0, eta_0
 
     def boundary_conditions(self, V, Q, t):
