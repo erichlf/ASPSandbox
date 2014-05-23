@@ -79,11 +79,11 @@ class Solver(SolverBase):
         zeta0 = movingObject
         
         D = Expression(seabed, hd=hd, hb=hb,  lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
-        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.zeta_ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.zeta__ = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
         
-        self.h = Expression(seabed + ' + epsilon*(' + movingObject +')', epsilon=epsilon, hb=hb, ad=ad, c0=c0, t0=self.t0, t=self.t0, bh=bh, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.h = Expression(seabed + ' + epsilon*(' + movingObject +')', epsilon=epsilon, hb=hb, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
         
         self.z = interpolate(self.h, self.Q)
         self.zz_ = interpolate(self.h, self.Q)
