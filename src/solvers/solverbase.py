@@ -203,9 +203,9 @@ class SolverBase:
             dx_array.append(float(t))
         
         #Saving parameters
-        errorname = 'results/error/error_dt='+str(dt)
+        errorname = 'results/error/error_dt='+str(dt)+'Alpha='+str(self.alpha)
         np.save(errorname+'.npy', error_array)
-        np.save(errorname+'dx.npy',dx_array)
+        #np.save(errorname+'dx.npy',dx_array)
         
         return U_, eta_
 
