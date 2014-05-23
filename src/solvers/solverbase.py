@@ -43,6 +43,9 @@ class SolverBase:
         self.Pu = self.options['velocity_order'] #order of velocity element
         self.Pp = self.options['height_order'] #order of height/pressure element
 
+        if(self.Pu == 2 and self.options['stabilize']):
+            self.options['stabilize'] = False
+
         # Reset some solver variables
         self._time = None
         self._cputime = 0.0
@@ -139,7 +142,7 @@ class SolverBase:
               #R1, R2, z1, z2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
               #Rv1, Rv2, zv1, zv2 = self.strong_residual(U_alpha,v,chi)
               #F += d1*inner(R1 + z1 - F1, Rv1)*dx + d2*(R2 + z2 - F2)*Rv2*dx
-              F += h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta),grad(chi)))*dx
+              F += h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
           else:
               R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
               Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
