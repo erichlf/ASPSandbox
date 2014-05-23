@@ -178,9 +178,6 @@ class SolverBase:
             F1 = self.V_project(self.problem.F1(t),W)
             F2 = self.Q_project(self.problem.F2(t),W)
 
-            #w_.vector()[:] = w.vector()
-
-            #U_, eta_ = w_.split()
             (U, eta) = w.split(True) #Need to create a deep copy to use .vector() after...
             U_.assign(U)
             eta_.assign(eta)
@@ -204,7 +201,8 @@ class SolverBase:
             E = sqrt(assemble(error))/sqrt(assemble(inner(eta_0,eta_0)*dx)) #Scale the error
             error_array.append(E) #Fill the array with the error
             dx_array.append(float(t))
-            
+        
+        #Saving parameters
         errorname = 'results/error/error_dt='+str(dt)
         np.save(errorname+'.npy', error_array)
         np.save(errorname+'dx.npy',dx_array)
