@@ -230,13 +230,15 @@ class SolverBase:
             # Save velocity and pressure
             frequency = self.options['save_frequency']
             dt = self.dt
-            N = self.options['Ny']
+            Nx = self.options['Nx']
+            Ny = self.options['Ny']
             if (self._timestep - 1) % frequency == 0:
                 # Create files for saving
                 if self._ufile is None:
                     s = 'results/' + self.prefix(problem) \
                             + self.suffix() \
-                            + 'Ny' + str(N) \
+                            + 'Nx' + str(Nx) \
+                            + 'Ny' + str(Ny) \
                             + 'K' + str(int(1./dt))
                     self._ufile = File(s + '_u.pvd')
                 if self._pfile is None:
