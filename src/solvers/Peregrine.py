@@ -9,6 +9,8 @@ class Solver(SolverBase):
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
+        
+        #Parameters
         self.Re = None
 
     def strong_residual(self,u,U,eta):  
@@ -45,6 +47,7 @@ class Solver(SolverBase):
         sigma = h0/lambda0
         c0 = (h0*g)**(0.5)
         epsilon = a0/h0
+        
         problem = self.problem
 
         #problem dimensions
