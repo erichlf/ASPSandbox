@@ -338,6 +338,30 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			
 			\pagebreak
 			
+			\subsection{Assessment of the code: the solitary wave test}	
+				To check the code, we use initial conditions which are approximation of a stationary solution for the Peregrine system. 
+				\begin{figure}[!h]
+					\centering
+					\includegraphics[height=8cm]{PeregrineSolitonSolution.jpg}
+					\caption{Initial condition for the velocity and the free surface}
+				\end{figure}
+				
+				For different time stepping methods and using or no a stabilization, we compute the solution and compare it to the initial condition at T=3.0s (during which the soliton moved of about 25 meters). 
+				\begin{figure}[!h]
+				\centering
+					\begin{minipage}[t]{0.46\linewidth}
+						\includegraphics[height=5cm]{ErrorL2.png}
+						\caption{Error $\mathbb{L}^2$}
+					\end{minipage}
+					\begin{minipage}[t]{0.46\linewidth}
+						\includegraphics[height=5cm]{ErrorL8.png}
+						\caption{Error $\mathbb{L}^\infty$}
+					\end{minipage}
+				\end{figure}
+				
+			
+			
+			\pagebreak				
 	\section{Optimization}			
 	
 		\pagebreak	
