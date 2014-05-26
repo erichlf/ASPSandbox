@@ -31,7 +31,14 @@ class ProblemBase:
         self.p      = None
         self.solver = None
         self.output_location = ''
-
+        #Parameters for the wave object
+        self.h0 = None
+        self.hb = None
+        self.ad = None
+        self.vmax = None
+        self.D = None
+        self.zeta0 = None
+        
     def update_problem(self, t, u, p):
 #        Update problem at time t
 
