@@ -54,8 +54,9 @@ class Solver(SolverBase):
         epsilon = a0/h0
 
         #Physical Parameters
-        hd = 1. #Depth [m]
-        ad = 0.4 #height of the moving object [m]
+        hd = 2. #Depth [m]
+        ad = 0.8 #height of the moving object [m]
+        hb = 0.3
 
         #Scaled Parameters
         self.dt = self.dt*c0/lambda0 #time step
@@ -63,19 +64,21 @@ class Solver(SolverBase):
         self.T = self.T*c0/lambda0 #Final time
         hd = hd/h0 #depth
         ad = ad/a0 #height of the moving object
+        hb = hb/h0
 
         #Definition of the wave_object
         vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
-        seabed = 'hd - 0.5/10.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.) + 0.5/10.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
+        seabed = 'hd - (hd-hb)/21.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.) + (hd-hb)/21.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
         movingObject = ' - (x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]>-6 ? 1. : 0.)*ad*0.5*0.5*(1. - tanh(0.5*lambda0*x[1]-2.))*(tanh(10*(1. - (lambda0*x[0])-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0])+pow(lambda0*x[1],2)/5 + 0.5))) ' \
                   + ' - (x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]>-6 ? 1. : 0.)*ad*0.5*0.5*(1. + tanh(0.5*lambda0*x[1]+2.))*(tanh(10*(1. - (lambda0*x[0])-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0])+pow(lambda0*x[1],2)/5 + 0.5))) ' 
         D = seabed
         zeta0 = movingObject
         
-        D = Expression(seabed, hd=hd, lambda0=lambda0, element=self.Q.ufl_element())
+        D = Expression(seabed, hd=hd, hb=hb, lambda0=lambda0, element=self.Q.ufl_element())
         self.zeta = Expression(zeta0, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())       
-        self.h = Expression(seabed + ' + epsilon*(' + movingObject +')', epsilon=epsilon, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
+        self.h = Expression(seabed + ' + epsilon*(' + movingObject +')', hb=hb, epsilon=epsilon, ad=ad, c0=c0, t0=self.t0, t=self.t0, hd=hd, lambda0=lambda0, vmax=vmax, element=self.Q.ufl_element())
         self.zz_ = interpolate(self.h, self.Q)
+        
         #weak form of the equations
         
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U)*U,v)*dx \
@@ -97,6 +100,14 @@ class Solver(SolverBase):
         d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
         return d1, d2
-
+    
+    def wave_object(self, t, dt):
+        self.zeta.t = t
+        self.zeta_.t = t - dt
+        self.zeta__.t = t - 2*dt
+        self.zz_.assign(self.z)
+        self.h.t = t
+        self.z = interpolate(self.h, self.Q)
+        
     def __str__(self):
           return 'Peregrine'
