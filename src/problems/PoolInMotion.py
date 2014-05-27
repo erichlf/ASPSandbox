@@ -78,7 +78,7 @@ class Problem(ProblemBase):
 
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 3./lambda0 and p.x() > -12./lambda0:
+            if p.y() > -3./lambda0 and p.y() < 3./lambda0 and p.x() > -12./lambda0 and p.x() < 10./lambda0:
                 cell_markers2[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers2)
