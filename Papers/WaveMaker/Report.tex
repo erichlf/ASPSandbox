@@ -349,17 +349,22 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 				For different time stepping methods and using or no a stabilization, we compute the solution and compare it to the initial condition at T=3.0s (during which the soliton moved of about 25 meters). 
 				\begin{figure}[!h]
 				\centering
-					\begin{minipage}[t]{0.46\linewidth}
-						\includegraphics[height=5cm]{ErrorL2.png}
-						\caption{Error $\mathbb{L}^2$}
-					\end{minipage}
-					\begin{minipage}[t]{0.46\linewidth}
-						\includegraphics[height=5cm]{ErrorL8.png}
-						\caption{Error $\mathbb{L}^\infty$}
-					\end{minipage}
+						\includegraphics[height=9cm]{ErrorL2L8}
+						\caption{Error}
 				\end{figure}
-				
-			
+	
+		\subsection{Stabilization}
+			\pagebreak
+		\subsection{Time stepping methods}
+			We tried two time-stepping methods in our weak formulation:
+			\begin{itemize}
+				\item Implicit method
+				\item Crank-Nicholson schema
+			\end{itemize}
+			The implicit method is more stable than the Crank-Nicholson one, but add dissipation. We can see on the following figure the comparison of those two methods without stabilization and a stabilized simulation.
+			\begin{figure}[!h]
+				 \includegraphics[height=6.5cm]{ComparisonTimestepStabilization}
+			\end{figure}
 			
 			\pagebreak				
 	\section{Optimization}			
