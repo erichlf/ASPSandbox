@@ -68,7 +68,7 @@ class Problem(ProblemBase):
 
         for cell in cells(mesh):
             p = cell.midpoint()
-            if p.y() > -3.5/lambda0 and p.y() < 3.5/lambda0: 
+            if p.y() > -5./lambda0 and p.x() < 10/lambda0 and p.x() > -12./lambda0: 
                 cell_markers[cell] = True
             
         self.mesh = refine(mesh, cell_markers)
@@ -78,7 +78,7 @@ class Problem(ProblemBase):
 
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 3./lambda0 and p.x() > -12./lambda0 and p.x() < 10./lambda0:
+            if p.y() > -4./lambda0 and p.y() < 20./lambda0 and p.x() > -12./lambda0 and p.x() < 10./lambda0:
                 cell_markers2[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers2)
@@ -88,7 +88,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 3./lambda0 and p.x() > -10./lambda0 and p.x() < 6./lambda0:
+            if p.y() > -3.5/lambda0 and p.y() < 15./lambda0 and p.x() > -8./lambda0 and p.x() < 8./lambda0:
                 cell_markers3[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers3)
@@ -98,7 +98,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -2.5/lambda0 and p.y() < 2.5/lambda0 and p.x() > -8./lambda0 and p.x() < 4./lambda0:
+            if p.y() > -3./lambda0 and p.y() < 15./lambda0 and p.x() > -8./lambda0 and p.x() < 6./lambda0:
                 cell_markers4[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers4)
