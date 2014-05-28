@@ -141,7 +141,7 @@ class SolverBase:
               #R1, R2, z1, z2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
               #Rv1, Rv2, zv1, zv2 = self.strong_residual(U_alpha,v,chi)
               #F += d1*inner(R1 + z1 - F1, Rv1)*dx + d2*(R2 + z2 - F2)*Rv2*dx
-              F += h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
+              F += 0.1*h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
           else:
               R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
               Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
