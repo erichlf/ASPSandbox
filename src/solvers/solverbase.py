@@ -184,7 +184,7 @@ class SolverBase:
 
             # Update
             self.update(problem, t, U_, eta_)
-            
+            """
             #COMPUTATION OF THE ERROR L2
             #Computing eta_centered, the translated of eta
             N_traj = np.argmax(eta.vector()) - problem.n_0 #Checking position of eta
@@ -199,19 +199,20 @@ class SolverBase:
             eta_c.vector()[:] = eta_centered #Fill this function with the values 
             error = inner(eta_c - eta_0, eta_c - eta_0)*dx  #Compute the L2 norme 
             E = sqrt(assemble(error))/sqrt(assemble(inner(eta_0,eta_0)*dx)) #Scale the error
+            """
 
             #Computation of the L-infinity error
-            """
+            
             error = abs(eta.vector().max() - eta_0.vector().max())
             E = error/eta_0.vector().max()
-            """
+            
             error_array.append(E) #Fill the array with the error
             dx_array.append(float(t))
         
         #Saving parameters
-        errorname = 'results/error/errorL2_dt='+str(dt)+'Alpha='+str(self.alpha)
+        errorname = 'results/error/errorL8_dt='+str(dt)+'Alpha='+str(self.alpha)
         if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
-           errorname += 'Stabilized'
+           errorname += 'Stabilized0.1'
         np.save(errorname+'.npy', error_array)
         np.save(errorname+'dx.npy',dx_array)
         
