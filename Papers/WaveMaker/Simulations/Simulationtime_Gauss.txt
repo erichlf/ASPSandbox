@@ -1,0 +1,42 @@
+
+./solve Peregrine Pool Nx=80 Ny=64 save_solution=True dt=0.03 T=3.0 velocity_order=1 lambda0=20. stabilize=True
+Solved Peregrine for the Pool problem in 6565.59 seconds. (Pool [-4,60]x[-30,30])
+
+./solve Peregrine Pool Nx=120 Ny=50 save_solution=True dt=0.02 T=3.0 velocity_order=1 lambda0=20 stabilize=True
+Solved Peregrine for the Pool problem in 18530.3 seconds. (Pool [-4,60]x[-15,15])
+
+./solve Peregrine Pool Nx=80 Ny=32 save_solution=True dt=0.03 T=3.0 velocity_order=1 lambda0=20. stabilize=True
+Solved Peregrine for the Pool problem in 4788.59 seconds. (Pool [-4,60]x[-15,15])
+
+./solve Peregrine Pool Nx=80 Ny=32 save_solution=True dt=0.03 T=3.0 velocity_order=2 lambda0=20. 
+Solved Peregrine for the Pool problem in ?? seconds. (Pool [-4,60]x[-15,15]) #About 2 hours
+
+./solve PeregrineInhomogenousDirichletBC PoolInMotion save_solution=True velocity_order=2 stabilize=False Nx=100 Ny=40 dt=0.03 T=3.0
+Solved PeregrineInhomogenousDirichletBC for the PoolInMotion problem in 48959.9 seconds.
+
+./solve Peregrine Pool Nx=80 Ny=64 stabilize=True velocity_order=1 save_solution=True dt=0.02 T=5.0 lambda0=20. h0=2. a0=0.8
+Traceback (most recent call last):seconds, 53.0377% done (t = 2.65189, T = 5).
+*** Error:   Unable to solve nonlinear system with NewtonSolver.
+*** Reason:  Newton solver did not converge. Bummer.
+
+./solve Peregrine Pool Nx=75 Ny=55 stabilize=True velocity_order=1 save_solution=True dt=0.03 T=5.0 lambda0=20. h0=2. a0=0.8
+Solved Peregrine for the Pool problem in 19954 seconds.
+#Comment : simulation time too long: should have taken T=2.8 (would have taken about 3 hours)
+
+./solve Peregrine Pool stabilize=True velocity_order=1 alpha=0.5 Nx=75 Ny=55 save_solution=True dt=0.03 T=2.8 lambda0=20. h0=2. a0=0.8
+Solved Peregrine for the Pool problem in 10747.8 seconds.
+
+./solve Peregrine Pool stabilize=False velocity_order=2 alpha=0.5 Nx=75 Ny=55 save_solution=True dt=0.03 T=2.8 lambda0=20. h0=2. a0=0.8
+Solved Peregrine for the Pool problem in 55441.9 seconds.
+
+./solve PeregrineInhomogenousDirichletBC PoolInMotion save_solution=True velocity_order=1 stabilize=True Nx=80 Ny=32 dt=0.03 T=3.0 h0=2. lambda0=20. a0=0.8
+Solved PeregrineInhomogenousDirichletBC for the PoolInMotion problem in 1920.03 seconds.
+
+./solve Peregrine Pool stabilize=False velocity_order=2 alpha=1. Nx=75 Ny=55 save_solution=True dt=0.03 T=2.8 lambda0=20. h0=2. a0=0.8
+Solved Peregrine for the Pool problem in 55069 seconds.
+
+./solve PeregrineInhomogenousDirichletBC PoolInMotion save_solution=True velocity_order=1 stabilize=True Nx=70 Ny=55 dt=0.03 T=3.0 h0=2. lambda0=20. a0=0.8
+Solved PeregrineInhomogenousDirichletBC for the PoolInMotion problem in 2996 seconds.
+
+./solve Peregrine Pool stabilize=True velocity_order=1 alpha=0.5 Nx=75 Ny=55 save_solution=True dt=0.03 T=2.8 lambda0=20. h0=2. a0=0.8
+Solved Peregrine for the Pool problem in 10825.1 seconds. (stabilization F+=0.1*...)
