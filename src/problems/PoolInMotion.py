@@ -102,7 +102,7 @@ class Problem(ProblemBase):
                 cell_markers4[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers4)
-           
+
         #DEFINITION OF THE OBJECT
         #Physical Parameters
         hd = 2. #Depth of the pool in the central lane [m]

@@ -14,7 +14,7 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
-x0 = -4.
+x0 = -6.
 x1 = 60.
 y0 = -25.
 y1 = 25.
@@ -73,7 +73,7 @@ class Problem(ProblemBase):
 
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 20./lambda0:
+            if p.y() > -3.5/lambda0 and p.y() < 20./lambda0:
                 cell_markers2[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers2)
@@ -83,7 +83,7 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 15./lambda0:
+            if p.y() > -3./lambda0 and p.y() < 18./lambda0:
                 cell_markers3[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers3)
@@ -93,11 +93,11 @@ class Problem(ProblemBase):
         
         for cell in cells(self.mesh):
             p = cell.midpoint()
-            if p.y() > -2.5/lambda0 and p.y() < 15./lambda0:
+            if p.y() > -3./lambda0 and p.y() < 15./lambda0:
                 cell_markers4[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers4)
-        
+
         #DEFINITION OF THE OBJECT
         #Physical Parameters
         hd = 2. #Depth of the pool in the central lane [m]
@@ -109,12 +109,19 @@ class Problem(ProblemBase):
         self.ad = ad/a0 #height of the moving object
         self.hb = hb/h0 #depth at the boundary
         
+        #Defintion of the shape of the seabed
+        seabed = 'hd - (hd-hb)/21.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.)'\
+                + ' + (hd-hb)/21.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
+            
         #Definition of the wave_object
         self.vmax = ((self.hd*h0+self.ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
-        seabed = 'hd - (hd-hb)/21.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.) + (hd-hb)/21.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
         traj = 'vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))'
-        movingObject = ' - (x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*ad*0.5*0.5*(1. - tanh(0.5*lambda0*x[1]-2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' \
-                              + ' - (x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*ad*0.5*0.5*(1. + tanh(0.5*lambda0*x[1]+2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' 
+        movingObject = '-(x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)'\
+                    +'*ad*0.5*0.5*(1.-tanh(0.5*lambda0*x[1]-2.))*(tanh(10*(1.-(lambda0*x[0]-' + traj + ')'\
+                    +'-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5)))'\
+                    +'-(x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)'\
+                    +'*ad*0.5*0.5*(1.+tanh(0.5*lambda0*x[1]+2.))*(tanh(10*(1.-(lambda0*x[0]-' + traj + ')'\
+                    +'-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5)))' 
         self.D = seabed
         self.zeta0 = movingObject
         
@@ -133,9 +140,7 @@ class Problem(ProblemBase):
         bcs = [bc_X, bc_Y]
         
         return bcs
-    
-    
-
+        
     def F1(self, t):
         #forcing function for the momentum equation
         return Expression(self.options['F1'],t=t)
