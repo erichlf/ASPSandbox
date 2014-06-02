@@ -76,14 +76,16 @@ class Solver(SolverBase):
        
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
-
+        
+        #Define function to stabilize the wake of the object
+        self.time_stabilize = Expression(problem.filtre, t=self.t0, lambda0=lambda0, c0=c0)
+        
         #Time stepping method
-        U_alpha = (1.-alpha)*U_ + alpha*U
+        U_alpha = (1. - alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
         zeta_alpha = (1. - alpha)*self.zeta_ + alpha*self.zeta
 
         #weak form of the equations
-
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U_alpha)*U_alpha,v)*dx \
             - div(v)*eta_alpha*dx
 
@@ -111,6 +113,7 @@ class Solver(SolverBase):
         self.h_.assign(self.h)
         self.bottom.t = t
         self.h = interpolate(self.bottom, self.Q)
+        self.time_stabilize.t = t
 
     def __str__(self):
           return 'Peregrine'

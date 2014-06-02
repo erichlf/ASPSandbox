@@ -38,6 +38,7 @@ class ProblemBase:
         self.vmax = None
         self.D = None
         self.zeta0 = None
+        self.filtre = None
         
     def update_problem(self, t, u, p):
 #        Update problem at time t

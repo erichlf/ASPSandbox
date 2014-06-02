@@ -125,6 +125,11 @@ class Problem(ProblemBase):
         self.D = seabed
         self.zeta0 = movingObject
         
+        #Define function to stabilize the wake of the object
+        self.filtre = '(x[1]<4/lambda0 ? 1. : 0.)*(x[1]>-4/lambda0 ? 1. : 0.)'\
+                    + '*(lambda0*x[0]-'+traj+' < -2 ? 1. : 0.)'
+        
+        
         
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))
