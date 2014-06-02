@@ -78,7 +78,7 @@ class Solver(SolverBase):
         zeta_t = 1./dt*(self.zeta - self.zeta_)
         
         #Define function to stabilize the wake of the object
-        self.time_stabilize = Expression(problem.filtre, t=self.t0, lambda0=lambda0, c0=c0)
+        self.time_stabilize = Expression(problem.filtre, vmax=vmax, t=self.t0, lambda0=lambda0, c0=c0)
         
         #Time stepping method
         U_alpha = (1. - alpha)*U_ + alpha*U
