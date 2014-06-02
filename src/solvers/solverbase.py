@@ -30,8 +30,8 @@ class SolverBase:
         self.H = None #Fluid depth
         self.Ro = None #Rossby number
         self.Fr = None #Froude number
-        self.Th = None #average wave height
-        self.zeta = None #average wave height
+        self.Th = None 
+        self.zeta = None
 
         #initialize the time stepping method parameters
         self.t0 = 0 #initial time
@@ -75,8 +75,7 @@ class SolverBase:
 
     def solve(self, problem):
         self.problem = problem
-        #get problem mesh
-        mesh = problem.mesh
+        mesh = problem.mesh #get problem mesh
         self.mesh = mesh
         h = CellSize(mesh) #mesh size
 
@@ -247,7 +246,7 @@ class SolverBase:
                     self._bfile = File(s + '_b.pvd')
                 self._ufile << u
                 self._pfile << p
-                self._bfile << self.zz_
+                self._bfile << self.h_
         else:
             self.options['plot_solution'] = True
 

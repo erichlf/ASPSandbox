@@ -20,7 +20,6 @@ y0 = -25.
 y1 = 25.
 
 # No-slip boundary
-
 class Y_SlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and \
@@ -39,11 +38,19 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         global x0, x1, y0, y1
-
+        
+        #Scaling Parameters
+        g = 9.8 #Gravity
+        lambda0 = options['lambda0'] #typical wavelength
+        a0 = options['a0'] #Typical wave height
+        h0 = options['h0'] #Typical depth
+        sigma = h0/lambda0
+        c0 = (h0*g)**(0.5)
+        epsilon = a0/h0
+        
         # Create mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
-        lambda0 = float(options["lambda0"])
         x0 = x0/lambda0
         x1 = x1/lambda0
         y0 = y0/lambda0
@@ -90,7 +97,28 @@ class Problem(ProblemBase):
                 cell_markers4[cell] = True
             
         self.mesh = refine(self.mesh, cell_markers4)
-
+        
+        #DEFINITION OF THE OBJECT
+        #Physical Parameters
+        hd = 2. #Depth of the pool in the central lane [m]
+        hb = 0.3 #Depth at the boundaries [m]
+        ad = 0.8 #height of the moving object [m]
+        
+        #Scaled Parameters
+        self.hd = hd/h0 #depth
+        self.ad = ad/a0 #height of the moving object
+        self.hb = hb/h0 #depth at the boundary
+        
+        #Definition of the wave_object
+        self.vmax = ((self.hd*h0+self.ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
+        seabed = 'hd - (hd-hb)/21.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.) + (hd-hb)/21.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
+        traj = 'vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))'
+        movingObject = ' - (x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*ad*0.5*0.5*(1. - tanh(0.5*lambda0*x[1]-2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' \
+                              + ' - (x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)*ad*0.5*0.5*(1. + tanh(0.5*lambda0*x[1]+2.))*(tanh(10*(1. - (lambda0*x[0] - ' + traj + ')-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5))) ' 
+        self.D = seabed
+        self.zeta0 = movingObject
+        
+        
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))
         eta0 = Expression("0.0")
@@ -105,6 +133,8 @@ class Problem(ProblemBase):
         bcs = [bc_X, bc_Y]
         
         return bcs
+    
+    
 
     def F1(self, t):
         #forcing function for the momentum equation
