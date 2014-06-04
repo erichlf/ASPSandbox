@@ -249,7 +249,7 @@ class SolverBase:
                     self._bfile = File(s + '_b.pvd')
                 self._ufile << u
                 self._pfile << p
-                self._bfile << self.h
+                self._bfile << self.h_
         else:
             self.options['plot_solution'] = True
 
@@ -264,12 +264,12 @@ class SolverBase:
                 else :
                     self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
                 if('wave_object' in dir(self)):
-                    self.vizZ = plot(interpolate(self.h,self.Q), title='Wave Object', rescale=True)
+                    self.vizZ = plot(self.h, title='Wave Object', rescale=True)
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
                 if('wave_object' in dir(self)):
-                    self.vizZ.plot(interpolate(self.h,self.Q))
+                    self.vizZ.plot(self.h_)
 
         # Check memory usage
         if self.options['check_mem_usage']:

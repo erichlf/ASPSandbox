@@ -129,7 +129,7 @@ class Problem(ProblemBase):
         U = (g*(self.hd*h0+self.ad*a0))**0.5
         self.U = U/c0
         
-        self.filtre = 'pow(0.5*(1+tanh(2*lambda0/c0*t-5)),0.5)'
+        self.filtre = 'pow(0.5*(1+tanh(lambda0/c0*t-5)),0.5)'
 
         
     def initial_conditions(self, V, Q):

@@ -108,8 +108,8 @@ class Solver(SolverBase):
     
     def wave_object(self, t, dt): 
         self.zeta.t = t
-        self.zeta_.t = t - dt
-        self.zeta__.t = t - 2*dt
+        self.zeta_.t = max(t - dt, self.t0)
+        self.zeta__.t = max(t - 2*dt, self.t0)
         self.h_.assign(self.h)
         self.bottom.t = t
         self.h = interpolate(self.bottom, self.Q)

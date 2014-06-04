@@ -68,9 +68,14 @@ class Solver(SolverBase):
         self.h_ = interpolate(self.bottom, self.Q)
         
         self.filtre = Expression(problem.filtre, lambda0=lambda0, c0=c0, t=self.t0, element=self.Q.ufl_element())
+        self.filtre_ = Expression(problem.filtre, lambda0=lambda0, c0=c0, t=self.t0, element=self.Q.ufl_element())
+        self.filtre__ = Expression(problem.filtre, lambda0=lambda0, c0=c0, t=self.t0, element=self.Q.ufl_element())
         #Time stepping method
         U_alpha = (1.-alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
+        
+        filtre_tt = 1./dt**2*(self.filtre - 2*self.filtre_ + self.filtre__)
+        filtre_t = 1./dt*(self.filtre - self.filtre_)
         
         #weak form of the equations
         
@@ -79,8 +84,9 @@ class Solver(SolverBase):
 
         r += sigma**2*1./dt*div((D + epsilon*self.filtre*self.zeta)*(U-U_))*div((D + epsilon*self.filtre*self.zeta)*v/2.)*dx \
               - sigma**2*1./dt*div(U-U_)*div((D + epsilon*self.filtre*self.zeta)**2*v/6.)*dx
-
-        r += 1./dt*(eta-eta_)*chi*dx
+        r += sigma**2*filtre_tt*self.zeta*div((D + epsilon*self.filtre*self.zeta)*v/2.)*dx
+                
+        r += 1./dt*(eta-eta_)*chi*dx  + filtre_t*self.zeta*chi*dx
         r += chi*div((epsilon*eta_alpha + D + epsilon*self.filtre*self.zeta)*U_alpha)*dx
         
         return r
@@ -96,6 +102,8 @@ class Solver(SolverBase):
     def wave_object(self, t, dt): 
         self.zeta.t = t
         self.filtre.t = t
+        self.filtre.t_ = max(self.t0, t - dt)
+        self.filtre.t__ = max(self.t0, t - 2*dt)
         self.h_.assign(self.h)
         self.bottom.t = t
         self.h = interpolate(self.bottom, self.Q)   
