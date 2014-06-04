@@ -126,8 +126,8 @@ class Problem(ProblemBase):
         self.zeta0 = movingObject
         
         #Define function to stabilize the wake of the object
-        self.filtre = '(x[1]<4/lambda0 ? 1. : 0.)*(x[1]>-4/lambda0 ? 1. : 0.)'\
-                    + '*(lambda0*x[0]-'+traj+' < -8 ? 1. : 0.)'
+        self.filtre = '2*(x[1]<4/lambda0 ? 1. : 0.)*(x[1]>-4/lambda0 ? 1. : 0.)'\
+            + '*(lambda0*x[0]-'+traj+' < -4 ? 1. : 0.)+0.05'
         
         
         

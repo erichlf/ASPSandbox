@@ -64,8 +64,9 @@ class Solver(SolverBase):
         self.h = Expression(problem.D + ' + epsilon*(' + problem.zeta0+ '*' + problem.filtre +')', epsilon=epsilon,\
                     hb=problem.hb, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0, hd=problem.hd,\
                     lambda0=lambda0, element=self.Q.ufl_element())
-        #self.h = interpolate(self.bottom, self.Q)
-        #self.h_ = interpolate(self.bottom, self.Q)
+        self.h_ = Expression(problem.D + ' + epsilon*(' + problem.zeta0+ '*' + problem.filtre +')', epsilon=epsilon,\
+                hb=problem.hb, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0, hd=problem.hd,\
+                lambda0=lambda0, element=self.Q.ufl_element())
         
         self.filtre = Expression(problem.filtre, lambda0=lambda0, c0=c0, t=self.t0, element=self.Q.ufl_element())
         #Time stepping method
@@ -97,7 +98,7 @@ class Solver(SolverBase):
         self.zeta.t = t
         self.filtre.t = t
         self.h.t = t
-        #self.h_.t = t-dt
+        self.h_.t = t-dt
         
     def __str__(self):
           return 'Peregrine'
