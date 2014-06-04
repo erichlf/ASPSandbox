@@ -127,7 +127,7 @@ class Problem(ProblemBase):
         
         #Define function to stabilize the wake of the object
         self.filtre = '2*(x[1]<4/lambda0 ? 1. : 0.)*(x[1]>-4/lambda0 ? 1. : 0.)'\
-            + '*(lambda0*x[0]-'+traj+' < -4 ? 1. : 0.)+0.05'
+                    + '*(lambda0*x[0]-'+traj+' < -4 ? 1. : 0.)+0.05'
         
         
         
