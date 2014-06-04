@@ -61,12 +61,13 @@ class Solver(SolverBase):
         D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element()) 
         self.zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0,\
                     hd=problem.hd, lambda0=lambda0, element=self.Q.ufl_element())
-        self.bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', epsilon=epsilon,\
+        self.h = Expression(problem.D + ' + epsilon*(' + problem.zeta0+ '*' + problem.filtre +')', epsilon=epsilon,\
                     hb=problem.hb, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0, hd=problem.hd,\
                     lambda0=lambda0, element=self.Q.ufl_element())
-        self.h = interpolate(self.bottom, self.Q)
-        self.h_ = interpolate(self.bottom, self.Q)
+        #self.h = interpolate(self.bottom, self.Q)
+        #self.h_ = interpolate(self.bottom, self.Q)
         
+        self.filtre = Expression(problem.filtre, lambda0=lambda0, c0=c0, t=self.t0, element=self.Q.ufl_element())
         #Time stepping method
         U_alpha = (1.-alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
@@ -76,11 +77,11 @@ class Solver(SolverBase):
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U_alpha)*U_alpha,v)*dx \
             - div(v)*eta_alpha*dx
 
-        r += sigma**2*1./dt*div((D + epsilon*self.zeta)*(U-U_))*div((D + epsilon*self.zeta)*v/2.)*dx \
-              - sigma**2*1./dt*div(U-U_)*div((D + epsilon*self.zeta)**2*v/6.)*dx
+        r += sigma**2*1./dt*div((D + epsilon*self.filtre*self.zeta)*(U-U_))*div((D + epsilon*self.filtre*self.zeta)*v/2.)*dx \
+              - sigma**2*1./dt*div(U-U_)*div((D + epsilon*self.filtre*self.zeta)**2*v/6.)*dx
 
         r += 1./dt*(eta-eta_)*chi*dx
-        r += chi*div((epsilon*eta_alpha + D + epsilon*self.zeta)*U_alpha)*dx
+        r += chi*div((epsilon*eta_alpha + D + epsilon*self.filtre*self.zeta)*U_alpha)*dx
         
         return r
 
@@ -93,7 +94,10 @@ class Solver(SolverBase):
         return d1, d2
     
     def wave_object(self, t, dt): 
-        self.zeta.t=t
+        self.zeta.t = t
+        self.filtre.t = t
+        self.h.t = t
+        #self.h_.t = t-dt
         
     def __str__(self):
           return 'Peregrine'
