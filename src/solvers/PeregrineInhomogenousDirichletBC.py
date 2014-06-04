@@ -61,12 +61,11 @@ class Solver(SolverBase):
         D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element()) 
         self.zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0,\
                     hd=problem.hd, lambda0=lambda0, element=self.Q.ufl_element())
-        self.h = Expression(problem.D + ' + epsilon*(' + problem.zeta0+ '*' + problem.filtre +')', epsilon=epsilon,\
+        self.bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0+ '*' + problem.filtre +')', epsilon=epsilon,\
                     hb=problem.hb, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0, hd=problem.hd,\
                     lambda0=lambda0, element=self.Q.ufl_element())
-        self.h_ = Expression(problem.D + ' + epsilon*(' + problem.zeta0+ '*' + problem.filtre +')', epsilon=epsilon,\
-                hb=problem.hb, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0, hd=problem.hd,\
-                lambda0=lambda0, element=self.Q.ufl_element())
+        self.h = interpolate(self.bottom, self.Q)
+        self.h_ = interpolate(self.bottom, self.Q)
         
         self.filtre = Expression(problem.filtre, lambda0=lambda0, c0=c0, t=self.t0, element=self.Q.ufl_element())
         #Time stepping method
@@ -97,8 +96,9 @@ class Solver(SolverBase):
     def wave_object(self, t, dt): 
         self.zeta.t = t
         self.filtre.t = t
-        self.h.t = t
-        self.h_.t = t-dt
+        self.h_.assign(self.h)
+        self.bottom.t = t
+        self.h = interpolate(self.bottom, self.Q)   
         
     def __str__(self):
           return 'Peregrine'
