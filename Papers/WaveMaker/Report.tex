@@ -334,7 +334,10 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 					\mathrm{dx}
 				\end{split}
 			\end{equation}
-			The non-linear terms are computed by FEniCS, using a Newton Method.
+			The non-linear terms are computed by FEniCS, using a Newton Method. 
+			\cite{LoggMardalEtAl2012a}
+			\cite{LoggWellsEtAl2012a}
+			\cite{LoggWells2010a}
 			
 			\pagebreak
 			
@@ -367,7 +370,42 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			\end{figure}
 			
 			\pagebreak				
-	\section{Optimization}			
+	\section{Optimization}		
+		\subsection{Coupling with the transport equation}
+			We meet some difficulties with FEniCS to optimize a time-dependant parameter. On the contrary, FEniCS and Dolfin Adjoint make it very easy to optimise parameters	such as an initial condition. A first approach to this optimization problem we shall consider is therefore the weakly coupled system below, in which the control is $\zeta_0(x,y)$.
+		\begin{align}
+			\mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  &= O(\epsilon \sigma^2, \sigma^4)\\
+			\eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] &= 0 \\
+			\zeta_t + \epsilon \mathbf{U} \cdot \nabla \zeta &= 0\\
+			\zeta(x,y,t=0) &= \zeta_0(x,y)
+		\end{align}
+		where $\mathbf{U}$ is the trajectory of the object.
+				
+				The main problem raised by this method is the instability of the transport equation, as we try to solve it with a finite element method. To be able to optimize correctly the shape of the object, we need however to transport this shape along the object trajectory with a good accuracy. The following part will present a few methods used to solve this equation. The lector is invited to see \cite{Transport} for more details on that topic.
+				
+					\subsubsection{Stabilization of the transport equation using Taylor-Galerkin method}
+					A first method used to stabilize the transport equation, and which gives good results is a second-order Taylor-Galerkin approximation.
+					Let $\Delta t$ be a small time-step and $\theta \in [0,1]$ the time-stepping method used, we have:	
+					\begin{align}
+						\displaystyle \frac{\zeta^{n+1} - \zeta^n}{\Delta t} = \left(\frac{\partial \zeta}{\partial t} \right)^n + \frac{\Delta t}{2} \left(\frac{\partial^2 \zeta}{\partial t^2} \right)^{n+\theta} + O(\Delta t^2)
+					\end{align}
+					using the transport equation
+					\begin{equation}
+						\displaystyle \frac{\partial \zeta}{\partial t} = - \epsilon \mathbf{U} \cdot \nabla \zeta, \qquad \displaystyle \frac{\partial^2 \zeta}{\partial t^2} = - \epsilon \frac{\partial \mathbf{U}}{\partial t} \cdot \nabla \zeta - \epsilon \mathbf{U} \cdot \nabla \frac{\partial \zeta}{\partial t}
+					\end{equation}
+					we get:
+					\begin{align}
+						\displaystyle \frac{\zeta^{n+1} - \zeta^n}{\Delta t} =- \epsilon \mathbf{U}^n \cdot \nabla \zeta^n - \frac{\epsilon \Delta t}{2} \left(\frac{\partial \mathbf{U}}{\partial t} \cdot \nabla \zeta^{n+\theta} - \epsilon \mathbf{U}^{n+\theta} \cdot \nabla (\mathbf{U}^{n+\theta} \cdot \nabla \zeta^{n+\theta})\right) + O(\Delta t^2)
+					\end{align}
+					which lead us to the following weak formulation: $\forall w \in \mathbb{H}^1_0(\Omega)$,
+					\begin{align}
+						\displaystyle \int_{\Omega}{\! w \frac{\zeta^{n+1} - \zeta^n}{\Delta t}}  -   \epsilon \int_{\Omega}{\! \nabla w \cdot  \mathbf{U}^n  \zeta^n} - \frac{\epsilon \Delta t}{2} \int_{\Omega}{\! \nabla w \cdot \frac{\partial \mathbf{U}}{\partial t} \zeta^{n+\theta}}
+						 +  \frac{\epsilon^2 \Delta t}{2} \int_{\Omega}{\! (\nabla w \cdot \mathbf{U})(\nabla \zeta^{n+\theta} \cdot \mathbf{U}^{n+\theta})} = 0
+					\end{align}
+					
+					
+					
+		
 	
 		\pagebreak	
 	
