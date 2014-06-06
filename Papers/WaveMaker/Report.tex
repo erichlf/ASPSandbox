@@ -374,12 +374,12 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 		\subsection{Coupling with the transport equation}
 			We meet some difficulties with FEniCS to optimize a time-dependant parameter. On the contrary, FEniCS and Dolfin Adjoint make it very easy to optimise parameters	such as an initial condition. A first approach to this optimization problem we shall consider is therefore the weakly coupled system below, in which the control is $\zeta_0(x,y)$.
 		\begin{align}
-			\mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  &= O(\epsilon \sigma^2, \sigma^4)\\
+			\mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  &= 0\\
 			\eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] &= 0 \\
 			\zeta_t + \epsilon \mathbf{U} \cdot \nabla \zeta &= 0\\
 			\zeta(x,y,t=0) &= \zeta_0(x,y)
 		\end{align}
-		where $\mathbf{U}$ is the trajectory of the object.
+		where $\mathbf{U}(t)$ is the trajectory of the object.
 				
 				The main problem raised by this method is the instability of the transport equation, as we try to solve it with a finite element method. To be able to optimize correctly the shape of the object, we need however to transport this shape along the object trajectory with a good accuracy. The following part will present a few methods used to solve this equation. The lector is invited to see \cite{Transport} for more details on that topic.
 				

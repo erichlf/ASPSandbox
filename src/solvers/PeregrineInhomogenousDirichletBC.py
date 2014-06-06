@@ -77,6 +77,8 @@ class Solver(SolverBase):
         filtre_tt = 1./dt**2*(self.filtre - 2*self.filtre_ + self.filtre__)
         filtre_t = 1./dt*(self.filtre - self.filtre_)
         
+        self.time_stabilize = Expression('10*(1.005-tanh(lambda0/c0*t-5))', t=self.t0, lambda0=lambda0, c0=c0)
+                                         
         #weak form of the equations
         
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U_alpha)*U_alpha,v)*dx \
@@ -106,7 +108,8 @@ class Solver(SolverBase):
         self.filtre.t__ = max(self.t0, t - 2*dt)
         self.h_.assign(self.h)
         self.bottom.t = t
-        self.h = interpolate(self.bottom, self.Q)   
+        self.h = interpolate(self.bottom, self.Q)
+        self.time_stabilize.t = t
         
     def __str__(self):
           return 'Peregrine'
