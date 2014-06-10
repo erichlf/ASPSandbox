@@ -129,8 +129,8 @@ class Problem(ProblemBase):
         U = (g*(self.hd*h0+self.ad*a0))**0.5
         self.U = U/c0
         
-        self.filtre = 'pow(0.5*(1+tanh(lambda0/c0*t-5)),0.5)'
-
+        #self.filtre = 'pow(0.5*(1+tanh(lambda0/c0*t-5)),0.5)'
+        self.filtre = '1'
         
     def initial_conditions(self, V, Q):
         u0 = Expression(("-U", "0.0"),U=self.U)
