@@ -370,9 +370,27 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			\end{figure}
 			
 			\pagebreak				
-	\section{Optimization}		
+	\section{Optimization}
+		In this part we will focus on the optimization of the wave object so as to minimize a given functional characterizing the quality of the final water wave.
+		A typical functional which will be used to assess the wave is the $H^1$ norm of the height of the free surface  $\eta$ at a final time $T$ over a specific domain $\omega$.
+		\begin{equation}
+			\inf_{\zeta_0 \in U_{ad}}\left\{J(\zeta_0)\ = \int_{\omega}{\! j(\eta(T),\zeta_0) \: \mathrm{dx}} \right\}, \: \mathrm{with} \: j(\eta(T),\zeta_0) = \frac{1}{2}||\eta(T)||_{H^1(\Omega)}^2
+		\end{equation}
+		\begin{figure}[!h]
+			\centering
+			\includegraphics[height=6cm]{OptimizationDomain}
+			\caption{Domain $\omega$ on which the wave is assessed}
+		\end{figure}
+				
+		\subsection{Derivation of the adjoint system}
+		Calling $(\mathbf{v}^N, \xi^N), ... (\mathbf{v}^0, \xi^0)$ the Lagrange multipliers associated with $(\mathbf{u}^N, \eta^N), ... (\mathbf{u}^0, \eta^0)$, we can now define the Lagrangian $\mathcal{L} $ of our problem: 
+		
+		\begin{align}
+		\mathcal{L}(\zeta_0, (\mathbf{u}^N, \eta^N), ... (\mathbf{u}^0, \eta^0), 	(\mathbf{v}^N, \xi^N), ... (\mathbf{v}^0, \xi^0))	= J(\zeta_0) + \sum_{k=0}^{k=N-1} FV
+		\end{align}
+		
 		\subsection{Coupling with the transport equation}
-			We meet some difficulties with FEniCS to optimize a time-dependant parameter. On the contrary, FEniCS and Dolfin Adjoint make it very easy to optimise parameters	such as an initial condition. A first approach to this optimization problem we shall consider is therefore the weakly coupled system below, in which the control is $\zeta_0(x,y)$.
+			We met some difficulties with FEniCS to optimize a time-dependent parameter. On the contrary, FEniCS and Dolfin Adjoint make it very easy to optimise parameters	such as an initial condition. A first approach to this optimization problem we shall consider is therefore the weakly coupled system below, in which the control is $\zeta_0(x,y)$.
 		\begin{align}
 			\mathbf{u}_t + \nabla \eta + \epsilon (\mathbf{u} \cdot \nabla)\mathbf{u} - \sigma^2\frac{h}{2}\nabla (\nabla \cdot (h \mathbf{u}_t)) + \sigma^2 \frac{h^2}{6}\nabla (\nabla \cdot \mathbf{u}_t) - \sigma^2\frac{h}{2}\nabla \zeta_{tt}  &= 0\\
 			\eta_t+\zeta_t + \nabla \cdot [(h+\epsilon\eta)\mathbf{u}] &= 0 \\
@@ -397,11 +415,24 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 					\begin{align}
 						\displaystyle \frac{\zeta^{n+1} - \zeta^n}{\Delta t} =- \epsilon \mathbf{U}^n \cdot \nabla \zeta^n - \frac{\epsilon \Delta t}{2} \left(\frac{\partial \mathbf{U}}{\partial t} \cdot \nabla \zeta^{n+\theta} - \epsilon \mathbf{U}^{n+\theta} \cdot \nabla (\mathbf{U}^{n+\theta} \cdot \nabla \zeta^{n+\theta})\right) + O(\Delta t^2)
 					\end{align}
-					which lead us to the following weak formulation: $\forall w \in \mathbb{H}^1_0(\Omega)$,
+					which lead us to the following weak formulation: $\forall \tau \in \mathbb{H}^1_0(\Omega)$,
 					\begin{align}
-						\displaystyle \int_{\Omega}{\! w \frac{\zeta^{n+1} - \zeta^n}{\Delta t}}  -   \epsilon \int_{\Omega}{\! \nabla w \cdot  \mathbf{U}^n  \zeta^n} - \frac{\epsilon \Delta t}{2} \int_{\Omega}{\! \nabla w \cdot \frac{\partial \mathbf{U}}{\partial t} \zeta^{n+\theta}}
-						 +  \frac{\epsilon^2 \Delta t}{2} \int_{\Omega}{\! (\nabla w \cdot \mathbf{U})(\nabla \zeta^{n+\theta} \cdot \mathbf{U}^{n+\theta})} = 0
+						\displaystyle \int_{\Omega}{\! \tau \frac{\zeta^{n+1} - \zeta^n}{\Delta t}}  -   \epsilon \int_{\Omega}{\! \nabla \tau \cdot  \mathbf{U}^n  \zeta^n} - \frac{\epsilon \Delta t}{2} \int_{\Omega}{\! \nabla \tau \cdot \frac{\partial \mathbf{U}}{\partial t} \zeta^{n+\theta}}
+						 +  \frac{\epsilon^2 \Delta t}{2} \int_{\Omega}{\! (\nabla \tau \cdot \mathbf{U})(\nabla \zeta^{n+\theta} \cdot \mathbf{U}^{n+\theta})} = 0
 					\end{align}
+					Will the same method, a Taylor series expanded to the order 3 would give us the following:  $\forall \tau \in \mathbb{H}^1_0(\Omega)$,
+					\begin{align*}
+						& \displaystyle \int_{\Omega}{\! \tau \frac{\zeta^{n+1} - \zeta^n}{\Delta t}}  -   \epsilon \int_{\Omega}{\! \nabla \tau \cdot  \mathbf{U}^n  \zeta^n} + \frac{\Delta t}{2}\left( - \epsilon \int_{\Omega}{\! \nabla \tau \cdot \frac{\partial \mathbf{U}}{\partial t} \zeta^{n+\theta}}
+						 +  \epsilon^2 \int_{\Omega}{\! (\nabla \tau \cdot \mathbf{U})(\nabla \zeta^{n+\theta} \cdot \mathbf{U}^{n+\theta})}\right) \\
+						 & -\frac{\Delta t^2}{6}\left(\epsilon \int_{\Omega}{\! \nabla \tau \cdot \frac{\partial^2 \mathbf{U}}{\partial t^2} \zeta^{n+\theta}} -2*\epsilon^2 \int_{\Omega}{\! (\nabla \tau \cdot \frac{\partial \mathbf{U}}{\partial t})(\nabla \zeta^{n+\theta} \cdot \mathbf{U}^{n+\theta})} -\epsilon^2 \int_{\Omega}{\! (\nabla \zeta^{n+\theta} \cdot \frac{\partial \mathbf{U}}{\partial t})(\nabla \tau \cdot \mathbf{U}^{n+\theta})}\right) \\
+						 & -\frac{\Delta t}{6} \epsilon^2 \int_{\Omega}{\! (\nabla \tau \cdot \mathbf{U})(\nabla (\zeta^{n+1} -  \zeta^n) \cdot \mathbf{U}^{n+\theta})}  = 0
+					\end{align*}
+					
+					Comment the results of that method (the object do not keep is shape...)
+					
+				\subsection{Convergence}
+					We use dolfin-adjoint coupled with pyipopt, which allows an automatic resolution of the adjoint system.
+					
 					
 					
 					
