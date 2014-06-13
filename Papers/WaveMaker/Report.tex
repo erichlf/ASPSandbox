@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{dsfont}
 \usepackage{amssymb}
 \usepackage{array}
 \usepackage{latexsym}
@@ -457,7 +458,7 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 		The expression above gives us an explicit formula for the gradient: 
 		\begin{equation*}
 			\begin{split}
-				J'(\zeta_0) &= \sum^{N}_{k=1} \left[ \xi^k(\hat{x} + f(t^k)) \right.\\
+				J'(\zeta_0) &= \sum^{N}_{k=1} \mathds{1}_{\{\hat{x} \in \Omega_{obj}\}} \left[ \xi^k(\hat{x} + f(t^k)) \right.\\
 				&  - \epsilon \frac{\mathbf{u}^k(\hat{x} + f(t^k)) \cdot \nabla \xi^k(\hat{x} + f(t^{k})) - \mathbf{u}^k(\hat{x} + f(t^{k-1})) \cdot \nabla \xi^{k-1}(\hat{x} + f(t^{k-1}))}{\mathrm{dt}} \\
 				&  - \frac{\epsilon \sigma^2}{2}  \frac{\mathbf{u}^k(\hat{x} + f(t^k)) - \mathbf{u}^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}}  \nabla\left( \nabla \cdot \left( (D + \epsilon \zeta_0) \mathbf{v}^k(\hat{x} + f(t^k)) \right) \right)\\
 				&  - \frac{\epsilon \sigma^2}{2} \nabla \left( \nabla \cdot \left((D+\epsilon \zeta_0)\frac{\mathbf{u}^k(\hat{x} + f(t^k)) - \mathbf{u}^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}}\right) \right)  \mathbf{v}^k(\hat{x} + f(t^k))  \\
@@ -467,7 +468,12 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 				& \left. - \frac{\epsilon \sigma^2}{2} \nabla  \left(\frac{\zeta^{k+1}(\hat{x} + f(t^k)) - 2\zeta_0 + \zeta^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}} \right) \cdot \mathbf{v}^k(\hat{x} + f(t^k)) \right]
 			\end{split}
 		\end{equation*}
-				
+		
+		After having computed and stored all the solutions of the forward and backward problem and with this expression for the gradient of $J(\zeta_0)$, we can then implement a gradient algorithm with variable step:
+		\begin{itemize}
+			\item 
+		\end{itemize}
+		
 		
 		\subsection{Coupling with the transport equation}
 			We met some difficulties with FEniCS to optimize a time-dependent parameter. On the contrary, FEniCS and Dolfin Adjoint make it very easy to optimise parameters	such as an initial condition. A first approach to this optimization problem we shall consider is therefore the weakly coupled system below, in which the control is $\zeta_0(x,y)$.
