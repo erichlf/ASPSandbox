@@ -372,9 +372,9 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			\pagebreak				
 	\section{Optimization}
 		In this part we will focus on the optimization of the wave object so as to minimize a given functional characterizing the quality of the final water wave.
-		A typical functional which will be used to assess the wave is the $H^1$ norm of the height of the free surface  $\eta$ at a final time $T$ over a specific domain $\omega$.
+		A typical functional which will be used to assess the wave is the $\mathbb{H}^1$ norm of the height of the free surface  $\eta$ at a final time $T$ over a specific domain $\omega$.
 		\begin{equation}
-			\inf_{\zeta_0 \in U_{ad}}\left\{J(\zeta_0)\ = \int_{\omega}{\! j(\eta(T),\zeta_0) \: \mathrm{dx}} \right\}, \: \mathrm{with} \: j(\eta(T),\zeta_0) = \frac{1}{2}||\eta(T)||_{H^1(\Omega)}^2
+			\inf_{\zeta_0 \in U_{ad}}\left\{J(\zeta_0)\ = \int_{\omega}{\! j(\eta(T),\zeta_0) \: \mathrm{dx}} \right\}, \: \mathrm{with} \: j(\eta(T),\zeta_0) = \frac{1}{2}(\alpha ||\eta(T)||_{\mathbb{L}^2(\Omega)}^2 + \beta ||\nabla \eta(T)||_{\mathbb{L}^2(\Omega)^2}^2)
 		\end{equation}
 		\begin{figure}[!h]
 			\centering
@@ -393,9 +393,81 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 		\subsection{Derivation of the adjoint system}
 		Calling $(\mathbf{v}^N, \xi^N), ... (\mathbf{v}^0, \xi^0)$ the Lagrange multipliers associated with $(\mathbf{u}^N, \eta^N), ... (\mathbf{u}^0, \eta^0)$, we can now define the Lagrangian $\mathcal{L} $ of our problem: 
 		
-		\begin{align}
-		\mathcal{L}(\zeta_0, (\mathbf{u}^N, \eta^N), ... (\mathbf{u}^0, \eta^0), 	(\mathbf{v}^N, \xi^N), ... (\mathbf{v}^0, \xi^0))	= J(\zeta_0) + \sum_{k=0}^{k=N-1} FV
-		\end{align}
+		\begin{equation}
+			\begin{split}
+				&\mathcal{L}(\zeta_0, (\mathbf{u}^N, \eta^N), ... (\mathbf{u}^0, \eta^0), 	(\mathbf{v}^N, \xi^N), ... (\mathbf{v}^0, \xi^0))	= J(\zeta_0) + \sum_{k=0}^{k=N-1} \left[ \int_{\Omega} \! \frac{\mathbf{u}^{k+1} - \mathbf{u}^k}{\mathrm{dt}} \cdot	\mathbf{v}^{k+1} \: \mathrm{dx} \right. \\
+				 &\quad - \int_{\Omega} \! \eta^{k+1} \; (\nabla \cdot \mathbf{v}^{k+1}) \: \mathrm{dx} + \epsilon \! \int_{\Omega} \! (\mathbf{u}^{k+1} \cdot \nabla ) \mathbf{u}^{k+1} \cdot	\mathbf{v}^{k+1} \: \mathrm{dx} + \displaystyle\int_{\Omega}\! \frac{\eta^{k+1} - \eta^{k}}{\mathrm{dt}} \; \xi^{k+1} \: \mathrm{dx} + \int_{\Omega}\! \zeta^{k+1}_t \; \xi^{k+1} \: \mathrm{dx} \\
+				 &\quad-\int_{\Omega}\! \nabla \xi^{k+1} \; \cdot [(D + \epsilon \zeta^{k+1} + \epsilon \eta^{k+1}) \mathbf{u}^{k+1}] \:	\mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \! \zeta^{k+1}_{tt}  \; (\nabla \cdot( (D+\epsilon \zeta^{k+1}) \mathbf{v}^{k+1})) \: \mathrm{dx} \\ 
+					&\quad+ \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot ((D + \epsilon \zeta^{k+1})	\frac{\mathbf{u}^{k+1} - \mathbf{u}^{k}}{\mathrm{dt}})) \; (\nabla \cdot ((D + \epsilon \zeta^{k+1}) \mathbf{v}^{k+1})) \: \mathrm{dx} \\
+					&\quad\left. - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla 
+					\cdot \frac{\mathbf{u}^{k+1} - \mathbf{u}^{k}}{\mathrm{dt}}) \; (\nabla  \cdot	((D + \epsilon \zeta^{k+1})^2  \mathbf{v}^{k+1})) \: \mathrm{dx} + stabilization\right]	
+			\end{split}
+		\end{equation}
+		where we denoted $\zeta^k(x,y,t) = \zeta_0(x-f(t^k),y)$ with $f(t)$ the trajectory of the object (along the axis x).
+		
+		Differentiating the Lagrangian with respect to the velocity and the height at each time step gives us the adjoint system: $\forall (\mathbf{u},\eta) \in \mathbb{V} \times \mathbb{H}^1(\Omega)$		
+		\begin{equation}
+			\begin{split}
+				0 & = \int_{\Omega} \! \frac{\mathbf{v}^{N}}{\mathrm{dt}} \cdot	\mathbf{u} \: \mathrm{dx} + \epsilon \int_{\Omega} \! ((\mathbf{u} \cdot \nabla )\mathbf{u}^N + (\mathbf{u}^N \cdot \nabla )\mathbf{u}) \cdot 	\mathbf{v}^{N} \: \mathrm{dx} 	- \int_{\Omega} \! (\epsilon \eta^N + D + \epsilon \zeta^N) \mathbf{u} \cdot \nabla \xi^N \: \mathrm{dx} \\
+				&\quad + \frac{\sigma^2}{2} \int_{\Omega} \! \nabla \cdot ((D + \epsilon \zeta) \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^N)\mathbf{v}^N}{\mathrm{dt}}\right) \: \mathrm{dx} - \frac{\sigma^2}{6} \int_{\Omega} \! (\nabla \cdot \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^N)^2 \mathbf{v}^N}{\mathrm{dt}}\right) \: \mathrm{dx} \\
+				& + stabilization \\
+				0 & = \int_{\Omega} \! \frac{\xi^{N}}{\mathrm{dt}} \eta \: \mathrm{dx} - \int_{\Omega} \! \eta (\nabla \cdot \mathbf{v}^N) \: \mathrm{dx} - \int_{\Omega} \! \epsilon \eta \mathbf{u}^N \cdot \nabla \xi^N \: \mathrm{dx} + \int_{\Omega} \! \frac{\partial j}{\partial \eta^N}(\eta^N) \eta + stabilization
+			\end{split}			
+		\end{equation}
+		which gives us $(\mathbf{v}^N, \xi^N)$, and then for all $k<N$, we solve the following system backward in time: $\forall (\mathbf{u},\eta) \in \mathbb{V} \times \mathbb{H}^1(\Omega)$ 
+		\begin{equation}
+			\begin{split}
+				0 & = \int_{\Omega} \! \frac{\mathbf{v}^{k} - \mathbf{v}^{k+1}}{\mathrm{dt}} \cdot	\mathbf{u} \: \mathrm{dx} + \epsilon \int_{\Omega} \! ((\mathbf{u} \cdot \nabla )\mathbf{u}^k + (\mathbf{u}^k \cdot \nabla )\mathbf{u}) \cdot 	\mathbf{v}^{k} \: \mathrm{dx} 	- \int_{\Omega} \! (\epsilon \eta^k + D + \epsilon \zeta^k) \mathbf{u} \cdot \nabla \xi^k \: \mathrm{dx} \\
+				&\quad + \frac{\sigma^2}{2} \int_{\Omega} \! \nabla \cdot ((D + \epsilon \zeta) \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^k)\mathbf{v}^k - (D + \epsilon \zeta^{k+1})\mathbf{v}^{k+1})}{\mathrm{dt}}\right) \: \mathrm{dx} \\
+				&\quad - \frac{\sigma^2}{6} \int_{\Omega} \! (\nabla \cdot \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^k)^2 \mathbf{v}^k - (D + \epsilon \zeta^{k+1})^2 \mathbf{v}^{k+1})}{\mathrm{dt}}\right) \: \mathrm{dx} + stabilization \\
+				0 & = \int_{\Omega} \! \frac{\xi^{k} - \xi^{k+1}}{\mathrm{dt}} \eta \: \mathrm{dx} - \int_{\Omega} \! \eta (\nabla \cdot \mathbf{v}^k) \: \mathrm{dx} - \int_{\Omega} \! \epsilon \eta \mathbf{u}^k \cdot \nabla \xi^k \: \mathrm{dx} + stabilization
+			\end{split}			
+		\end{equation}
+		Knowing the solution at the forward problem and the adjoint at each time step, we are now looking for an explicit formulation for the gradient of our functional $J(\zeta_0)$: $\forall \chi \in U_{ad}$
+		\begin{equation*}
+			\begin{split}
+				<\!J'(\zeta_0),\chi\!> &= <\! \frac{\partial \mathcal{L}}{\partial \zeta_0}(\zeta_0, (\mathbf{u}^N, \eta^N), ... (\mathbf{u}^0, \eta^0), 	(\mathbf{v}^N, \xi^N), ... (\mathbf{v}^0, \xi^0)), \chi\!> \\
+				&= \sum^{N}_{k=1} \left[ \int_{\Omega} \! <\!\frac{\partial\zeta^k}{\partial \zeta_0}, \chi\!> \xi^k \: \mathrm{dx} - \int_{\Omega} \! \epsilon <\!\frac{\partial\zeta_t^k}{\partial \zeta_0}, \chi\!> \mathbf{u}^k \cdot \nabla \xi^k \: \mathrm{dx} \right.\\
+				& \quad + \frac{\epsilon \sigma^2}{2} \int_{\Omega} \! \nabla \cdot \left( <\!\frac{\partial\zeta^k}{\partial \zeta_0}, \chi\!> \frac{\mathbf{u}^k - \mathbf{u}^{k-1}}{\mathrm{dt}} \right) \nabla \cdot \left( (D + \epsilon \zeta^k) \mathbf{v}^k \right) \: \mathrm{dx} \\
+				& \quad + \frac{\epsilon \sigma^2}{2} \int_{\Omega} \! \nabla \cdot \left((D+\epsilon \zeta^k)\frac{\mathbf{u}^k - \mathbf{u}^{k-1}}{\mathrm{dt}}\right) \nabla \cdot \left(<\!\frac{\partial\zeta^k}{\partial \zeta_0}, \chi\!> \mathbf{v}^k \right) \: \mathrm{dx} \\
+				&  \quad - \frac{\epsilon \sigma^2}{3} \int_{\Omega} \! \nabla \cdot \left( \frac{\mathbf{u}^k - \mathbf{u}^{k-1}}{\mathrm{dt}} \right) \nabla \cdot \left( <\!\frac{\partial\zeta^k}{\partial \zeta_0}, \chi\!> (D + \epsilon \zeta^k) \mathbf{v}^k \right) \: \mathrm{dx} \\
+				& \left. \quad + \frac{\sigma^2}{2}\int_{\Omega} \! <\!\frac{\partial\zeta_{tt}^k}{\partial \zeta_0}, \chi\!> \nabla \cdot \left( (D + \epsilon \zeta^k) \mathbf{v}^k \right) \: \mathrm{dx} + \frac{\sigma^2}{2} \int_{\Omega} \! \zeta_{tt}^k \nabla \cdot \left( \epsilon <\!\frac{\partial\zeta^k}{\partial \zeta_0}, \chi\!> \mathbf{v}^k \right) \: \mathrm{dx} \right]
+			\end{split}
+		\end{equation*}
+		
+		As $\zeta^k(x,y) = \zeta_0(x-f(t^k),y)$, we can easily compute its differential with respect to $\zeta_0$:
+		\begin{align*}
+			& <\!\frac{\partial\zeta^k}{\partial \zeta_0}, \chi\!>(x,y) = \chi(x-f(t^k),y)\\
+			& <\!\frac{\partial\zeta_t^k}{\partial \zeta_0}, \chi\!>(x,y) = \frac{\chi(x-f(t^k),y) - \chi(x-f(t^{k-1}),y)}{\mathrm{dt}} \\
+			& <\!\frac{\partial\zeta_{tt}^k}{\partial \zeta_0}, \chi\!>(x,y) = \frac{\chi(x-f(t^{k+1}),y) - 2\chi(x-f(t^{k}),y)+\chi(x-f(t^{k-1}),y)}{\mathrm{dt}^2} 
+		\end{align*}
+		$\chi$ is in $U_{ad}$ and so is null everywhere in $\Omega$ except in the small domain $\Omega_{obj}$ where the object is defined. In order to get an explicit formula for $J'(\zeta_0)$, we can make the change of variable $ \hat{x}^k = x - f(t^k)$ in each integral where $\chi(x-f(t^k),y)$ appears, so as to get:
+		\begin{equation*}
+			\begin{split}
+				<\!J'(\zeta_0),\chi\!> &= \sum^{N}_{k=1} \left[ \int_{\Omega_{obj}} \! \chi \xi^k(\hat{x} + f(t^k)) \: \mathrm{d\hat{x}} \right.\\
+				&  - \int_{\Omega_{obj}} \! \epsilon \chi \frac{\mathbf{u}^k(\hat{x} + f(t^k)) \cdot \nabla \xi^k(\hat{x} + f(t^{k})) - \mathbf{u}^k(\hat{x} + f(t^{k-1})) \cdot \nabla \xi^{k-1}(\hat{x} + f(t^{k-1}))}{\mathrm{dt}}  \: \mathrm{d\hat{x}} \\
+				&  - \frac{\epsilon \sigma^2}{2} \int_{\Omega_{obj}} \! \chi \frac{\mathbf{u}^k(\hat{x} + f(t^k)) - \mathbf{u}^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}}  \nabla\left( \nabla \cdot \left( (D + \epsilon \zeta_0) \mathbf{v}^k(\hat{x} + f(t^k)) \right) \right)\: \mathrm{d\hat{x}} \\
+				&  - \frac{\epsilon \sigma^2}{2} \int_{\Omega_{obj}} \! \chi \nabla \left( \nabla \cdot \left((D+\epsilon \zeta_0)\frac{\mathbf{u}^k(\hat{x} + f(t^k)) - \mathbf{u}^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}}\right) \right)  \mathbf{v}^k(\hat{x} + f(t^k))  \: \mathrm{d\hat{x}} \\
+				& + \frac{\epsilon \sigma^2}{3} \int_{\Omega_{obj}} \! \chi \nabla \left( \nabla \cdot \left( \frac{\mathbf{u}^k(\hat{x} + f(t^k)) - \mathbf{u}^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}} \right) \right) \cdot \left(  (D + \epsilon \zeta_0) \mathbf{v}^k(\hat{x} + f(t^k)) \right) \: \mathrm{d\hat{x}} \\
+				&  + \frac{\sigma^2}{2}\int_{\Omega_{obj}} \! \chi \nabla \cdot \frac{1}{\mathrm{dt}^2} \left( (D + \epsilon \zeta^k(\hat{x} + f(t^{k+1}))) \mathbf{v}^k(\hat{x} + f(t^{k+1})) -2(D + \epsilon \zeta_0) \mathbf{v}^k(\hat{x} + f(t^{k})) \right. \\
+				& \qquad \qquad \qquad \qquad \qquad \qquad \qquad \left. + (D + \epsilon \zeta^k(\hat{x} + f(t^{k-1}))) \mathbf{v}^k(\hat{x} + f(t^{k-11}))\right) \: \mathrm{d\hat{x}} \\
+				& \left. - \frac{\epsilon \sigma^2}{2} \int_{\Omega_{obj}} \! \chi \nabla  \left(\frac{\zeta^{k+1}(\hat{x} + f(t^k)) - 2\zeta_0 + \zeta^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}} \right) \cdot \mathbf{v}^k(\hat{x} + f(t^k)) \: \mathrm{d\hat{x}} \right]
+			\end{split}
+		\end{equation*}
+		The expression above gives us an explicit formula for the gradient: 
+		\begin{equation*}
+			\begin{split}
+				J'(\zeta_0) &= \sum^{N}_{k=1} \left[ \xi^k(\hat{x} + f(t^k)) \right.\\
+				&  - \epsilon \frac{\mathbf{u}^k(\hat{x} + f(t^k)) \cdot \nabla \xi^k(\hat{x} + f(t^{k})) - \mathbf{u}^k(\hat{x} + f(t^{k-1})) \cdot \nabla \xi^{k-1}(\hat{x} + f(t^{k-1}))}{\mathrm{dt}} \\
+				&  - \frac{\epsilon \sigma^2}{2}  \frac{\mathbf{u}^k(\hat{x} + f(t^k)) - \mathbf{u}^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}}  \nabla\left( \nabla \cdot \left( (D + \epsilon \zeta_0) \mathbf{v}^k(\hat{x} + f(t^k)) \right) \right)\\
+				&  - \frac{\epsilon \sigma^2}{2} \nabla \left( \nabla \cdot \left((D+\epsilon \zeta_0)\frac{\mathbf{u}^k(\hat{x} + f(t^k)) - \mathbf{u}^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}}\right) \right)  \mathbf{v}^k(\hat{x} + f(t^k))  \\
+				& + \frac{\epsilon \sigma^2}{3} \nabla \left( \nabla \cdot \left( \frac{\mathbf{u}^k(\hat{x} + f(t^k)) - \mathbf{u}^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}} \right) \right) \cdot \left(  (D + \epsilon \zeta_0) \mathbf{v}^k(\hat{x} + f(t^k)) \right) \\
+				&  + \frac{\sigma^2}{2} \nabla \cdot \frac{1}{\mathrm{dt}^2} \left( (D + \epsilon \zeta^k(\hat{x} + f(t^{k+1}))) \mathbf{v}^k(\hat{x} + f(t^{k+1})) -2(D + \epsilon \zeta_0) \mathbf{v}^k(\hat{x} + f(t^{k})) \right. \\
+				& \qquad \qquad \qquad \qquad \qquad \qquad \qquad \qquad  \left. + (D + \epsilon \zeta^k(\hat{x} + f(t^{k-1}))) \mathbf{v}^k(\hat{x} + f(t^{k-11}))\right)\\
+				& \left. - \frac{\epsilon \sigma^2}{2} \nabla  \left(\frac{\zeta^{k+1}(\hat{x} + f(t^k)) - 2\zeta_0 + \zeta^{k-1}(\hat{x} + f(t^k))}{\mathrm{dt}} \right) \cdot \mathbf{v}^k(\hat{x} + f(t^k)) \right]
+			\end{split}
+		\end{equation*}
+				
 		
 		\subsection{Coupling with the transport equation}
 			We met some difficulties with FEniCS to optimize a time-dependent parameter. On the contrary, FEniCS and Dolfin Adjoint make it very easy to optimise parameters	such as an initial condition. A first approach to this optimization problem we shall consider is therefore the weakly coupled system below, in which the control is $\zeta_0(x,y)$.
