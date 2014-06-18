@@ -139,7 +139,7 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			\end{equation}
 			Assuming that $P = 0$ at $z = \epsilon\eta$, integrating \eqref{MConsz} with respect to $z$ from $z$ to $\epsilon\eta$, and using \eqref{Eq:2} we obtain
 			\begin{equation}
-				P = \epsilon \sigma^2(z\nabla \cdot (h \mathbf{u}_b)_t + \frac{z^2}{2} \nabla \cdot (\mathbf{u}_b)_t) + \epsilon \sigma^2z \zeta_{tt} + \epsilon \eta - z + O(\epsilon\sigma^4, \epsilon^2 \sigma^2)
+				P = \epsilon \sigma^2(z\nabla \cdot (h \mathbf{u}_b)_t + \frac{z^2}{2} \nabla \cdot (\mathbf{u}_b)_t) + \epsilon \sigma^2z \zeta_{tt} + \epsilon \eta - z + O(\epsilon\sigma^4, \epsilon^2 \sigma^2) \label{Pressure}
 			\end{equation}
 			Using equations \eqref{MConsxy} and \eqref{ApproxVelocity2}, for $z = -h$, and considering the fact that $h_t = O(\epsilon)$, we have
 			\begin{equation}
@@ -167,7 +167,7 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 			Using the depth-average velocity \eqref{AverageVelocity} in
 			\eqref{ApproxVelocity2} we obtain: 
 			\begin{equation}
-				\mathbf{u}_b = \bar{\mathbf{u}} + \sigma^2\frac{h}{2} \nabla (\nabla \cdot (h \bar{\mathbf{u}}) - \sigma^2 \frac{h^2}{3} \nabla (\nabla \cdot \bar{\mathbf{u}}) + \sigma^2 \frac{h}{2} \nabla \zeta_t + O(\sigma^4, \epsilon \sigma^2) 
+				\mathbf{u}_b = \bar{\mathbf{u}} + \sigma^2\frac{h}{2} \nabla (\nabla \cdot (h \bar{\mathbf{u}}) - \sigma^2 \frac{h^2}{3} \nabla (\nabla \cdot \bar{\mathbf{u}}) + \sigma^2 \frac{h}{2} \nabla \zeta_t + O(\sigma^4, \epsilon \sigma^2) \label{AverageVelocity2}
 			\end{equation}
 			and thus, the equation \eqref{Eq:3} gives: 
 			\begin{equation}
@@ -424,7 +424,7 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 				0 & = \int_{\Omega} \! \frac{\xi^{k} - \xi^{k+1}}{\mathrm{dt}} \eta \: \mathrm{dx} - \int_{\Omega} \! \eta (\nabla \cdot \mathbf{v}^k) \: \mathrm{dx} - \int_{\Omega} \! \epsilon \eta \mathbf{u}^k \cdot \nabla \xi^k \: \mathrm{dx} + stabilization
 			\end{split}			
 		\end{equation}
-		Knowing the solution at the forward problem and the adjoint at each time step, we are now looking for an explicit formulation for the gradient of our functional $J(\zeta_0)$: $\forall \chi \in U_{ad}$
+		Knowing the solution of the forward problem and the adjoint at each time step, we are now looking for an explicit formulation for the gradient of our functional $J(\zeta_0)$: $\forall \chi \in U_{ad}$
 		\begin{equation*}
 			\begin{split}
 				<\!J'(\zeta_0),\chi\!> &= <\! \frac{\partial \mathcal{L}}{\partial \zeta_0}(\zeta_0, (\mathbf{u}^N, \eta^N), ... (\mathbf{u}^0, \eta^0), 	(\mathbf{v}^N, \xi^N), ... (\mathbf{v}^0, \xi^0)), \chi\!> \\
@@ -515,6 +515,20 @@ the Euler equations and the kinematic and dynamic boundary conditions:
 					\end{align*}
 					
 					Comment the results of that method (the object do not keep is shape...)
+				
+				\pagebreak
+				\subsection{Recovering the pressure in the Peregrine system}		
+				Using only the size of the wave as a functional to maximize gives a quite minimal result (a single block of maximal height). If such an object will give a big wave, he will also need a lot of energy to be pulled under the water, for its shape is not aerodynamic. To find a good compromise between the size of the created wave and the energy required to pull the object, we need to take an other factor in account: the resistance of the object while it is moving under the water. An optimal shape will allow the object to create a big wave, but with a weak resistance whilst it is moving. As we are using a two dimensional model, the only way to evaluate the forces on the object is to recover the pressure from Euler equations.
+				
+				Using the equation \eqref{Pressure} for $ z = -h$, and the equation \eqref{AverageVelocity2}, we get:
+			\begin{equation}
+				P(z=-h) = \epsilon \sigma^2(-h\nabla \cdot (h \mathbf{u}_t) + \frac{h^2}{2} \nabla \cdot \mathbf{u}_t) - \epsilon \sigma^2 h \zeta_{tt} + \epsilon \eta + h + O(\epsilon\sigma^4, \epsilon^2 \sigma^2)
+			\end{equation}			
+			This equation with dimensions becomes:
+			
+			\begin{equation}
+				\tilde{P}(-\tilde{h}) = \rho g (\tilde{\eta} + \tilde{h} ) - \rho \tilde h \tilde {\nabla} \cdot (\tilde h \tilde{\mathbf{u}}_{\tilde t}) + \rho \frac{\tilde h^2}{2} \tilde \nabla \cdot \tilde{\mathbf{u}}_{\tilde t} - \rho \tilde h \tilde \zeta_{\tilde t \tilde t}
+			\end{equation}
 					
 				\subsection{Convergence}
 					We use dolfin-adjoint coupled with pyipopt, which allows an automatic resolution of the adjoint system.
