@@ -19,7 +19,12 @@ x1 = 60.
 y0 = -25.
 y1 = 25.
 
-# No-slip boundary
+#Physical Parameters
+hd = 2. #Depth of the pool in the central lane [m]
+hb = 0.3 #Depth at the boundaries [m]
+ad = 0.8 #height of the moving object [m]
+
+# Slip boundary
 class Y_SlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and \
@@ -99,11 +104,6 @@ class Problem(ProblemBase):
         self.mesh = refine(self.mesh, cell_markers4)
 
         #DEFINITION OF THE OBJECT
-        #Physical Parameters
-        hd = 2. #Depth of the pool in the central lane [m]
-        hb = 0.3 #Depth at the boundaries [m]
-        ad = 0.8 #height of the moving object [m]
-
         #Scaled Parameters
         self.hd = hd/h0 #depth
         self.ad = ad/a0 #height of the moving object
@@ -128,8 +128,6 @@ class Problem(ProblemBase):
         #Define function to stabilize the wake of the object
         self.filtre = '2*(x[1]<4/lambda0 ? 1. : 0.)*(x[1]>-4/lambda0 ? 1. : 0.)'\
                     + '*(lambda0*x[0]-'+traj+' < -4 ? 1. : 0.)+0.05'
-
-
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))
