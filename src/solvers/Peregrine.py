@@ -9,20 +9,25 @@ class Solver(SolverBase):
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
-        
+
         #Parameters
         self.Re = None
+        self.g = 9.8 #Gravity
+        self.lambda0 = self.options['lambda0'] #typical wavelength
+        a0 = self.options['a0'] #Typical wave height
+        h0 = self.options['h0'] #Typical depth
+        self.sigma = h0/self.lambda0
+        self.c0 = (h0*self.g)**(0.5)
+        self.epsilon = a0/h0
 
-    def strong_residual(self,u,U,eta):  
+    def strong_residual(self,u,U,eta):
         #Parameters
-        g = 9.8 #Gravity
-        lambda0 = options['lambda0'] #typical wavelength
-        a0 = options['a0'] #Typical wave height
-        h0 = options['h0'] #Typical depth
-        sigma = h0/lambda0
-        c0 = (h0*g)**(0.5)
-        epsilon = a0/h0
-        
+        g = self.g #Gravity
+        lambda0 = self.lambda0 #typical wavelength
+        sigma = self.sigma
+        c0 = self.c0
+        epsilon = self.epsilon
+
         zeta_tt = 1./self.dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./self.dt*(self.zeta - self.zeta_)
 
@@ -38,16 +43,14 @@ class Solver(SolverBase):
 
     def weak_residual(self,U,U_,eta,eta_,v,chi):
         alpha = self.alpha #time stepping method
-        
+
         #Parameters
-        g = 9.8 #Gravity
-        lambda0 = self.options['lambda0'] #typical wavelength
-        a0 = self.options['a0'] #Typical wave height
-        h0 = self.options['h0'] #Typical depth
-        sigma = h0/lambda0
-        c0 = (h0*g)**(0.5)
-        epsilon = a0/h0
-        
+        g = self.g #Gravity
+        lambda0 = self.lambda0 #typical wavelength
+        sigma = self.sigma
+        c0 = self.c0
+        epsilon = self.epsilon
+
         problem = self.problem
 
         #problem dimensions
@@ -60,26 +63,23 @@ class Solver(SolverBase):
         self.dt = self.dt*c0/lambda0 #time step
         dt = self.dt
         self.T = self.T*c0/lambda0 #Final time
-        
-        D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element()) 
+
+        D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element())
         self.zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0,\
                     hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
         self.zeta_ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0,\
                     hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
         self.zeta__ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())   
+                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
         self.bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', epsilon=epsilon,\
                     hb=problem.hb, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0, hd=problem.hd,\
                     lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
         self.h = interpolate(self.bottom, self.Q)
         self.h_ = interpolate(self.bottom, self.Q)
-       
+
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
-        
-        #Define function to stabilize the wake of the object
-        self.time_stabilize = Expression(problem.filtre, vmax=problem.vmax, t=self.t0, lambda0=lambda0, c0=c0)
-        
+
         #Time stepping method
         U_alpha = (1. - alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
@@ -105,15 +105,14 @@ class Solver(SolverBase):
         d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
         return d1, d2
-    
-    def wave_object(self, t, dt): 
+
+    def wave_object(self, t, dt):
         self.zeta.t = t
         self.zeta_.t = max(t - dt, self.t0)
         self.zeta__.t = max(t - 2*dt, self.t0)
         self.h_.assign(self.h)
         self.bottom.t = t
         self.h = interpolate(self.bottom, self.Q)
-        self.time_stabilize.t = t
 
     def __str__(self):
           return 'Peregrine'
