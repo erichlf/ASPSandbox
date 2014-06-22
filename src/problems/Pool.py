@@ -42,7 +42,7 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
-        global x0, x1, y0, y1
+        global x0, x1, y0, y1, hd, hb, ad
 
         #Scaling Parameters
         g = 9.8 #Gravity
