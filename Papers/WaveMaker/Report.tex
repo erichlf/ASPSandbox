@@ -88,7 +88,7 @@
 	\end{align}
 	At the free surface $\tilde{z} = \tilde{\eta}(\tilde{x},\tilde{y},\tilde{t})$,	the fluid is also assumed to satisfy the dynamic boundary condition $\tilde{P}(\tilde{x},\tilde{y},\tilde{t}) = \tilde{P}_0(\tilde{x},\tilde{y})$.
 			
-	Considering a characteristic water depth $h_0$ and the corresponding 	characteristic velocity $c_0 = \sqrt{g h_0}$, a typical wavelength $\lambda_0$ and a typical wave height $a_0$, we scale the variables as in \cite{DM2013}: 
+	Considering a characteristic water depth $h_0$ and the corresponding 	characteristic velocity $c_0 = \sqrt{g h_0}$, a typical wavelength $\lambda_0$ and a typical wave height $a_0$, we use the following scaled variables: 
 	\begin{equation*}
 		x = \frac{\tilde{x}}{\lambda_0},\: 
 		y = \frac{\tilde{y}}{\lambda_0}, \:
@@ -230,19 +230,7 @@
 			 &\int_{\Omega}\! \eta_t \; \xi \: \mathrm{dx} +\int_{\Omega}\! \zeta_t \; \xi \: \mathrm{dx} -\int_{\Omega}\! \nabla \xi \; \cdot [(D + \epsilon \zeta+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx} = 0
 		\end{split} 
 	\end{equation}
-			
-	\pagebreak
-
-\subsection{Weak Formulation with inhomogeneous boundary conditions}
-	The main inconvenient of the previous model is that, as the object is moving along the mesh, we need to compute the simulation on a really large domain if we want to model the wave for a long time. A solution to that problem is to consider the object as a static object in a stream of constant velocity $\mathbf{\tilde U} = \tilde{U} \: \mathbf{e_x} $. In that framework, the previous Peregrine system still apply but the weak formulation is slightly different as the boundary conditions have changed. Moreover it is now necessary to impose more boundary conditions on the open boundary, as precised in \cite{}.
 				
-				With $\mathbf{U} = \frac{h_0}{a_0 c_0} \mathbf{\tilde{U}}$, we introduce  $\mathbb{V}' = \left\lbrace \mathbf{w} \in \mathbb{H}^1(\Omega)^2, \mathbf{w} \cdot \mathbf{n} = 0 \: \mathrm{on} \: \partial \Omega_y, \mathbf{w} = \mathbf{0} \: \mathrm{on} \: \partial \Omega_x\right\rbrace $ and $\mathbb{U}' = \left\lbrace \mathbf{w} \in \mathbb{H}^1(\Omega)^2, \mathbf{w} \cdot \mathbf{n} = 0 \: \mathrm{on} \: \partial \Omega_y, \mathbf{w} = -\mathbf{U} \: \mathrm{on} \: \partial \Omega_x\right\rbrace $. As we still have $\mathbf{v} \cdot \mathbf{n} = 0 \: \forall \: \mathbf{v} \in \mathbb{V}'$, the boundary terms resulting from the divergence theorem apply to the last terms of the first equation of \eqref{PeregrineWeakForm1} are still null, but this is not the case for the second equation where we have: 
-				\begin{equation}
-					\int_{\Omega}\! \nabla \cdot [(h+\epsilon\eta) \mathbf{u}] \; \xi \: \mathrm{dx} = - \int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx} + \int_{\partial \Omega_x} \! \xi (h+\epsilon \eta) \mathbf{u} \cdot \mathbf{n} \; \mathrm{ds}
-				\end{equation}				
-			
-	\pagebreak
-	
 \subsection{Time stepping methods}	
 	Considering $\mathrm{dt}$ a time-step, the second part is to discretize the time dependency. We will use a $\theta$-method in order to get the possibility to run different time stepping methods. Let $\theta$ be in $[0,1] $ and $f$ be a time-dependent function: 	
 	\begin{equation}
@@ -262,45 +250,141 @@
 			\displaystyle 0 &= \int_{\Omega}\! \frac{\eta - \eta^{n-1}}{\mathrm{dt}} \; \xi \: \mathrm{dx} +\frac{1}{\epsilon}\int_{\Omega}\! h_t \; \xi \: \mathrm{dx} -\int_{\Omega}\! \nabla \xi \; \cdot [(h+\epsilon\eta) \mathbf{u}]  \: \mathrm{dx}
 		\end{split}
 	\end{equation}
-	The non-linear terms are computed by FEniCS, using a Newton Method. 
-	\cite{LoggMardalEtAl2012a}
-	\cite{LoggWellsEtAl2012a}
-	\cite{LoggWells2010a}
-			
-			\pagebreak
-			
-			\subsection{Assessment of the code: the solitary wave test}	
-				To check the code, we use initial conditions which are approximation of a stationary solution for the Peregrine system. 
-				\begin{figure}[!h]
-					\centering
-					\includegraphics[height=8cm]{PeregrineSolitonSolution.jpg}
-					\caption{Initial condition for the velocity and the free surface}
-				\end{figure}
-				
-				For different time stepping methods and using or no different stabilization, we compute the solution and compare it to the initial condition at T=3.0s (during which the soliton moved of about 25 meters). 
-				\begin{figure}[!h]
-				\centering
-						\includegraphics[height=9cm]{ErrorL2L801.png}
-						\caption{Error}
-				\end{figure}
 	
-		\subsection{Stabilization}
-			\pagebreak
-		\subsection{Time stepping methods}
-			We tried two time-stepping methods in our weak formulation:
-			\begin{itemize}
-				\item Implicit method
-				\item Crank-Nicholson schema
-			\end{itemize}
-			The implicit method is more stable than the Crank-Nicholson one, but add dissipation. We can see on the following figure the comparison of those two methods without stabilization and a stabilized simulation.
-			\begin{figure}[!h]
-				 \includegraphics[height=6.5cm]{ComparisonTimestepStabilization}
-			\end{figure}
+	The weak formulation obtained is then solved using the collection of free softwares FEniCS and the main library DOLFIN. Within that computational framework, the non-linear terms are directly computed by DOLFIN, using a Newton Method. For more information on those computing tools, the reader can refer to the following: \cite{LoggMardalEtAl2012a}, \cite{LoggWellsEtAl2012a}, \cite{LoggWells2010a}.
 			
-			\pagebreak				
-	\section{Optimization}
-		In this part we will focus on the optimization of the wave object so as to minimize a given functional characterizing the quality of the final water wave.
-		A typical functional which will be used to assess the wave is the $\mathbb{H}^1$ norm of the height of the free surface  $\eta$ at a final time $T$ over a specific domain $\omega$.
+\subsection{Stabilization}
+	The first resolution of that system using (P2, P1) finite element spaces and two different time stepping methods (implicit with $\theta=1$ and Crank-Nicholson with $\theta = 0.5$)	showed some instabilities issues, especially in the wake of the object. A stabilization method was therefore needed here to solve that problem and we added here some artificial dissipation to the weak formulation:
+	\begin{equation}
+		s((\mathbf{u}, \eta),(\mathbf{v}, \xi)) = c_f h^{\frac{3}{2}}\left(\int_{\Omega}{\! \nabla \mathbf{u} : \nabla \mathbf{v} \: \mathrm{dx}} + \int_{\Omega}{\!\nabla \eta \cdot \nabla \xi \: \mathrm{dx}} \right)
+	\end{equation}
+	where $h$ is the size of the cells in the mesh and $c_f$ a coefficient we can adapt. An important point to take in account with stabilization is the computation time. This added dissipation allows us to run our finite element method with the finite element spaces (P1,P1) instead of (P2,P1), which decreases significantly the calculation time (almost a factor 5 between both).
+	\begin{figure}[!h]
+		\begin{minipage}[t]{0.5\linewidth}
+			\centering
+			\includegraphics[height=4.8cm]{Instabilities.png}
+			\caption{Instabilities with Crank-Nicholson time-stepping method}
+		\end{minipage}
+		\hspace{10pt}
+		\begin{minipage}[t]{0.5\linewidth}
+			\centering
+			\includegraphics[height=4.8cm]{InstabilitiesCorrection.png}
+			\caption{Result with Crank-Nicholson and stabilization with $c_f = 0.1$}
+		\end{minipage}
+	\end{figure}
+		
+\subsection{Assessment of the code: the solitary wave test}	
+	One of the characteristic of the Peregrine system is that it admits a stationary solution that can be computed numerically. An interesting way to assess the code is therefore to compare that soliton with the solution of our code with this stationary solution as initial condition. We used D. DUTYKH's Matlab code to compute the following stationary solution: 
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[height=8cm]{PeregrineSolitonSolution.jpg}
+		\caption{Solitary solution (velocity $\mathbf{u}$ and free surface $\eta$)}
+	\end{figure}		
+			
+	For different time stepping methods and using or no stabilization with different coefficients $c_f$, we compute the solution for different time step values $dt$ and compare it to the initial condition after a fixed final time step, during which the soliton moved of about 25 meters. 
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[height=9cm]{ErrorL2L801.png}
+		\caption{Computation of the error $\mathbb{L}^2$ and $\mathbb{L}^{\infty}$}
+	\end{figure}
+	
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[height=4cm]{SolitonSolution.png}
+		\caption{Computed soliton solution at final time for implicit (in red) and Crank-Nicholson (in blue) time stepping methods}
+	\end{figure}
+	
+	The Crank-Nicholson time stepping method gives good results, with an $\mathbb{L}^2$-error and an $\mathbb{L}^{\infty}$-error inferior as $3\%$, whereas the implicit time stepping method generates dissipation with an error $\mathbb{L}^2$ which increases with the time step. The stabilization induces more important errors for the mesh used here is not very refined. The size of the cells is here fixed for a computational reason (the Matlab results need to be read by FEniCS through a Python code). However in the real simulations, we use a more refined mesh which reduces the impact of stabilization as we can see in the following part. 
+				
+\subsection{Simulations and results}
+	The following simulations were run using the following characteristics: \\
+	\begin{tabular}{|l|r|}
+		Pouet & Pouet	\\
+		FILL THE TABULAR WITH VALUES &
+	\end{tabular}\\
+	and the following object and trajectory:
+	\begin{figure}[!h]
+		\begin{minipage}[t]{0.5\linewidth}
+			\centering
+			\includegraphics[height=4.5cm]{ObjectUsedModified.png}
+			\caption{Object from different angles}
+		\end{minipage}
+		\hspace{10pt}
+		\begin{minipage}[t]{0.5\linewidth}
+			\centering
+			\includegraphics[height=4.5cm]{ObjectTraj.png}
+			\caption{Trajectory of the object (with real dimensions)}
+		\end{minipage}
+	\end{figure}
+	
+\begin{itemize}
+	\item Crank-Nicholson time stepping method without stabilization
+	\begin{figure}[!h]
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNNoStabilized150.png}
+		\end{minipage}
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNNoStabilized300.png}
+		\end{minipage}
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNNoStabilized400.png}
+		\end{minipage}
+	\end{figure}
+	\item Implicit time stepping method without stabilization
+	\begin{figure}[!h]
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{ImplicitNoStabilized150.png}
+		\end{minipage}
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{ImplicitNoStabilized300.png}
+		\end{minipage}
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{ImplicitNoStabilized400.png}
+		\end{minipage}
+	\end{figure}
+	\item Crank-Nicholson time stepping method with stabilization ($c_f=0.1$)
+	\begin{figure}[!h]
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNStabilized150.png}
+		\end{minipage}
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNStabilized300.png}
+		\end{minipage}
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNStabilized400.png}
+		\end{minipage}
+	\end{figure}
+	\item Crank-Nicholson time stepping method with stabilization ($c_f=1$)
+	\begin{figure}[!h]
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNStabilized1_150.png}
+		\end{minipage}
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNStabilized1_300.png}
+		\end{minipage}
+		\begin{minipage}[t]{0.3\linewidth}
+			\centering
+			\includegraphics[width=5.5cm]{CNStabilized1_400.png}
+		\end{minipage}
+	\end{figure}
+\end{itemize}
+
+	\pagebreak
+	
+\section{Optimization}
+	In this part we will focus on the optimization of the wave object so as to minimize a given functional characterizing the quality of the final water wave.
+	A typical functional which will be used to assess the wave is the $\mathbb{H}^1$ norm of the height of the free surface  $\eta$ at a final time $T$ over a specific domain $\omega$.
 		\begin{equation}
 			\inf_{\zeta_0 \in U_{ad}}\left\{J(\zeta_0)\ = \int_{\omega}{\! j(\eta(T),\zeta_0) \: \mathrm{dx}} \right\}, \: \mathrm{with} \: j(\eta(T),\zeta_0) = \frac{1}{2}(\alpha ||\eta(T)||_{\mathbb{L}^2(\Omega)}^2 + \beta ||\nabla \eta(T)||_{\mathbb{L}^2(\Omega)^2}^2)
 		\end{equation}
