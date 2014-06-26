@@ -570,7 +570,8 @@ The stabilized simulation show less instabilities in the wake of the object, but
 \textbf{	\textcolor{red}{ADD GRAPHICS AND PICTURES OF THE PRESSURE AND THE FORCE - COMMENT INSTABILITIES OBSERVED FOR THE BLOCK OBJECT}	}
 
 \subsection{Derivation of the adjoint system}
-	To avoid the lost of information caused by the inaccuracy of the numerical resolution of the transport equation, the alternative is to derive and code ourself a gradient method using the explicit expression of $\zeta(\mathbf{x},t)$
+	To avoid the lost of information caused by the inaccuracy of the numerical resolution of the transport equation, the alternative is to derive and code ourself a gradient method using the explicit expression of $\zeta(\mathbf{x},t)$ so as to get rid of \textit{Dolfin-Adjoint} constraints. The following calculations explain a method to compute the adjoint and the gradient of a functional depending only of the final free surface, for an implicit time stepping method and without added stabilization, using Lagrange multipliers. It can easily be extended to other functionals, time stepping methods and cases with stabilization.
+	
 	Calling $(\mathbf{v}^N, \xi^N), ... (\mathbf{v}^0, \xi^0)$ the Lagrange multipliers associated with $(\mathbf{u}^N, \eta^N), ... (\mathbf{u}^0, \eta^0)$, we can now define the Lagrangian $\mathcal{L} $ of our problem: 
 		
 		\begin{equation}
@@ -580,16 +581,16 @@ The stabilized simulation show less instabilities in the wake of the object, but
 				 &\quad-\int_{\Omega}\! \nabla \xi^{k+1} \; \cdot [(D + \epsilon \zeta^{k+1} + \epsilon \eta^{k+1}) \mathbf{u}^{k+1}] \:	\mathrm{dx} + \frac{\sigma^2}{2} \! \int_{\Omega} \! \zeta^{k+1}_{tt}  \; (\nabla \cdot( (D+\epsilon \zeta^{k+1}) \mathbf{v}^{k+1})) \: \mathrm{dx} \\ 
 					&\quad+ \frac{\sigma^2}{2} \! \int_{\Omega} \!  (\nabla \cdot ((D + \epsilon \zeta^{k+1})	\frac{\mathbf{u}^{k+1} - \mathbf{u}^{k}}{\Delta t})) \; (\nabla \cdot ((D + \epsilon \zeta^{k+1}) \mathbf{v}^{k+1})) \: \mathrm{dx} \\
 					&\quad\left. - \frac{\sigma^2}{6} \! \int_{\Omega} \! (\nabla 
-					\cdot \frac{\mathbf{u}^{k+1} - \mathbf{u}^{k}}{\Delta t}) \; (\nabla  \cdot	((D + \epsilon \zeta^{k+1})^2  \mathbf{v}^{k+1})) \: \mathrm{dx} + stabilization\right]	
+					\cdot \frac{\mathbf{u}^{k+1} - \mathbf{u}^{k}}{\Delta t}) \; (\nabla  \cdot	((D + \epsilon \zeta^{k+1})^2  \mathbf{v}^{k+1})) \: \mathrm{dx} \right]	
 			\end{split}
 		\end{equation}
-		where we denoted $\zeta^k(x,y,t) = \zeta_0(x-f(t^k),y)$ with $f(t)$ the trajectory of the object (along the axis x).
+		where we denoted $\zeta^k(\mathbf{x}, t) = \zeta_0(\mathbf{x}-\mathbf{f}(t^k),y)$ with $\mathbf{f}(t) = \int_0^t{\! \mathbf{U}(s) \: \mathrm{ds}}$ the trajectory of the object.
 		
 		Differentiating the Lagrangian with respect to the velocity and the height at each time step gives us the adjoint system: $\forall (\mathbf{u},\eta) \in \mathbb{V} \times \mathbb{H}^1(\Omega)$		
 		\begin{equation}
 			\begin{split}
 				0 & = \int_{\Omega} \! \frac{\mathbf{v}^{N}}{\Delta t} \cdot	\mathbf{u} \: \mathrm{dx} + \epsilon \int_{\Omega} \! ((\mathbf{u} \cdot \nabla )\mathbf{u}^N + (\mathbf{u}^N \cdot \nabla )\mathbf{u}) \cdot 	\mathbf{v}^{N} \: \mathrm{dx} 	- \int_{\Omega} \! (\epsilon \eta^N + D + \epsilon \zeta^N) \mathbf{u} \cdot \nabla \xi^N \: \mathrm{dx} \\
-				&\quad + \frac{\sigma^2}{2} \int_{\Omega} \! \nabla \cdot ((D + \epsilon \zeta) \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^N)\mathbf{v}^N}{\Delta t}\right) \: \mathrm{dx} - \frac{\sigma^2}{6} \int_{\Omega} \! (\nabla \cdot \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^N)^2 \mathbf{v}^N}{\Delta t}\right) \: \mathrm{dx} \\
+				&\quad + \frac{\sigma^2}{2} \int_{\Omega} \! \nabla \cdot ((D + \epsilon \zeta^N) \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^N)\mathbf{v}^N}{\Delta t}\right) \: \mathrm{dx} - \frac{\sigma^2}{6} \int_{\Omega} \! (\nabla \cdot \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^N)^2 \mathbf{v}^N}{\Delta t}\right) \: \mathrm{dx} \\
 				& + stabilization \\
 				0 & = \int_{\Omega} \! \frac{\xi^{N}}{\Delta t} \eta \: \mathrm{dx} - \int_{\Omega} \! \eta (\nabla \cdot \mathbf{v}^N) \: \mathrm{dx} - \int_{\Omega} \! \epsilon \eta \mathbf{u}^N \cdot \nabla \xi^N \: \mathrm{dx} + \int_{\Omega} \! \frac{\partial j}{\partial \eta^N}(\eta^N) \eta + stabilization
 			\end{split}			
@@ -598,7 +599,7 @@ The stabilized simulation show less instabilities in the wake of the object, but
 		\begin{equation}
 			\begin{split}
 				0 & = \int_{\Omega} \! \frac{\mathbf{v}^{k} - \mathbf{v}^{k+1}}{\Delta t} \cdot	\mathbf{u} \: \mathrm{dx} + \epsilon \int_{\Omega} \! ((\mathbf{u} \cdot \nabla )\mathbf{u}^k + (\mathbf{u}^k \cdot \nabla )\mathbf{u}) \cdot 	\mathbf{v}^{k} \: \mathrm{dx} 	- \int_{\Omega} \! (\epsilon \eta^k + D + \epsilon \zeta^k) \mathbf{u} \cdot \nabla \xi^k \: \mathrm{dx} \\
-				&\quad + \frac{\sigma^2}{2} \int_{\Omega} \! \nabla \cdot ((D + \epsilon \zeta) \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^k)\mathbf{v}^k - (D + \epsilon \zeta^{k+1})\mathbf{v}^{k+1})}{\Delta t}\right) \: \mathrm{dx} \\
+				&\quad + \frac{\sigma^2}{2} \int_{\Omega} \! \nabla \cdot ((D + \epsilon \zeta^k) \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^k)\mathbf{v}^k - (D + \epsilon \zeta^{k+1})\mathbf{v}^{k+1})}{\Delta t}\right) \: \mathrm{dx} \\
 				&\quad - \frac{\sigma^2}{6} \int_{\Omega} \! (\nabla \cdot \mathbf{u})  \nabla \cdot \left(\frac{(D+ \epsilon \zeta^k)^2 \mathbf{v}^k - (D + \epsilon \zeta^{k+1})^2 \mathbf{v}^{k+1})}{\Delta t}\right) \: \mathrm{dx} + stabilization \\
 				0 & = \int_{\Omega} \! \frac{\xi^{k} - \xi^{k+1}}{\Delta t} \eta \: \mathrm{dx} - \int_{\Omega} \! \eta (\nabla \cdot \mathbf{v}^k) \: \mathrm{dx} - \int_{\Omega} \! \epsilon \eta \mathbf{u}^k \cdot \nabla \xi^k \: \mathrm{dx} + stabilization
 			\end{split}			
@@ -648,10 +649,7 @@ The stabilized simulation show less instabilities in the wake of the object, but
 			\end{split}
 		\end{equation*}
 		
-		After having computed and stored all the solutions of the forward and backward problem and with this expression for the gradient of $J(\zeta_0)$, we can then implement a gradient algorithm with variable step:
-		\begin{itemize}
-			\item 
-		\end{itemize}
+	After having computed and stored all the solutions of the forward and backward problem and with this expression for the gradient of $J(\zeta_0)$, we can then implement a gradient algorithm.
 		
 		
 		
