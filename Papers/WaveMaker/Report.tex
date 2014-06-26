@@ -551,18 +551,19 @@ The stabilized simulation show less instabilities in the wake of the object, but
 	To find a good compromise between the size of the created wave and the energy required to pull the object, we need to take an other factor in account: the resistance of the object while it is moving under the water. An optimal shape will allow the object to create a big wave, but with a weak resistance whilst it is moving.
 	
 \subsubsection{Recovering the pressure in the Peregrine system}		
-	 As we are using a two dimensional model, one way to evaluate the forces on the object is to recover the pressure from Euler equations, used to derived the Peregrine system in the section \ref{Part1}.
+	As we are using a two dimensional model, one way to evaluate the forces on the object is to recover the pressure from Euler equations, used to derived the Peregrine system in the section \ref{Part1}.
 				
-				Using the equation \eqref{Pressure} for $ z = -h$, and the equation \eqref{AverageVelocity2}, we get:
-			\begin{equation}
-				P(z=-h) = \epsilon \sigma^2(-h\nabla \cdot (h \mathbf{u}_t) + \frac{h^2}{2} \nabla \cdot \mathbf{u}_t) - \epsilon \sigma^2 h \zeta_{tt} + \epsilon \eta + h + O(\epsilon\sigma^4, \epsilon^2 \sigma^2)
-			\end{equation}			
-			This equation with dimensions becomes:
-			
-			\begin{equation}
-				\tilde{P}(-\tilde{h}) = \rho g (\tilde{\eta} + \tilde{h} ) - \rho \tilde h \tilde {\nabla} \cdot (\tilde h \tilde{\mathbf{u}}_{\tilde t}) + \rho \frac{\tilde h^2}{2} \tilde \nabla \cdot \tilde{\mathbf{u}}_{\tilde t} - \rho \tilde h \tilde \zeta_{\tilde t \tilde t}
-			\end{equation}
-					
+	Using the equation \eqref{Pressure} for $ z = -h$, and the equation \eqref{AverageVelocity2}, we get:
+	\begin{equation}
+		P(z=-h) = \epsilon \sigma^2(-h\nabla \cdot (h \mathbf{u}_t) + \frac{h^2}{2} \nabla \cdot \mathbf{u}_t) - \epsilon \sigma^2 h \zeta_{tt} + \epsilon \eta + h + O(\epsilon\sigma^4, \epsilon^2 \sigma^2)
+	\end{equation}	
+	Knowing the pressure on the seabed, we now want to find the total force applied on the object.	Let $t$ be a fixed time and $\mathbf{n}$ be the unit vector normal to surface $\Sigma(t)_{object} = \{(x,y,z), z = - h(x,y,t), \zeta(x,y,t)\neq 0 \} $ and $\Omega(t)_{object} = \{(x,y), \zeta(x,y,t)\neq 0 \} $ . The projection of that vector on the horizontal plan is the vector $\hat{\mathbf{n}} = - \dfrac{\nabla h(x,y,t)}{|\nabla h(x,y,t)|}$. The total horizontal force applied on the object at time $t$ is therefore the following: 
+	\begin{align*}
+		\mathbf{F}(t) &= \int_{\Sigma(t)_{object}}{\! P(\hat{x}, \hat{y}) (-\hat{\mathbf{n}})(\hat{x},\hat{y}) \: \mathrm{d\hat{x}}\:\mathrm{d\hat{y}}}\\
+		 & = - \int_{\Omega(t)_{object}}{\! P(-h(x,y,t)) \hat{\mathbf{n}}(h(x,y,t)) |-\nabla h(x,y,t)| \: \mathrm{dx}\:\mathrm{dy}}\\
+		 & = \int_{\Omega(t)_{object}}{\! P(-h(x,y,t)) \nabla h(x,y,t) \: \mathrm{dx}\:\mathrm{dy}}
+	\end{align*}	
+	With this formula, we are now able to evaluate the constraints on the moving object over time and therefore to minimize them. 					
 
 \subsection{Derivation of the adjoint system}
 	To avoid the lost of information caused by the inaccuracy of the numerical resolution of the transport equation, the alternative is to derive and code ourself a gradient method using the explicit expression of $\zeta(\mathbf{x},t)$
