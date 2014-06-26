@@ -18,11 +18,20 @@ class Solver(SolverBase):
         return R1, R2
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,U,U_,p,p_,v,q):
+    def weak_residual(self,w,w_,wt):
+        (U, p) = (as_vector((w[0], w[1])), w[2])
+        (U_, p_) = (as_vector((w_[0], w_[1])), w_[2])
+        (v, q) = (as_vector((wt[0], wt[1])), wt[2])
+
+        h = CellSize(self.mesh) #mesh size
+
         Re = self.Re #Reynolds Number
+
+        problem = self.problem
 
         alpha = self.alpha #time stepping method
         dt = self.dt
+        t0 = self.t0
 
         inviscid = self.options['inviscid']
 
@@ -32,12 +41,26 @@ class Solver(SolverBase):
         #p_(k+alpha)
         p_alpha = (1.0-alpha)*p_ + alpha*p
 
+        t = t0 + dt
+        #forcing and mass source/sink
+        F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
+        F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
+
         #weak form of the equations
         r = (1./dt)*inner(U - U_,v)*dx \
             - p_alpha*div(v)*dx \
             + inner(grad(U_alpha)*U_alpha,v)*dx
         r +=  inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         r += div(U_alpha)*q*dx
+
+        r -= inner(F1_alpha,v)*dx + F2_alpha*q*dx
+
+        #least squares stabilization
+        if(self.options["stabilize"]):
+            d1, d2 = self.stabilization_parameters(U_,p_,h)
+            R1, R2 = self.strong_residual(U_alpha,U_alpha,p_alpha)
+            Rv1, Rv2 = self.strong_residual(U_alpha,v,q)
+            r += d1*inner(R1 - F1_alpha, Rv1)*dx + d2*(R2 - F2_alpha)*Rv2*dx
 
         return r
 

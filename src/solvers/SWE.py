@@ -16,6 +16,19 @@ class Solver(SolverBase):
         self.Fr = options['Fr']
         self.Th = options['Theta']
 
+        #if we want a linear version then make a coefficient zero for the
+        #terms which only occur in the non-linear from of SWE
+        if(self.options['linear']):
+            self.NonLinear = 0
+        else:
+            self.NonLinear = 1
+
+        if(self.options['inviscid']):
+            self.inviscid = 0
+        else:
+            self.inviscid = 1
+
+
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,eta):
         #get problem parameters
@@ -37,7 +50,13 @@ class Solver(SolverBase):
         return R1, R2
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,U,U_,eta,eta_,v,chi):
+    def weak_residual(self,w,w_,wt):
+        (U, eta) = (as_vector((w[0], w[1])), w[2])
+        (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
+        (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
+
+        h = CellSize(self.mesh) #mesh size
+
         #get problem parameters
         Re = self.Re #Reynolds number
         H = self.H #Fluid depth
@@ -48,14 +67,22 @@ class Solver(SolverBase):
         NonLinear = self.NonLinear
         inviscid = self.inviscid
 
+        problem = self.problem
+
         alpha = self.alpha #time stepping method
         dt = self.dt
+        t0 = self.t0
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
 
         #p_(k+alpha)
         eta_alpha = (1.0-alpha)*eta_ + alpha*eta
+
+        t = t0 + dt
+        #forcing and mass source/sink
+        F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
+        F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
         #weak form of the equations
         #momentum equation
@@ -68,6 +95,15 @@ class Solver(SolverBase):
         #continuity equation
         r += (1./dt)*(eta - eta_)*chi*dx \
             + H/Th*div(U_alpha)*chi*dx
+
+        r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
+
+        #least squares stabilization
+        if(self.options["stabilize"]):
+            d1, d2 = self.stabilization_parameters(U_,eta_,h)
+            R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
+            Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
+            r += d1*inner(R1 - F1_alpha, Rv1)*dx + d2*(R2 - F2_alpha)*Rv2*dx
 
         return r
 

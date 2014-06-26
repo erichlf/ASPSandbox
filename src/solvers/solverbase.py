@@ -79,24 +79,9 @@ class SolverBase:
         self.mesh = mesh
         h = CellSize(mesh) #mesh size
 
-        #if we want a linear version then make a coefficient zero for the
-        #terms which only occur in the non-linear from of SWE
-        if(self.options['linear']):
-            self.NonLinear = 0
-        else:
-            self.NonLinear = 1
-
-        if(self.options['inviscid']):
-            self.inviscid = 0
-        else:
-            self.inviscid = 1
-
         t = self.t0
         T=self.T
         T = problem.T #final time
-
-        F1 = problem.F1(t) #forcing function for the momentum equation
-        F2 = problem.F2(t) #mass source for the continuity equation
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
@@ -107,11 +92,8 @@ class SolverBase:
         # Get boundary conditions
         bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
 
-        #forcing and mass source/sink
-        F1 = self.V_project(problem.F1(t),W)
-        F2 = self.Q_project(problem.F2(t),W)
-
         #define trial and test function
+        wt = TestFunction(W)
         v, chi = TestFunctions(W)
 
         w = Function(W)
@@ -123,30 +105,7 @@ class SolverBase:
         U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
-        #U_(k+alpha)
-        U_alpha = (1.0-self.alpha)*U_ + self.alpha*U
-
-        #p_(k+alpha)
-        eta_alpha = (1.0-self.alpha)*eta_ + self.alpha*eta
-
-        F = self.weak_residual(U, U_, eta, eta_, v, chi) \
-            - inner(F1,v)*dx - F2*chi*dx
-
-        if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
-          # Stabilization parameters
-          d1, d2 = self.stabilization_parameters(U_,eta_,h)
-
-          #add stabilization
-          if 'wave_object' in dir(self):
-              #R1, R2, z1, z2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
-              #Rv1, Rv2, zv1, zv2 = self.strong_residual(U_alpha,v,chi)
-              #F += d1*inner(R1 + z1 - F1, Rv1)*dx + d2*(R2 + z2 - F2)*Rv2*dx
-              #shock capturing
-              F += 0.1*h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
-          else:
-              R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
-              Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
-              F += d1*inner(R1 - F1, Rv1)*dx + d2*(R2 - F2)*Rv2*dx
+        F = self.weak_residual(w, w_,wt)
 
         U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, F)
         return U_, eta_
@@ -173,12 +132,12 @@ class SolverBase:
             F1 = self.V_project(self.problem.F1(t),W)
             F2 = self.Q_project(self.problem.F2(t),W)
 
-            w_.vector()[:] = w.vector()
+            w_.assign(w)
 
-            U_, eta_ = w_.split()
+            #U_, eta_ = w_.split()
 
             # Update
-            self.update(problem, t, U_, eta_)
+            self.update(problem, t, w.split()[0], w.split()[1])
 
         return U_, eta_
 

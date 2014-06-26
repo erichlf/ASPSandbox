@@ -41,7 +41,13 @@ class Solver(SolverBase):
 
         return R1, R2, z1, z2
 
-    def weak_residual(self,U,U_,eta,eta_,v,chi):
+    def weak_residual(self,w,w_,wt):
+        (U, eta) = (as_vector((w[0], w[1])), w[2])
+        (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
+        (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
+
+        h = CellSize(self.mesh) #mesh size
+
         alpha = self.alpha #time stepping method
 
         #Parameters
@@ -53,26 +59,22 @@ class Solver(SolverBase):
 
         problem = self.problem
 
-        #problem dimensions
-        self.x0 = problem.mesh.coordinates()[0][0]
-        self.x1 = problem.mesh.coordinates()[-1][0]
-        self.y0 = problem.mesh.coordinates()[0][1]
-        self.y1 = problem.mesh.coordinates()[-1][1]
-
         #Scaled Parameters
         self.dt = self.dt*c0/lambda0 #time step
         dt = self.dt
         self.T = self.T*c0/lambda0 #Final time
 
+        t0 = self.t0
+
         D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0,\
+        self.zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
                     hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.zeta_ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0,\
+        self.zeta_ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
                     hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.zeta__ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0,\
+        self.zeta__ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
                     hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
         self.bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', epsilon=epsilon,\
-                    hb=problem.hb, ad=problem.ad, c0=c0, t0=self.t0, t=self.t0, hd=problem.hd,\
+                    hb=problem.hb, ad=problem.ad, c0=c0, t0=t0, t=t0, hd=problem.hd,\
                     lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
         self.h = interpolate(self.bottom, self.Q)
         self.h_ = interpolate(self.bottom, self.Q)
@@ -85,6 +87,11 @@ class Solver(SolverBase):
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
         zeta_alpha = (1. - alpha)*self.zeta_ + alpha*self.zeta
 
+        t = t0 + dt
+        #forcing and mass source/sink
+        F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
+        F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
+
         #weak form of the equations
         r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U_alpha)*U_alpha,v)*dx \
             - div(v)*eta_alpha*dx
@@ -95,6 +102,11 @@ class Solver(SolverBase):
 
         r += 1./dt*(eta-eta_)*chi*dx + zeta_t*chi*dx
         r -= inner(U_alpha,grad(chi))*(epsilon*eta_alpha + D + epsilon*zeta_alpha)*dx
+
+        r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
+
+        if(self.options["stabilize"]):
+          r += 0.1*h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
 
         return r
 
