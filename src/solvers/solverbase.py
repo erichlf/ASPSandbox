@@ -84,6 +84,7 @@ class SolverBase:
         T = problem.T #final time
 
         # Define function spaces
+        Z = FunctionSpace(mesh, "DG", 0)
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
         self.Q = FunctionSpace(mesh, 'CG', self.Pp)
         Q = self.Q
@@ -105,12 +106,14 @@ class SolverBase:
         U, eta = (as_vector((w[0], w[1])), w[2])
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
-        F = self.weak_residual(w, w_,wt)
+        #weak form of the primal problem
+        F = self.weak_residual(w, w_,wt,ei_mode=False)
 
-        U_, eta_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, U_, eta_, F)
+        w_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, F)
+
         return U_, eta_
 
-    def timeStepper(self, problem, t, T, dt, W, w, w_, U_, eta_, F):
+    def timeStepper(self, problem, t, T, dt, W, w, w_, F):
         # Time loop
         self.start_timing()
 
@@ -134,12 +137,10 @@ class SolverBase:
 
             w_.assign(w)
 
-            #U_, eta_ = w_.split()
-
             # Update
             self.update(problem, t, w.split()[0], w.split()[1])
 
-        return U_, eta_
+        return w_
 
     def prefix(self, problem):
         #Return file prefix for output files
@@ -206,7 +207,7 @@ class SolverBase:
                     self._bfile = File(s + '_b.pvd')
                 self._ufile << u
                 self._pfile << p
-                self._bfile << self.h_
+                self._bfile << self.H_
         else:
             self.options['plot_solution'] = True
 
@@ -221,12 +222,12 @@ class SolverBase:
                 else :
                     self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
                 if('wave_object' in dir(self)):
-                    self.vizZ = plot(self.h, title='Wave Object', rescale=True)
+                    self.vizZ = plot(self.H, title='Wave Object', rescale=True)
             else :
                 self.vizU.plot(u)
                 self.vizP.plot(p)
                 if('wave_object' in dir(self)):
-                    self.vizZ.plot(self.h_)
+                    self.vizZ.plot(self.H_)
 
         # Check memory usage
         if self.options['check_mem_usage']:

@@ -60,48 +60,7 @@ class Problem(ProblemBase):
         x1 = x1/lambda0
         y0 = y0/lambda0
         y1 = y1/lambda0
-        mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
-
-        #Refine the mesh along the object's trajectory
-        cell_markers = CellFunction("bool", mesh)
-        cell_markers.set_all(False)
-
-        for cell in cells(mesh):
-           p = cell.midpoint()
-           if p.y() > -4./lambda0:
-                cell_markers[cell] = True
-
-        self.mesh = refine(mesh, cell_markers)
-
-        cell_markers2 = CellFunction("bool", self.mesh)
-        cell_markers2.set_all(False)
-
-        for cell in cells(self.mesh):
-            p = cell.midpoint()
-            if p.y() > -3.5/lambda0 and p.y() < 20./lambda0:
-                cell_markers2[cell] = True
-
-        self.mesh = refine(self.mesh, cell_markers2)
-
-        cell_markers3 = CellFunction("bool", self.mesh)
-        cell_markers3.set_all(False)
-
-        for cell in cells(self.mesh):
-            p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 18./lambda0:
-                cell_markers3[cell] = True
-
-        self.mesh = refine(self.mesh, cell_markers3)
-
-        cell_markers4 = CellFunction("bool", self.mesh)
-        cell_markers4.set_all(False)
-
-        for cell in cells(self.mesh):
-            p = cell.midpoint()
-            if p.y() > -3./lambda0 and p.y() < 15./lambda0:
-                cell_markers4[cell] = True
-
-        self.mesh = refine(self.mesh, cell_markers4)
+        self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
 
         #DEFINITION OF THE OBJECT
         #Scaled Parameters

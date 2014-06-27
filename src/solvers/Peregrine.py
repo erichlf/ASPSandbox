@@ -41,12 +41,19 @@ class Solver(SolverBase):
 
         return R1, R2, z1, z2
 
-    def weak_residual(self,w,w_,wt):
+    def weak_residual(self,w,w_,wt,ei_mode):
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
+        problem = self.problem
+
         h = CellSize(self.mesh) #mesh size
+        d = 0.1*h**(3./2.) #stabilization parameter
+
+        #set up error indicators
+        Z = FunctionSpace(self.mesh, "DG", 0)
+        z = TestFunction(Z)
 
         alpha = self.alpha #time stepping method
 
@@ -57,8 +64,6 @@ class Solver(SolverBase):
         c0 = self.c0
         epsilon = self.epsilon
 
-        problem = self.problem
-
         #Scaled Parameters
         self.dt = self.dt*c0/lambda0 #time step
         dt = self.dt
@@ -66,18 +71,8 @@ class Solver(SolverBase):
 
         t0 = self.t0
 
-        D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.zeta_ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.zeta__ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', epsilon=epsilon,\
-                    hb=problem.hb, ad=problem.ad, c0=c0, t0=t0, t=t0, hd=problem.hd,\
-                    lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.h = interpolate(self.bottom, self.Q)
-        self.h_ = interpolate(self.bottom, self.Q)
+        D, self.zeta, self.zeta_, self.zeta__, self.bottom, self.H, self.H_ \
+            = self.seabed(problem,t0,c0,lambda0,epsilon)
 
         zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./dt*(self.zeta - self.zeta_)
@@ -105,8 +100,12 @@ class Solver(SolverBase):
 
         r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
 
-        if(self.options["stabilize"]):
-          r += 0.1*h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
+        if(not self.options["stabilize"]):
+          d = 0
+        if(not ei_mode):
+          z = 1.
+
+        r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
 
         return r
 
@@ -118,13 +117,29 @@ class Solver(SolverBase):
 
         return d1, d2
 
+    def seabed(self,problem,t0,c0,lambda0,epsilon):
+        D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element())
+        zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
+                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
+        zeta_ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
+                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
+        zeta__ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
+                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
+        bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', epsilon=epsilon,\
+                    hb=problem.hb, ad=problem.ad, c0=c0, t0=t0, t=t0, hd=problem.hd,\
+                    lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
+        H = interpolate(bottom, self.Q)
+        H_ = interpolate(bottom, self.Q)
+
+        return D, zeta, zeta_, zeta__, bottom, H, H_
+
     def wave_object(self, t, dt):
         self.zeta.t = t
         self.zeta_.t = max(t - dt, self.t0)
         self.zeta__.t = max(t - 2*dt, self.t0)
-        self.h_.assign(self.h)
+        self.H_.assign(self.H)
         self.bottom.t = t
-        self.h = interpolate(self.bottom, self.Q)
+        self.H = interpolate(self.bottom, self.Q)
 
     def __str__(self):
           return 'Peregrine'

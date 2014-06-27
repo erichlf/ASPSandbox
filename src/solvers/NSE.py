@@ -18,12 +18,17 @@ class Solver(SolverBase):
         return R1, R2
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,w,w_,wt):
+    def weak_residual(self,w,w_,wt,ei_mode):
         (U, p) = (as_vector((w[0], w[1])), w[2])
         (U_, p_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, q) = (as_vector((wt[0], wt[1])), wt[2])
 
         h = CellSize(self.mesh) #mesh size
+        d1, d2 = self.stabilization_parameters(U_,p_,h) #stabilization parameters
+
+        #set up error indicators
+        Z = FunctionSpace(self.mesh, "DG", 0)
+        z = TestFunction(Z)
 
         Re = self.Re #Reynolds Number
 
@@ -55,12 +60,17 @@ class Solver(SolverBase):
 
         r -= inner(F1_alpha,v)*dx + F2_alpha*q*dx
 
+
         #least squares stabilization
-        if(self.options["stabilize"]):
-            d1, d2 = self.stabilization_parameters(U_,p_,h)
-            R1, R2 = self.strong_residual(U_alpha,U_alpha,p_alpha)
-            Rv1, Rv2 = self.strong_residual(U_alpha,v,q)
-            r += d1*inner(R1 - F1_alpha, Rv1)*dx + d2*(R2 - F2_alpha)*Rv2*dx
+        if(not self.options["stabilize"]):
+          d1 = 0
+          d2 = 0
+        if(not ei_mode):
+          z = 1.
+
+        R1, R2 = self.strong_residual(U_alpha,U_alpha,p_alpha)
+        Rv1, Rv2 = self.strong_residual(U_alpha,v,q)
+        r += z*(d1*inner(R1 - F1_alpha, Rv1)*dx + d2*(R2 - F2_alpha)*Rv2*dx)
 
         return r
 
