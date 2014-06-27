@@ -75,7 +75,7 @@ class Solver(SolverBase):
         inviscid = self.inviscid
 
         alpha = self.alpha #time stepping method
-        dt = self.dt
+        k = self.k
         t0 = self.t0
 
         #U_(k+alpha)
@@ -84,21 +84,21 @@ class Solver(SolverBase):
         #p_(k+alpha)
         eta_alpha = (1.0-alpha)*eta_ + alpha*eta
 
-        t = t0 + dt
+        t = t0 + k
         #forcing and mass source/sink
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
         #weak form of the equations
         #momentum equation
-        r = (1./dt)*inner(U - U_,v)*dx \
+        r = (1./k)*inner(U - U_,v)*dx \
             + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0])*dx \
             - Fr**(-2)*Th*eta_alpha*div(v)*dx
         r += inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         #add the terms for the non-linear SWE
         r += NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
         #continuity equation
-        r += (1./dt)*(eta - eta_)*chi*dx \
+        r += (1./k)*(eta - eta_)*chi*dx \
             + H/Th*div(U_alpha)*chi*dx
 
         r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
@@ -117,10 +117,10 @@ class Solver(SolverBase):
         return r
 
     def stabilization_parameters(self,U_,eta_,h):
-        k1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
-        k2  = self.Th/(2*self.H)
-        d1 = k1*(self.dt**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
-        d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-1))**(-0.5)
+        K1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
+        K2  = self.Th/(2*self.H)
+        d1 = K1*(self.k**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
+        d2 = K2*(self.k**(-2) + eta_*eta_*h**(-1))**(-0.5)
 
         return d1, d2
 

@@ -35,7 +35,7 @@ class Solver(SolverBase):
         problem = self.problem
 
         alpha = self.alpha #time stepping method
-        dt = self.dt
+        k = self.k
         t0 = self.t0
 
         inviscid = self.options['inviscid']
@@ -46,13 +46,13 @@ class Solver(SolverBase):
         #p_(k+alpha)
         p_alpha = (1.0-alpha)*p_ + alpha*p
 
-        t = t0 + dt
+        t = t0 + k
         #forcing and mass source/sink
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
         #weak form of the equations
-        r = (1./dt)*inner(U - U_,v)*dx \
+        r = (1./k)*inner(U - U_,v)*dx \
             - p_alpha*div(v)*dx \
             + inner(grad(U_alpha)*U_alpha,v)*dx
         r +=  inviscid/Re*inner(grad(U_alpha),grad(v))*dx
@@ -75,10 +75,10 @@ class Solver(SolverBase):
         return r
 
     def stabilization_parameters(self,U_,eta_,h):
-        k1  = 1.
-        k2  = 0.5
-        d1 = k1*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
-        d2 = k2*(self.dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+        K1  = 1.
+        K2  = 0.5
+        d1 = K1*(self.k**(-2) + eta_*eta_*h**(-2))**(-0.5)
+        d2 = K2*(self.k**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
 
         return d1, d2
 

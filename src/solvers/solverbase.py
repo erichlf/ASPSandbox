@@ -35,7 +35,7 @@ class SolverBase:
 
         #initialize the time stepping method parameters
         self.t0 = 0 #initial time
-        self.dt = self.options['dt'] #time step
+        self.k = self.options['dt'] #time step
         self.alpha = self.options['alpha'] #time stepping method
         self.T = self.options['T'] #Final Time
 
@@ -109,11 +109,11 @@ class SolverBase:
         #weak form of the primal problem
         F = self.weak_residual(w, w_,wt,ei_mode=False)
 
-        w_ = self.timeStepper(problem, t, T, self.dt, W, w, w_, F)
+        w_ = self.timeStepper(problem, t, T, self.k, W, w, w_, F)
 
         return U_, eta_
 
-    def timeStepper(self, problem, t, T, dt, W, w, w_, F):
+    def timeStepper(self, problem, t, T, k, W, w, w_, F):
         # Time loop
         self.start_timing()
 
@@ -121,10 +121,10 @@ class SolverBase:
         self.update(problem, t, w_.split()[0], w_.split()[1])
 
         while t<T:
-            t += dt
+            t += k
 
             if('wave_object' in dir(self)):
-                self.wave_object(t, dt)
+                self.wave_object(t, k)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
@@ -189,7 +189,7 @@ class SolverBase:
         if self.options['save_solution']:
             # Save velocity and pressure
             frequency = self.options['save_frequency']
-            dt = self.dt
+            k = self.k
             Nx = self.options['Nx']
             Ny = self.options['Ny']
             if (self._timestep - 1) % frequency == 0:
@@ -199,7 +199,7 @@ class SolverBase:
                             + self.suffix() \
                             + 'Nx' + str(Nx) \
                             + 'Ny' + str(Ny) \
-                            + 'K' + str(int(1./dt))
+                            + 'K' + str(int(1./k))
                     self._ufile = File(s + '_u.pvd')
                 if self._pfile is None:
                     self._pfile = File(s + '_p.pvd')

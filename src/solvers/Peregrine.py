@@ -28,8 +28,8 @@ class Solver(SolverBase):
         c0 = self.c0
         epsilon = self.epsilon
 
-        zeta_tt = 1./self.dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
-        zeta_t = 1./self.dt*(self.zeta - self.zeta_)
+        zeta_tt = 1./self.k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
+        zeta_t = 1./self.k*(self.zeta - self.zeta_)
 
         #strong form for stabilization
         R1 = epsilon*grad(u)*U + grad(eta)
@@ -65,8 +65,8 @@ class Solver(SolverBase):
         epsilon = self.epsilon
 
         #Scaled Parameters
-        self.dt = self.dt*c0/lambda0 #time step
-        dt = self.dt
+        self.k = self.k*c0/lambda0 #time step
+        k = self.k
         self.T = self.T*c0/lambda0 #Final time
 
         t0 = self.t0
@@ -74,28 +74,28 @@ class Solver(SolverBase):
         D, self.zeta, self.zeta_, self.zeta__, self.bottom, self.H, self.H_ \
             = self.seabed(problem,t0,c0,lambda0,epsilon)
 
-        zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
-        zeta_t = 1./dt*(self.zeta - self.zeta_)
+        zeta_tt = 1./k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
+        zeta_t = 1./k*(self.zeta - self.zeta_)
 
         #Time stepping method
         U_alpha = (1. - alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
         zeta_alpha = (1. - alpha)*self.zeta_ + alpha*self.zeta
 
-        t = t0 + dt
+        t = t0 + k
         #forcing and mass source/sink
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
         #weak form of the equations
-        r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U_alpha)*U_alpha,v)*dx \
+        r = 1./k*inner(U-U_,v)*dx + epsilon*inner(grad(U_alpha)*U_alpha,v)*dx \
             - div(v)*eta_alpha*dx
 
-        r += sigma**2*1./dt*div((D + epsilon*zeta_alpha)*(U-U_))*div((D + epsilon*zeta_alpha)*v/2.)*dx \
-              - sigma**2*1./dt*div(U-U_)*div((D + epsilon*zeta_alpha)**2*v/6.)*dx
+        r += sigma**2*1./k*div((D + epsilon*zeta_alpha)*(U-U_))*div((D + epsilon*zeta_alpha)*v/2.)*dx \
+              - sigma**2*1./k*div(U-U_)*div((D + epsilon*zeta_alpha)**2*v/6.)*dx
         r += sigma**2*zeta_tt*div((D + epsilon*zeta_alpha)*v/2.)*dx
 
-        r += 1./dt*(eta-eta_)*chi*dx + zeta_t*chi*dx
+        r += 1./k*(eta-eta_)*chi*dx + zeta_t*chi*dx
         r -= inner(U_alpha,grad(chi))*(epsilon*eta_alpha + D + epsilon*zeta_alpha)*dx
 
         r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
@@ -110,10 +110,10 @@ class Solver(SolverBase):
         return r
 
     def stabilization_parameters(self,U_,eta_,h):
-        k1  = 2.
-        k2  = 2.
-        d1 = k1*(self.dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
-        d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
+        K1  = 2.
+        K2  = 2.
+        d1 = K1*(self.k**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+        d2 = K2*(self.k**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
         return d1, d2
 
@@ -133,10 +133,10 @@ class Solver(SolverBase):
 
         return D, zeta, zeta_, zeta__, bottom, H, H_
 
-    def wave_object(self, t, dt):
+    def wave_object(self, t, k):
         self.zeta.t = t
-        self.zeta_.t = max(t - dt, self.t0)
-        self.zeta__.t = max(t - 2*dt, self.t0)
+        self.zeta_.t = max(t - k, self.t0)
+        self.zeta__.t = max(t - 2*k, self.t0)
         self.H_.assign(self.H)
         self.bottom.t = t
         self.H = interpolate(self.bottom, self.Q)
