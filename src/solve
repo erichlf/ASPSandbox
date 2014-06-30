@@ -34,6 +34,7 @@ OPTIONS = { "Nx": 20, #number of elements along x axis
             "a0": 0.8, #Typical wave height
             "h0": 2., #Typical depth
             "alpha": 0.5, #time-stepping method
+            "adaptive": False, #mesh adaptivity
             "save_solution": True,
             "save_frequency": 1,
             "plot_solution": False,
@@ -133,7 +134,10 @@ def main(args):
 
     # Solve problem with solver
     wct = time.time()
-    u, p = solver.solve(problem)
+    if(not options['adaptive']):
+      u, p = solver.solve(problem)
+    else :
+      u, p = solver.adaptive_solve(problem)
 
     # Compute elapsed time
     wct = time.time() - wct

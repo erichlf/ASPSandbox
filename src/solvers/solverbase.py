@@ -7,12 +7,15 @@ __license__  = "GNU GPL version 3 or any later version"
 #
 
 from dolfin import *
+from dolfin_adjoint import *
 
 from time import time
 from os import getpid
 from commands import getoutput
 import re
 import sys
+
+dolfin.parameters["adjoint"]["record_all"] = True
 
 # Common solver parameters
 maxiter = default_maxiter = 200
@@ -80,8 +83,47 @@ class SolverBase:
         h = CellSize(mesh) #mesh size
 
         t = self.t0
-        T=self.T
         T = problem.T #final time
+        k = self.k #time step
+
+        # Define function spaces
+        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        self.Q = FunctionSpace(mesh, 'CG', self.Pp)
+        Q = self.Q
+        W = MixedFunctionSpace([V, Q])
+
+        # Get boundary conditions
+        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+
+        #define trial and test function
+        wt = TestFunction(W)
+        v, chi = TestFunctions(W)
+
+        w = Function(W)
+        w_ = Function(W)
+
+        #initial condition
+        w_ = self.InitialConditions(problem, W)
+
+        U, eta = (as_vector((w[0], w[1])), w[2])
+        U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
+
+        #weak form of the primal problem
+        F = self.weak_residual(w, w_,wt,ei_mode=False)
+
+        w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
+
+        return U_, eta_
+
+    def adaptive_solve(self, problem):
+        self.problem = problem
+        mesh = problem.mesh #get problem mesh
+        self.mesh = mesh
+        h = CellSize(mesh) #mesh size
+
+        t = self.t0
+        T = problem.T #final time
+        k = self.k
 
         # Define function spaces
         Z = FunctionSpace(mesh, "DG", 0)
@@ -109,7 +151,40 @@ class SolverBase:
         #weak form of the primal problem
         F = self.weak_residual(w, w_,wt,ei_mode=False)
 
-        w_ = self.timeStepper(problem, t, T, self.k, W, w, w_, F)
+        w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
+
+        # Project output functional
+        J = self.Functional(mesh, v, chi)
+        (ut, etat) = TrialFunctions(W)
+        a_psi = inner(ut, v)*dx + inner(etat, chi)*dx
+        psi = Function(W)
+        solve(a_psi == J, psi)
+
+        # Generate the dual problem
+        J = Functional(J*dt[FINISH_TIME])
+        for (phi, var) in compute_adjoint(J):
+          pass
+        #phi = compute_adjoint(Functional(J*dt[FINISH_TIME]),forget=False)
+        #L_star = M(mesh, v, q)
+
+        # Generate dual boundary conditions
+        #for bc in bcs:
+        #    bc.homogenize()
+
+        # Solve the dual problem
+        #solve(a_star == L_star, phi, bcs)
+
+        # Generate error indicators
+        z = TestFunction(Z)
+
+        (u, p) = w.split()
+        (phi_u, phi_p) = phi.split()
+        (psi_u, psi_p) = psi.split()
+
+        # Compute error indicators ei
+        LR1 = self.weak_residual(w, w_, phi, ei_mode=True)#, stab=False)
+        ei = Function(Z)
+        ei.vector()[:] = assemble(LR1).array()
 
         return U_, eta_
 
@@ -141,6 +216,22 @@ class SolverBase:
             self.update(problem, t, w.split()[0], w.split()[1])
 
         return w_
+
+    # Refine the mesh based on error indicators
+    def adaptive_refine(mesh, ei, adapt_ratio, adaptive):
+        gamma = abs(ei.vector().array())
+
+        # Mark cells for refinement
+        cell_markers = MeshFunction("bool", mesh, mesh.topology().dim())
+        gamma_0 = sorted(gamma, reverse=True)[int(len(gamma)*adapt_ratio) - 1]
+        for c in cells(mesh):
+            cell_markers[c] = gamma[c.index()] > gamma_0
+
+        # Refine mesh
+        if adaptive:
+            mesh = refine(mesh, cell_markers)
+        else:
+            mesh = refine(mesh)
 
     def prefix(self, problem):
         #Return file prefix for output files

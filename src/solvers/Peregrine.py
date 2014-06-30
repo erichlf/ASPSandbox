@@ -117,6 +117,12 @@ class Solver(SolverBase):
 
         return d1, d2
 
+    def Functional(self,mesh,u,eta):
+
+      M = u[0]*dx # Mean of the x-velocity in the whole domain
+
+      return M
+
     def seabed(self,problem,t0,c0,lambda0,epsilon):
         D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element())
         zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\

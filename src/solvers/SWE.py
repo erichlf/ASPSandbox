@@ -116,6 +116,12 @@ class Solver(SolverBase):
 
         return r
 
+    def Functional(self,mesh,u,eta):
+
+      M = u[0]*dx # Mean of the x-velocity in the whole domain
+
+      return M
+
     def stabilization_parameters(self,U_,eta_,h):
         K1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
         K2  = self.Th/(2*self.H)
