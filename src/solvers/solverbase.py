@@ -14,6 +14,7 @@ from os import getpid
 from commands import getoutput
 import re
 import sys
+import math
 
 dolfin.parameters["adjoint"]["record_all"] = True
 
@@ -139,8 +140,8 @@ class SolverBase:
         wt = TestFunction(W)
         v, chi = TestFunctions(W)
 
-        w = Function(W)
-        w_ = Function(W)
+        w = Function(W, name='State')
+        w_ = Function(W, name='PreviousState')
 
         #initial condition
         w_ = self.InitialConditions(problem, W)
@@ -160,30 +161,29 @@ class SolverBase:
         psi = Function(W)
         solve(a_psi == J, psi)
 
-        # Generate the dual problem
-        J = Functional(J*dt[FINISH_TIME])
-        for (phi, var) in compute_adjoint(J):
-          pass
-        #phi = compute_adjoint(Functional(J*dt[FINISH_TIME]),forget=False)
-        #L_star = M(mesh, v, q)
-
-        # Generate dual boundary conditions
-        #for bc in bcs:
-        #    bc.homogenize()
-
-        # Solve the dual problem
-        #solve(a_star == L_star, phi, bcs)
+        '''
+        To calculate the error indicators we must access the adjoint at each
+        time step and use the state at that time step given by u_.tape_value
+        '''
+        phi = Function(W)
 
         # Generate error indicators
-        z = TestFunction(Z)
-
-        (u, p) = w.split()
-        (phi_u, phi_p) = phi.split()
-        (psi_u, psi_p) = psi.split()
-
-        # Compute error indicators ei
-        LR1 = self.weak_residual(w, w_, phi, ei_mode=True)#, stab=False)
         ei = Function(Z)
+        z = TestFunction(Z)
+        LR1 = 0.
+
+        # Generate the dual problem
+        J = Functional(J*dt)
+        i = int(math.ceil(T/k))
+        adjoint = compute_adjoint(J,forget=False)
+        for (phi, var) in adjoint:
+          if var.name == 'State':
+            # Compute error indicators ei
+            wtape = DolfinAdjointVariable(w).tape_value(iteration=i)
+            wtape_ = DolfinAdjointVariable(w_).tape_value(iteration=i)
+            LR1 += k*self.weak_residual(wtape, wtape_, phi, ei_mode=True)
+            i -= 1
+
         ei.vector()[:] = assemble(LR1).array()
 
         return U_, eta_

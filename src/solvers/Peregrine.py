@@ -104,6 +104,8 @@ class Solver(SolverBase):
           d = 0
         if(not ei_mode):
           z = 1.
+        else:
+          d = 0.
 
         r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
 
