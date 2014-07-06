@@ -41,7 +41,7 @@ class Solver(SolverBase):
 
         return R1, R2, z1, z2
 
-    def weak_residual(self,w,w_,wt,ei_mode):
+    def weak_residual(self,w,w_,wt,ei_mode=False):
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
@@ -87,18 +87,6 @@ class Solver(SolverBase):
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
-        #weak form of the equations
-        r = 1./k*inner(U-U_,v)*dx + epsilon*inner(grad(U_alpha)*U_alpha,v)*dx \
-            - div(v)*eta_alpha*dx
-
-        r += sigma**2*1./k*div((D + epsilon*zeta_alpha)*(U-U_))*div((D + epsilon*zeta_alpha)*v/2.)*dx \
-              - sigma**2*1./k*div(U-U_)*div((D + epsilon*zeta_alpha)**2*v/6.)*dx
-        r += sigma**2*zeta_tt*div((D + epsilon*zeta_alpha)*v/2.)*dx
-
-        r += 1./k*(eta-eta_)*chi*dx + zeta_t*chi*dx
-        r -= inner(U_alpha,grad(chi))*(epsilon*eta_alpha + D + epsilon*zeta_alpha)*dx
-
-        r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
 
         if(not self.options["stabilize"]):
           d = 0
@@ -106,6 +94,19 @@ class Solver(SolverBase):
           z = 1.
         else:
           d = 0.
+
+        #weak form of the equations
+        r = z*(1./k*inner(U-U_,v) + epsilon*inner(grad(U_alpha)*U_alpha,v) \
+            - div(v)*eta_alpha)*dx
+
+        r += z*(sigma**2*1./k*div((D + epsilon*zeta_alpha)*(U-U_))*div((D + epsilon*zeta_alpha)*v/2.) \
+              - sigma**2*1./k*div(U-U_)*div((D + epsilon*zeta_alpha)**2*v/6.))*dx
+        r += z*sigma**2*zeta_tt*div((D + epsilon*zeta_alpha)*v/2.)*dx
+
+        r += z*(1./k*(eta-eta_)*chi + zeta_t*chi)*dx
+        r -= z*inner(U_alpha,grad(chi))*(epsilon*eta_alpha + D + epsilon*zeta_alpha)*dx
+
+        r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
 
         r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
 

@@ -154,17 +154,6 @@ class SolverBase:
 
         w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
 
-        # Project output functional
-        J = self.Functional(mesh, v, chi)
-        (ut, etat) = TrialFunctions(W)
-        a_psi = inner(ut, v)*dx + inner(etat, chi)*dx
-        psi = Function(W)
-        solve(a_psi == J, psi)
-
-        '''
-        To calculate the error indicators we must access the adjoint at each
-        time step and use the state at that time step given by u_.tape_value
-        '''
         phi = Function(W)
 
         # Generate error indicators
@@ -173,8 +162,8 @@ class SolverBase:
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(J*dt)
-        i = int(math.ceil(T/k))
+        J = Functional(self.Functional(mesh, v, chi)*dt)
+        i = int(math.ceil(T/k)) #last time step
         adjoint = compute_adjoint(J,forget=False)
         for (phi, var) in adjoint:
           if var.name == 'State':
