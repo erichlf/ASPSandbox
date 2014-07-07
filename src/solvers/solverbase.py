@@ -79,8 +79,31 @@ class SolverBase:
 
     def solve(self, problem):
         self.problem = problem
-        mesh = problem.mesh #get problem mesh
-        self.mesh = mesh
+        self.mesh = problem.mesh
+
+        maxiters = 10
+
+        if not self.options['adaptive']:
+            u, p = self.forward_solve()
+        else:
+            adapt_ratio = 0.1
+            # Adaptive loop
+            for i in range(0, maxiters):
+                # Solve primal and dual equations and compute error indicators
+                (U_, eta_, ei) = self.adaptive_solve(self.mesh)
+                if(i == 0):
+                    plot(self.mesh, title="Initial mesh", size=((600, 300)))
+                elif(i == maxiters - 1):
+                    plot(self.mesh, title="Finest mesh", size=((600, 300)))
+
+                # Refine the mesh
+                self.mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
+
+        return U_, eta_
+
+    def forward_solve(self):
+        problem = self.problem
+        mesh = self.mesh #get problem mesh
         h = CellSize(mesh) #mesh size
 
         t = self.t0
@@ -116,10 +139,9 @@ class SolverBase:
 
         return U_, eta_
 
-    def adaptive_solve(self, problem):
-        self.problem = problem
+    def adaptive_solve(self, mesh):
+        problem = self.problem
         mesh = problem.mesh #get problem mesh
-        self.mesh = mesh
         h = CellSize(mesh) #mesh size
 
         t = self.t0
@@ -171,12 +193,26 @@ class SolverBase:
             wtape = DolfinAdjointVariable(w).tape_value(iteration=i)
             if i>0:
                 wtape_ = DolfinAdjointVariable(w).tape_value(iteration=i-1)
-            LR1 += k*self.weak_residual(wtape, wtape_, phi, ei_mode=True)
+            LR1 = k*self.weak_residual(wtape, wtape_, phi, ei_mode=True)
+            ei.vector()[:] += assemble(LR1).array()
             i -= 1
 
-        ei.vector()[:] = assemble(LR1).array()
+        return U_, eta_, ei
 
-        return U_, eta_
+    # Refine the mesh based on error indicators
+    def adaptive_refine(self, mesh, ei, adapt_ratio):
+        gamma = abs(ei.vector().array())
+
+        # Mark cells for refinement
+        cell_markers = MeshFunction("bool", mesh, mesh.topology().dim())
+        gamma_0 = sorted(gamma, reverse=True)[int(len(gamma)*adapt_ratio) - 1]
+        for c in cells(mesh):
+            cell_markers[c] = gamma[c.index()] > gamma_0
+
+        # Refine mesh
+        mesh = refine(mesh, cell_markers)
+
+        return mesh
 
     def timeStepper(self, problem, t, T, k, W, w, w_, F):
         # Time loop
@@ -206,21 +242,6 @@ class SolverBase:
             self.update(problem, t, w.split()[0], w.split()[1])
 
         return w_
-
-    # Refine the mesh based on error indicators
-    def adaptive_refine(mesh, ei, adapt_ratio):
-        gamma = abs(ei.vector().array())
-
-        # Mark cells for refinement
-        cell_markers = MeshFunction("bool", mesh, mesh.topology().dim())
-        gamma_0 = sorted(gamma, reverse=True)[int(len(gamma)*adapt_ratio) - 1]
-        for c in cells(mesh):
-            cell_markers[c] = gamma[c.index()] > gamma_0
-
-        # Refine mesh
-        mesh = refine(mesh, cell_markers)
-
-        return mesh
 
     def prefix(self, problem):
         #Return file prefix for output files

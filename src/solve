@@ -134,10 +134,7 @@ def main(args):
 
     # Solve problem with solver
     wct = time.time()
-    if(not options['adaptive']):
-      u, p = solver.solve(problem)
-    else :
-      u, p = solver.adaptive_solve(problem)
+    u, p = solver.solve(problem)
 
     # Compute elapsed time
     wct = time.time() - wct
