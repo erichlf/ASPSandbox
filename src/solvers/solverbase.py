@@ -169,7 +169,8 @@ class SolverBase:
           if var.name == 'State':
             # Compute error indicators ei
             wtape = DolfinAdjointVariable(w).tape_value(iteration=i)
-            wtape_ = DolfinAdjointVariable(w_).tape_value(iteration=i)
+            if i>0:
+                wtape_ = DolfinAdjointVariable(w).tape_value(iteration=i-1)
             LR1 += k*self.weak_residual(wtape, wtape_, phi, ei_mode=True)
             i -= 1
 
@@ -207,7 +208,7 @@ class SolverBase:
         return w_
 
     # Refine the mesh based on error indicators
-    def adaptive_refine(mesh, ei, adapt_ratio, adaptive):
+    def adaptive_refine(mesh, ei, adapt_ratio):
         gamma = abs(ei.vector().array())
 
         # Mark cells for refinement
@@ -217,10 +218,9 @@ class SolverBase:
             cell_markers[c] = gamma[c.index()] > gamma_0
 
         # Refine mesh
-        if adaptive:
-            mesh = refine(mesh, cell_markers)
-        else:
-            mesh = refine(mesh)
+        mesh = refine(mesh, cell_markers)
+
+        return mesh
 
     def prefix(self, problem):
         #Return file prefix for output files
