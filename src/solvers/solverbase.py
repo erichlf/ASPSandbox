@@ -316,7 +316,8 @@ class SolverBase:
                     self._bfile = File(s + '_b.pvd')
                 self._ufile << u
                 self._pfile << p
-                self._bfile << self.H_
+                if self.zeta is not None:
+                    self._bfile << self.H_
         else:
             self.options['plot_solution'] = True
 
