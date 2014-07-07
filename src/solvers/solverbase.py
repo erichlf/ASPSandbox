@@ -94,17 +94,22 @@ class SolverBase:
                 if i==0:
                     print 'Solving on initial mesh.'
                 else:
-                    print 'Solving on %d%s adapted mesh.' % (i, nth[i-1 if i<end else end ])
+                    if i < len(nth):
+                        print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
+                    else:
+                        print 'Solving on %d%s adapted mesh.' % (i, nth[len(nth)-1])
                 # Solve primal and dual problems and compute error indicators
                 (U_, eta_, ei) = self.adaptive_solve(mesh)
-                if(i == 0):
+                if(i == 0 and self.options['plot_solution']):
                     plot(mesh, title="Initial mesh", size=((600, 300)))
-                elif(i == maxiters - 1):
+                elif(i == maxiters - 1 and self.options['plot_solution']):
                     plot(mesh, title="Finest mesh", size=((600, 300)))
 
                 # Refine the mesh
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
                 self._timestep = 0 #reset the time step to zero
+                adj_reset() #reset the dolfin-adjoint
+            interactive()
 
         return U_, eta_
 
@@ -138,7 +143,7 @@ class SolverBase:
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
         #weak form of the primal problem
-        F = self.weak_residual(W, w, w_,wt,ei_mode=False)
+        F = self.weak_residual(W, w, w_, wt, ei_mode=False)
 
         w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
 
