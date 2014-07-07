@@ -79,31 +79,37 @@ class SolverBase:
 
     def solve(self, problem):
         self.problem = problem
-        self.mesh = problem.mesh
+        mesh = problem.mesh
 
-        maxiters = 10
+        maxiters = 10 #max number of adaptive steps
+        adapt_ratio = 0.1 #number of cells to refine
+        nth = ('st','nd','rd','th') #numerical descriptors
 
-        if not self.options['adaptive']:
-            u, p = self.forward_solve()
+        if not self.options['adaptive']: #solve without adaptivity
+            u, p = self.forward_solve(mesh)
         else:
-            adapt_ratio = 0.1
             # Adaptive loop
             for i in range(0, maxiters):
-                # Solve primal and dual equations and compute error indicators
-                (U_, eta_, ei) = self.adaptive_solve(self.mesh)
+                print
+                if i==0:
+                    print 'Solving on initial mesh.'
+                else:
+                    print 'Solving on %d%s adapted mesh.' % (i, nth[i-1 if i<end else end ])
+                # Solve primal and dual problems and compute error indicators
+                (U_, eta_, ei) = self.adaptive_solve(mesh)
                 if(i == 0):
-                    plot(self.mesh, title="Initial mesh", size=((600, 300)))
+                    plot(mesh, title="Initial mesh", size=((600, 300)))
                 elif(i == maxiters - 1):
-                    plot(self.mesh, title="Finest mesh", size=((600, 300)))
+                    plot(mesh, title="Finest mesh", size=((600, 300)))
 
                 # Refine the mesh
-                self.mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
+                mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
+                self._timestep = 0 #reset the time step to zero
 
         return U_, eta_
 
-    def forward_solve(self):
+    def forward_solve(self,mesh):
         problem = self.problem
-        mesh = self.mesh #get problem mesh
         h = CellSize(mesh) #mesh size
 
         t = self.t0
@@ -112,8 +118,7 @@ class SolverBase:
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        self.Q = FunctionSpace(mesh, 'CG', self.Pp)
-        Q = self.Q
+        Q = FunctionSpace(mesh, 'CG', self.Pp)
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
@@ -133,7 +138,7 @@ class SolverBase:
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
         #weak form of the primal problem
-        F = self.weak_residual(w, w_,wt,ei_mode=False)
+        F = self.weak_residual(W, w, w_,wt,ei_mode=False)
 
         w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
 
@@ -141,7 +146,6 @@ class SolverBase:
 
     def adaptive_solve(self, mesh):
         problem = self.problem
-        mesh = problem.mesh #get problem mesh
         h = CellSize(mesh) #mesh size
 
         t = self.t0
@@ -151,8 +155,7 @@ class SolverBase:
         # Define function spaces
         Z = FunctionSpace(mesh, "DG", 0)
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        self.Q = FunctionSpace(mesh, 'CG', self.Pp)
-        Q = self.Q
+        Q = FunctionSpace(mesh, 'CG', self.Pp)
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
@@ -172,7 +175,7 @@ class SolverBase:
         U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
 
         #weak form of the primal problem
-        F = self.weak_residual(w, w_,wt,ei_mode=False)
+        F = self.weak_residual(W, w, w_, wt, ei_mode=False)
 
         w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
 
@@ -193,7 +196,7 @@ class SolverBase:
             wtape = DolfinAdjointVariable(w).tape_value(iteration=i)
             if i>0:
                 wtape_ = DolfinAdjointVariable(w).tape_value(iteration=i-1)
-            LR1 = k*self.weak_residual(wtape, wtape_, phi, ei_mode=True)
+            LR1 = k*self.weak_residual(W, wtape, wtape_, phi, ei_mode=True)
             ei.vector()[:] += assemble(LR1).array()
             i -= 1
 
@@ -221,11 +224,11 @@ class SolverBase:
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
 
-        while t<T:
+        while t<(T-k/2.):
             t += k
 
             if('wave_object' in dir(self)):
-                self.wave_object(t, k)
+                self.wave_object(W.sub(1), t, k)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
@@ -281,7 +284,7 @@ class SolverBase:
         self._cputime += timestep_cputime
 
         # Update problem
-        problem.update_problem(t, u, p)
+        #problem.update_problem(t, u, p)
 
         # Store values
         self._t.append(t)

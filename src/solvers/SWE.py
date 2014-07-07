@@ -57,11 +57,11 @@ class Solver(SolverBase):
 
         problem = self.problem
 
-        h = CellSize(self.mesh) #mesh size
+        h = CellSize(W.mesh()) #mesh size
         d1, d2 = self.stabilization_parameters(U_,eta_,h) #stabilization parameters
 
         #set up error indicators
-        Z = FunctionSpace(self.mesh, "DG", 0)
+        Z = FunctionSpace(W.mesh(), "DG", 0)
         z = TestFunction(Z)
 
         #get problem parameters
@@ -89,30 +89,30 @@ class Solver(SolverBase):
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
-        #weak form of the equations
-        #momentum equation
-        r = (1./k)*inner(U - U_,v)*dx \
-            + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0])*dx \
-            - Fr**(-2)*Th*eta_alpha*div(v)*dx
-        r += inviscid/Re*inner(grad(U_alpha),grad(v))*dx
-        #add the terms for the non-linear SWE
-        r += NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
-        #continuity equation
-        r += (1./k)*(eta - eta_)*chi*dx \
-            + H/Th*div(U_alpha)*chi*dx
-
-        r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
-
         #least squares stabilization
-        if(not self.options["stabilize"]):
+        if(not self.options["stabilize"] or ei_mode):
           d1 = 0
           d2 = 0
         if(not ei_mode):
           z = 1.
 
+        #weak form of the equations
+        #momentum equation
+        r = z*((1./k)*inner(U - U_,v) \
+            + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0]) \
+            - Fr**(-2)*Th*eta_alpha*div(v))*dx
+        r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
+        #add the terms for the non-linear SWE
+        r += z*NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
+        #continuity equation
+        r += z*((1./k)*(eta - eta_)*chi \
+            + H/Th*div(U_alpha)*chi)*dx
+
+        r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
+
         R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
         Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
-        r += z*(d1*inner(R1 - F1_alpha, Rv1)*dx + d2*(R2 - F2_alpha)*Rv2*dx)
+        r += z*(d1*inner(R1 - F1_alpha, Rv1) + d2*(R2 - F2_alpha)*Rv2)*dx
 
         return r
 
