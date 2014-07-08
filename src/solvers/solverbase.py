@@ -145,6 +145,7 @@ class SolverBase:
         t = problem.t0
         T = problem.T #final time
         k = problem.k
+        self.k = k
 
         # Define function spaces
         Z = FunctionSpace(mesh, "DG", 0)
