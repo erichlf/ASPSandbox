@@ -72,7 +72,7 @@ class Solver(SolverBase):
         t0 = self.t0
 
         D, self.zeta, self.zeta_, self.zeta__, self.bottom, self.H, self.H_ \
-            = self.seabed(problem,W.sub(1),t0,c0,lambda0,epsilon)
+            = self.seabed(problem,self.Q,t0,c0,lambda0,epsilon)
 
         zeta_tt = 1./k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./k*(self.zeta - self.zeta_)

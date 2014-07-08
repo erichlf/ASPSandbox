@@ -114,6 +114,7 @@ class SolverBase:
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
         Q = FunctionSpace(mesh, 'CG', self.Pp)
+        self.Q = Q
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
@@ -266,7 +267,7 @@ class SolverBase:
             t += k
 
             if('wave_object' in dir(self)):
-                self.wave_object(W.sub(1), t, k)
+                self.wave_object(self.Q, t, k)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
