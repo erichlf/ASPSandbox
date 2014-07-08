@@ -13,24 +13,18 @@ class Solver(SolverBase):
         #Parameters
         self.Re = None
         self.Ro = None
-        self.g = 9.8 #Gravity
-        self.lambda0 = self.options['lambda0'] #typical wavelength
-        a0 = self.options['a0'] #Typical wave height
-        h0 = self.options['h0'] #Typical depth
-        self.sigma = h0/self.lambda0
-        self.c0 = (h0*self.g)**(0.5)
-        self.epsilon = a0/h0
 
     def strong_residual(self,u,U,eta):
         #Parameters
-        g = self.g #Gravity
-        lambda0 = self.lambda0 #typical wavelength
-        sigma = self.sigma
-        c0 = self.c0
-        epsilon = self.epsilon
+        lambda0 = problem.lambda0 #typical wavelength
+        sigma = problem.sigma
+        c0 = problem.c0
+        epsilon = problem.epsilon
 
-        zeta_tt = 1./self.k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
-        zeta_t = 1./self.k*(self.zeta - self.zeta_)
+        k = problem.k
+
+        zeta_tt = 1./k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
+        zeta_t = 1./k*(self.zeta - self.zeta_)
 
         #strong form for stabilization
         R1 = epsilon*grad(u)*U + grad(eta)
