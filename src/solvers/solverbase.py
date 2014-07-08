@@ -107,6 +107,7 @@ class SolverBase:
         t = problem.t0
         T = problem.T #final time
         k = problem.k #time step
+        self.k = k
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)

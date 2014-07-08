@@ -35,8 +35,8 @@ class Solver(SolverBase):
         problem = self.problem
 
         alpha = self.alpha #time stepping method
-        k = self.k
-        t0 = self.t0
+        k = problem.k
+        t0 = problem.t0
 
         inviscid = self.options['inviscid']
 

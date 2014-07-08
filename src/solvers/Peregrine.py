@@ -16,9 +16,7 @@ class Solver(SolverBase):
 
     def strong_residual(self,u,U,eta):
         #Parameters
-        lambda0 = problem.lambda0 #typical wavelength
         sigma = problem.sigma
-        c0 = problem.c0
         epsilon = problem.epsilon
 
         k = problem.k
@@ -53,9 +51,7 @@ class Solver(SolverBase):
         alpha = self.alpha #time stepping method
 
         #Parameters
-        lambda0 = problem.lambda0 #typical wavelength
         sigma = problem.sigma
-        c0 = problem.c0
         epsilon = problem.epsilon
 
         t0 = problem.t0 #initial time
@@ -64,7 +60,7 @@ class Solver(SolverBase):
         k = problem.k #time step
 
         D, self.zeta, self.zeta_, self.zeta__, self.bottom, self.H, self.H_ \
-            = self.seabed(problem,self.Q,t0,c0,lambda0,epsilon)
+            = self.seabed(problem,self.Q,t0,epsilon)
 
         zeta_tt = 1./k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
         zeta_t = 1./k*(self.zeta - self.zeta_)
@@ -116,17 +112,13 @@ class Solver(SolverBase):
 
       return M
 
-    def seabed(self,problem,Q,t0,c0,lambda0,epsilon):
-        D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=Q.ufl_element())
-        zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=Q.ufl_element())
-        zeta_ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=Q.ufl_element())
-        zeta__ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=Q.ufl_element())
-        bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', epsilon=epsilon,\
-                    hb=problem.hb, ad=problem.ad, c0=c0, t0=t0, t=t0, hd=problem.hd,\
-                    lambda0=lambda0, vmax=problem.vmax, element=Q.ufl_element())
+    def seabed(self,problem,Q,t0,epsilon):
+        D = Expression(problem.D, element=Q.ufl_element())
+        zeta = Expression(problem.zeta0, t0=t0, t=t0,element=Q.ufl_element())
+        zeta_ = Expression(problem.zeta0, t0=t0, t=t0, element=Q.ufl_element())
+        zeta__ = Expression(problem.zeta0, t0=t0, t=t0, element=Q.ufl_element())
+        bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', \
+                epsilon=epsilon, t0=t0, t=t0, element=Q.ufl_element())
         H = interpolate(bottom, Q)
         H_ = interpolate(bottom, Q)
 

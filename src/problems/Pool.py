@@ -46,48 +46,55 @@ class Problem(ProblemBase):
 
         #Scaling Parameters
         g = 9.8 #Gravity
-        self.lambda0 = options['lambda0'] #typical wavelength
+        lambda0 = options['lambda0'] #typical wavelength
         a0 = options['a0'] #Typical wave height
         h0 = options['h0'] #Typical depth
-        self.sigma = h0/self.lambda0
-        self.c0 = (h0*g)**(0.5)
+        self.sigma = h0/lambda0
+        c0 = (h0*g)**(0.5)
         self.epsilon = a0/h0
 
         # Create mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
-        x0 = x0/self.lambda0
-        x1 = x1/self.lambda0
-        y0 = y0/self.lambda0
-        y1 = y1/self.lambda0
+        x0 = x0/lambda0
+        x1 = x1/lambda0
+        y0 = y0/lambda0
+        y1 = y1/lambda0
         self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
 
         #Scaled Parameters
         self.t0 = 0.
-        self.T = options['T']*self.c0/self.lambda0 #Final time
-        self.k = options['dt']*self.c0/self.lambda0 #time step
+        self.T = options['T']*c0/lambda0 #Final time
+        self.k = options['dt']*c0/lambda0 #time step
 
         #DEFINITION OF THE OBJECT
         #Scaled Parameters
-        self.hd = hd/h0 #depth
-        self.ad = ad/a0 #height of the moving object
-        self.hb = hb/h0 #depth at the boundary
-
-        #Defintion of the shape of the seabed
-        seabed = 'hd - (hd-hb)/21.*(x[1]>4./lambda0 ? 1. : 0.)*(lambda0*x[1]-4.)'\
-                + ' + (hd-hb)/21.*(x[1]<(-4./lambda0) ? 1. : 0.)*(lambda0*x[1]+4.)'
+        hd = hd/h0 #depth
+        ad = ad/a0 #height of the moving object
+        hb = hb/h0 #depth at the boundary
 
         #Definition of the wave_object
-        self.vmax = ((self.hd*h0+self.ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
-        traj = 'vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))'
-        movingObject = '-(x[1]<3/lambda0 ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)'\
-                    +'*ad*0.5*0.5*(1.-tanh(0.5*lambda0*x[1]-2.))*(tanh(10*(1.-(lambda0*x[0]-' + traj + ')'\
-                    +'-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5)))'\
-                    +'-(x[1]>-3/lambda0 ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(lambda0*x[0]-'+traj+'>-6 ? 1. : 0.)'\
-                    +'*ad*0.5*0.5*(1.+tanh(0.5*lambda0*x[1]+2.))*(tanh(10*(1.-(lambda0*x[0]-' + traj + ')'\
-                    +'-pow(lambda0*x[1],2)/5)) + tanh(2*((lambda0*x[0] - ' + traj + ')+pow(lambda0*x[1],2)/5 + 0.5)))'
-        self.D = seabed
-        self.zeta0 = movingObject
+        vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
+        traj = str(vmax*lambda0/c0) + '*t*exp(-4./(' + str(lambda0/c0) + '*t+0.05))'
+        self.zeta0 = '-(x[1]<3/' + str(lambda0) \
+            + ' ? 1. : 0.)*(x[1]>0 ? 1. : 0.)*(' + str(lambda0) + '*x[0]-' \
+            + traj + '>-6 ? 1. : 0.)*' + str(ad*0.5*0.5) \
+            + '*(1.-tanh(0.5*' + str(lambda0) + '*x[1]-2.))' \
+            + '*(tanh(10*(1.-(' + str(lambda0) + '*x[0]-' + traj + ')'\
+            + '-pow(' + str(lambda0) + '*x[1],2)/5)) + tanh(2*((' \
+            + str(lambda0) + '*x[0] - ' + traj + ') + pow(' + str(lambda0) \
+            + '*x[1],2)/5 + 0.5))) - (x[1]>' + str(-3/lambda0) \
+            + ' ? 1. : 0.)*(x[1]<=0 ? 1. : 0.)*(' + str(lambda0) + '*x[0] - ' \
+            + traj + '>-6 ? 1. : 0.)*' + str(ad*0.5*0.5) \
+            + '*(1.+tanh(0.5*' + str(lambda0) + '*x[1]+2.))*(tanh(10*(1.-(' \
+            + str(lambda0) + '*x[0]-' + traj + ') - pow(' + str(lambda0) \
+            + '*x[1],2)/5)) + tanh(2*((' + str(lambda0) + '*x[0] - ' + traj \
+            + ')+pow(' + str(lambda0) + '*x[1],2)/5 + 0.5)))'
+        #Defintion of the shape of the seabed
+        self.D = str(hd) + ' - ' + str((hd-hb)/21.) + '*(x[1]>4./' \
+            + str(lambda0) + ' ? 1. : 0.)*(' + str(lambda0) + '*x[1]-4.)' \
+            + ' +  ' + str((hd-hb)/21.) + '*(x[1]<(-4./' + str(lambda0) \
+            + ') ? 1. : 0.)*(' + str(lambda0) + '*x[1]+4.)'
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))

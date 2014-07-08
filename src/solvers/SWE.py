@@ -75,8 +75,8 @@ class Solver(SolverBase):
         inviscid = self.inviscid
 
         alpha = self.alpha #time stepping method
-        k = self.k
-        t0 = self.t0
+        k = problem.k
+        t0 = problem.t0
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
