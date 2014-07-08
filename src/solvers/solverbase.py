@@ -67,16 +67,6 @@ class SolverBase:
         self.vizU = None
         self.vizP = None
 
-    def getMyMemoryUsage(self):
-        mypid = getpid()
-        mymemory = getoutput('ps -o rss %s' % mypid).split()[1]
-        return mymemory
-
-    def start_timing(self):
-#       Start timing, will be paused automatically during update
-#       and stopped when the end-time is reached.
-        self._time = time()
-
     def solve(self, problem):
         self.problem = problem
         mesh = problem.mesh
@@ -86,7 +76,7 @@ class SolverBase:
         nth = ('st','nd','rd','th') #numerical descriptors
 
         if not self.options['adaptive']: #solve without adaptivity
-            u, p = self.forward_solve(mesh)
+            U_, eta_ = self.forward_solve(mesh)
         else:
             # Adaptive loop
             for i in range(0, maxiters):
@@ -202,10 +192,52 @@ class SolverBase:
             if i>0:
                 wtape_ = DolfinAdjointVariable(w).tape_value(iteration=i-1)
             LR1 = k*self.weak_residual(W, wtape, wtape_, phi, ei_mode=True)
-            ei.vector()[:] += assemble(LR1).array()
+            ei.vector()[:] += assemble(LR1,annotate=False).array()
             i -= 1
 
         return U_, eta_, ei
+
+    def W_project(self,f1,f2,W):
+        #This function will project an expressions into W
+        e1, e2 = TestFunctions(W)
+        w = TestFunction(W)
+
+        u = Function(W)
+
+        A = inner(u,w)*dx - inner(f1,e1)*dx - f2*e2*dx
+
+        solve(A == 0, u)
+
+        return u
+
+    def V_project(self,f1,W):
+        #This function will project an expression into W.sub(1)
+
+        #filler function
+        f2 = Expression('0.0')
+
+        f1 = self.W_project(f1,f2,W)
+        f1 = f1.split()[0]
+
+        return f1
+
+    def Q_project(self,f2,W):
+        #This function will project an expression into W.sub(1)
+
+        #filler function
+        f1 = Expression(('0.0','0.0'))
+
+        f2 = self.W_project(f1,f2,W)
+        f2 = f2.split()[1]
+
+        return f2
+
+    def InitialConditions(self,problem,W):
+        #project the given initial condition into W
+        U0, p0 = problem.initial_conditions(W.sub(0),W.sub(1))
+        W0 = self.W_project(U0,p0,W)
+
+        return W0
 
     # Refine the mesh based on error indicators
     def adaptive_refine(self, mesh, ei, adapt_ratio):
@@ -223,6 +255,7 @@ class SolverBase:
         return mesh
 
     def timeStepper(self, problem, t, T, k, W, w, w_, F):
+        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
         # Time loop
         self.start_timing()
 
@@ -241,8 +274,8 @@ class SolverBase:
             solve(F==0, w, bcs=bcs)
 
             #update forcing and mass source/sink
-            F1 = self.V_project(self.problem.F1(t),W)
-            F2 = self.Q_project(self.problem.F2(t),W)
+            #F1 = self.V_project(self.problem.F1(t),W)
+            #F2 = self.Q_project(self.problem.F2(t),W)
 
             w_.assign(w)
 
@@ -250,36 +283,6 @@ class SolverBase:
             self.update(problem, t, w.split()[0], w.split()[1])
 
         return w_
-
-    def prefix(self, problem):
-        #Return file prefix for output files
-        p = problem.__module__.split('.')[-1]
-        s = self.__module__.split('.')[-1]
-        if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
-            s += 'Stabilized'
-        if(self.options['inviscid']):
-            s = 'Inviscid' + s
-        if(self.options['linear']):
-            s = 'Linear' + s
-
-        return problem.output_location + p + s
-
-    def suffix(self):
-        s = ''
-
-        #Return file suffix for output files
-        if(not self.options['inviscid'] and self.Re is not None):
-            s = 'Re' + str(int(self.Re))
-        if(self.Ro is not None):
-            s += 'Ro' + str(self.Ro)
-        if(self.Fr is not None):
-            s += 'Fr' + str(self.Fr)
-        if(self.Th is not None):
-            s += 'Th' + str(self.Th)
-        if(self.H is not None):
-            s += 'H' + str(self.H)
-
-        return s
 
     def update(self, problem, t, u, p):
         #Update problem at time t
@@ -354,44 +357,42 @@ class SolverBase:
         self._timestep += 1
         self._time = time()
 
-    def W_project(self,f1,f2,W):
-        #This function will project an expressions into W
-        e1, e2 = TestFunctions(W)
-        w = TestFunction(W)
+    def prefix(self, problem):
+        #Return file prefix for output files
+        p = problem.__module__.split('.')[-1]
+        s = self.__module__.split('.')[-1]
+        if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
+            s += 'Stabilized'
+        if(self.options['inviscid']):
+            s = 'Inviscid' + s
+        if(self.options['linear']):
+            s = 'Linear' + s
 
-        u = Function(W)
+        return problem.output_location + p + s
 
-        A = inner(u,w)*dx - inner(f1,e1)*dx - f2*e2*dx
+    def suffix(self):
+        s = ''
 
-        solve(A == 0, u)
+        #Return file suffix for output files
+        if(not self.options['inviscid'] and self.Re is not None):
+            s = 'Re' + str(int(self.Re))
+        if(self.Ro is not None):
+            s += 'Ro' + str(self.Ro)
+        if(self.Fr is not None):
+            s += 'Fr' + str(self.Fr)
+        if(self.Th is not None):
+            s += 'Th' + str(self.Th)
+        if(self.H is not None):
+            s += 'H' + str(self.H)
 
-        return u
+        return s
 
-    def V_project(self,f1,W):
-        #This function will project an expression into W.sub(1)
+    def getMyMemoryUsage(self):
+        mypid = getpid()
+        mymemory = getoutput('ps -o rss %s' % mypid).split()[1]
+        return mymemory
 
-        #filler function
-        f2 = Expression('0.0')
-
-        f1 = self.W_project(f1,f2,W)
-        f1 = f1.split()[0]
-
-        return f1
-
-    def Q_project(self,f2,W):
-        #This function will project an expression into W.sub(1)
-
-        #filler function
-        f1 = Expression(('0.0','0.0'))
-
-        f2 = self.W_project(f1,f2,W)
-        f2 = f2.split()[1]
-
-        return f2
-
-    def InitialConditions(self,problem,W):
-        #project the given initial condition into W
-        U0, p0 = problem.initial_conditions(W.sub(0),W.sub(1))
-        W0 = self.W_project(U0,p0,W)
-
-        return W0
+    def start_timing(self):
+#       Start timing, will be paused automatically during update
+#       and stopped when the end-time is reached.
+        self._time = time()

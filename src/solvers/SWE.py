@@ -50,7 +50,7 @@ class Solver(SolverBase):
         return R1, R2
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,w,w_,wt,ei_mode):
+    def weak_residual(self,W,w,w_,wt,ei_mode=False):
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
