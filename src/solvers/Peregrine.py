@@ -53,11 +53,10 @@ class Solver(SolverBase):
         alpha = self.alpha #time stepping method
 
         #Parameters
-        g = self.g #Gravity
-        lambda0 = self.lambda0 #typical wavelength
-        sigma = self.sigma
-        c0 = self.c0
-        epsilon = self.epsilon
+        lambda0 = problem.lambda0 #typical wavelength
+        sigma = problem.sigma
+        c0 = problem.c0
+        epsilon = problem.epsilon
 
         t0 = problem.t0 #initial time
         self.t0 = t0
