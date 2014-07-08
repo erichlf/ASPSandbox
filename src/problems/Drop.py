@@ -26,6 +26,10 @@ class Problem(ProblemBase):
         Ny = options["Ny"]
         self.mesh = RectangleMesh(-1,-1,1,1,Nx, Ny)
 
+        self.t0 = 0.
+        self.T = options['T']
+        self.k = options['dt']
+
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
         eta0 = Expression('A*exp(-(x[0]*x[0]+x[1]*x[1])/(2*S*S))', A=1.0, S=5E-2)

@@ -38,10 +38,7 @@ class SolverBase:
         self.zeta = None
 
         #initialize the time stepping method parameters
-        self.t0 = 0 #initial time
-        self.k = self.options['dt'] #time step
         self.alpha = self.options['alpha'] #time stepping method
-        self.T = self.options['T'] #Final Time
 
         #initialize element orders
         self.Pu = self.options['velocity_order'] #order of velocity element
@@ -107,9 +104,9 @@ class SolverBase:
         problem = self.problem
         h = CellSize(mesh) #mesh size
 
-        t = self.t0
+        t = problem.t0
         T = problem.T #final time
-        k = self.k #time step
+        k = problem.k #time step
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
@@ -144,9 +141,9 @@ class SolverBase:
         problem = self.problem
         h = CellSize(mesh) #mesh size
 
-        t = self.t0
+        t = problem.t0
         T = problem.T #final time
-        k = self.k
+        k = problem.k
 
         # Define function spaces
         Z = FunctionSpace(mesh, "DG", 0)

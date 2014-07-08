@@ -36,6 +36,10 @@ class Problem(ProblemBase):
         Ny = options["Ny"]
         self.mesh = UnitSquare(Nx, Ny)
 
+        self.t0 = 0.
+        self.T = options['T']
+        self.k = options['dt']
+
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
         p0 = Constant(0)#self.pressure_bc(V, Q, 0)

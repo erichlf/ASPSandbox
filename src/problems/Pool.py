@@ -46,21 +46,26 @@ class Problem(ProblemBase):
 
         #Scaling Parameters
         g = 9.8 #Gravity
-        lambda0 = options['lambda0'] #typical wavelength
+        self.lambda0 = options['lambda0'] #typical wavelength
         a0 = options['a0'] #Typical wave height
         h0 = options['h0'] #Typical depth
-        sigma = h0/lambda0
-        c0 = (h0*g)**(0.5)
-        epsilon = a0/h0
+        self.sigma = h0/self.lambda0
+        self.c0 = (h0*g)**(0.5)
+        self.epsilon = a0/h0
 
         # Create mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
-        x0 = x0/lambda0
-        x1 = x1/lambda0
-        y0 = y0/lambda0
-        y1 = y1/lambda0
+        x0 = x0/self.lambda0
+        x1 = x1/self.lambda0
+        y0 = y0/self.lambda0
+        y1 = y1/self.lambda0
         self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
+
+        #Scaled Parameters
+        self.t0 = 0.
+        self.T = options['T']*self.c0/self.lambda0 #Final time
+        self.k = options['dt']*self.c0/self.lambda0 #time step
 
         #DEFINITION OF THE OBJECT
         #Scaled Parameters

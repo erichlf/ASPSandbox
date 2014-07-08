@@ -50,6 +50,10 @@ class Problem(ProblemBase):
         Ny = options["Ny"]
         self.mesh = Mesh('data/cylinder_0.xml.gz')
 
+        self.t0 = 0.
+        self.T = options['T']
+        self.k = options['dt']
+
     def initial_conditions(self, V, Q):
 
         u0 = Constant((0, 0))

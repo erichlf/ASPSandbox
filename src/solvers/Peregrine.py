@@ -12,6 +12,7 @@ class Solver(SolverBase):
 
         #Parameters
         self.Re = None
+        self.Ro = None
         self.g = 9.8 #Gravity
         self.lambda0 = self.options['lambda0'] #typical wavelength
         a0 = self.options['a0'] #Typical wave height
@@ -64,12 +65,10 @@ class Solver(SolverBase):
         c0 = self.c0
         epsilon = self.epsilon
 
-        #Scaled Parameters
-        self.k = self.k*c0/lambda0 #time step
-        k = self.k
-        self.T = self.T*c0/lambda0 #Final time
-
-        t0 = self.t0
+        t0 = problem.t0 #initial time
+        self.t0 = t0
+        T = problem.T #Final time
+        k = problem.k #time step
 
         D, self.zeta, self.zeta_, self.zeta__, self.bottom, self.H, self.H_ \
             = self.seabed(problem,self.Q,t0,c0,lambda0,epsilon)

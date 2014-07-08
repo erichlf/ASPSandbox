@@ -35,6 +35,10 @@ class Problem(ProblemBase):
         y1 = float(options["y1"])
         self.mesh = RectangleMesh(x0,y0,x1,y1,Nx, Ny)
 
+        self.t0 = 0.
+        self.T = options['T']
+        self.k = options['dt']
+
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
         eta0 = Constant(0)
