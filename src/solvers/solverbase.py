@@ -181,7 +181,7 @@ class SolverBase:
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(self.Functional(mesh, v, chi)*dt)
+        J = Functional(self.functional(mesh, v, chi)*dt)
         i = int(math.ceil(T/k)) #last time step
         adjoint = compute_adjoint(J,forget=False)
         for (phi, var) in adjoint:
