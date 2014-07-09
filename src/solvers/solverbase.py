@@ -68,7 +68,7 @@ class SolverBase:
         self.problem = problem
         mesh = problem.mesh
 
-        maxiters = 4 #max number of adaptive steps
+        maxiters = 10 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
 
@@ -77,7 +77,6 @@ class SolverBase:
         else:
             # Adaptive loop
             for i in range(0, maxiters):
-                print
                 if i==0:
                     print 'Solving on initial mesh.'
                 else:
@@ -93,6 +92,7 @@ class SolverBase:
                     plot(mesh, title="Finest mesh", size=((600, 300)))
 
                 # Refine the mesh
+                print 'Refining mesh.'
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
                 self._timestep = 0 #reset the time step to zero
                 adj_reset() #reset the dolfin-adjoint
@@ -174,15 +174,9 @@ class SolverBase:
         #weak form of the primal problem
         F = self.weak_residual(W, w, w_, wt, ei_mode=False)
 
+        print 'Solving the primal problem.'
         w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
         parameters["adjoint"]["stop_annotating"] = True
-
-        adj_html("forward.html", "forward")
-        adj_html("adjoint.html", "adjoint")
-        success = replay_dolfin(forget=False)
-
-        if not success:
-            sys.exit(1)
 
         phi = Function(W)
 
@@ -197,6 +191,8 @@ class SolverBase:
         wtape = []
         phi = []
 
+        print
+        print 'Solving the dual problem.'
         adjoint = compute_adjoint(J,forget=False) #adjoint solution
         for (adj, var) in adjoint:
             if var.name == 'w' and timestep != var.timestep:
@@ -205,6 +201,7 @@ class SolverBase:
                 wtape.append(DolfinAdjointVariable(w).tape_value(timestep=timestep))
                 phi.append(adj)
 
+        print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
             LR1 = k*self.weak_residual(W, wtape[i], wtape[i+1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1,annotate=False).array()
