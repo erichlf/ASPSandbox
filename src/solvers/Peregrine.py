@@ -12,24 +12,17 @@ class Solver(SolverBase):
 
         #Parameters
         self.Re = None
-        self.g = 9.8 #Gravity
-        self.lambda0 = self.options['lambda0'] #typical wavelength
-        a0 = self.options['a0'] #Typical wave height
-        h0 = self.options['h0'] #Typical depth
-        self.sigma = h0/self.lambda0
-        self.c0 = (h0*self.g)**(0.5)
-        self.epsilon = a0/h0
+        self.Ro = None
 
     def strong_residual(self,u,U,eta):
         #Parameters
-        g = self.g #Gravity
-        lambda0 = self.lambda0 #typical wavelength
-        sigma = self.sigma
-        c0 = self.c0
-        epsilon = self.epsilon
+        sigma = problem.sigma
+        epsilon = problem.epsilon
 
-        zeta_tt = 1./self.dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
-        zeta_t = 1./self.dt*(self.zeta - self.zeta_)
+        k = problem.k
+
+        zeta_tt = 1./k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
+        zeta_t = 1./k*(self.zeta - self.zeta_)
 
         #strong form for stabilization
         R1 = epsilon*grad(u)*U + grad(eta)
@@ -41,90 +34,105 @@ class Solver(SolverBase):
 
         return R1, R2, z1, z2
 
-    def weak_residual(self,w,w_,wt):
+    def weak_residual(self,W,w,w_,wt,ei_mode=False):
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
-        h = CellSize(self.mesh) #mesh size
+        problem = self.problem
+
+        h = CellSize(W.mesh()) #mesh size
+        d = 0.1*h**(3./2.) #stabilization parameter
+
+        #set up error indicators
+        Z = FunctionSpace(W.mesh(), "DG", 0)
+        z = TestFunction(Z)
 
         alpha = self.alpha #time stepping method
 
         #Parameters
-        g = self.g #Gravity
-        lambda0 = self.lambda0 #typical wavelength
-        sigma = self.sigma
-        c0 = self.c0
-        epsilon = self.epsilon
+        sigma = problem.sigma
+        epsilon = problem.epsilon
 
-        problem = self.problem
+        t0 = problem.t0 #initial time
+        self.t0 = t0
+        T = problem.T #Final time
+        k = problem.k #time step
 
-        #Scaled Parameters
-        self.dt = self.dt*c0/lambda0 #time step
-        dt = self.dt
-        self.T = self.T*c0/lambda0 #Final time
+        D, self.zeta, self.zeta_, self.zeta__, self.bottom, self.H, self.H_ \
+            = self.seabed(problem,self.Q,t0,epsilon)
 
-        t0 = self.t0
-
-        D = Expression(problem.D, hd=problem.hd, hb=problem.hb,  lambda0=lambda0, element=self.Q.ufl_element())
-        self.zeta = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.zeta_ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.zeta__ = Expression(problem.zeta0, ad=problem.ad, c0=c0, t0=t0, t=t0,\
-                    hd=problem.hd, lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', epsilon=epsilon,\
-                    hb=problem.hb, ad=problem.ad, c0=c0, t0=t0, t=t0, hd=problem.hd,\
-                    lambda0=lambda0, vmax=problem.vmax, element=self.Q.ufl_element())
-        self.h = interpolate(self.bottom, self.Q)
-        self.h_ = interpolate(self.bottom, self.Q)
-
-        zeta_tt = 1./dt**2*(self.zeta - 2*self.zeta_ + self.zeta__)
-        zeta_t = 1./dt*(self.zeta - self.zeta_)
+        zeta_tt = 1./k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
+        zeta_t = 1./k*(self.zeta - self.zeta_)
 
         #Time stepping method
         U_alpha = (1. - alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
         zeta_alpha = (1. - alpha)*self.zeta_ + alpha*self.zeta
 
-        t = t0 + dt
+        t = t0 + k
         #forcing and mass source/sink
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
+
+        if(not self.options["stabilize"] or ei_mode):
+          d = 0
+        if(not ei_mode):
+          z = 1.
+
         #weak form of the equations
-        r = 1./dt*inner(U-U_,v)*dx + epsilon*inner(grad(U_alpha)*U_alpha,v)*dx \
-            - div(v)*eta_alpha*dx
+        r = z*(1./k*inner(U-U_,v) + epsilon*inner(grad(U_alpha)*U_alpha,v) \
+            - div(v)*eta_alpha)*dx
 
-        r += sigma**2*1./dt*div((D + epsilon*zeta_alpha)*(U-U_))*div((D + epsilon*zeta_alpha)*v/2.)*dx \
-              - sigma**2*1./dt*div(U-U_)*div((D + epsilon*zeta_alpha)**2*v/6.)*dx
-        r += sigma**2*zeta_tt*div((D + epsilon*zeta_alpha)*v/2.)*dx
+        r += z*(sigma**2*1./k*div((D + epsilon*zeta_alpha)*(U-U_))*div((D + epsilon*zeta_alpha)*v/2.) \
+              - sigma**2*1./k*div(U-U_)*div((D + epsilon*zeta_alpha)**2*v/6.))*dx
+        r += z*sigma**2*zeta_tt*div((D + epsilon*zeta_alpha)*v/2.)*dx
 
-        r += 1./dt*(eta-eta_)*chi*dx + zeta_t*chi*dx
-        r -= inner(U_alpha,grad(chi))*(epsilon*eta_alpha + D + epsilon*zeta_alpha)*dx
+        r += z*(1./k*(eta-eta_)*chi + zeta_t*chi)*dx
+        r -= z*inner(U_alpha,grad(chi))*(epsilon*eta_alpha + D + epsilon*zeta_alpha)*dx
 
-        r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
+        r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
 
-        if(self.options["stabilize"]):
-          r += 0.1*h**(3./2.)*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
+        r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
 
         return r
 
     def stabilization_parameters(self,U_,eta_,h):
-        k1  = 2.
-        k2  = 2.
-        d1 = k1*(self.dt**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
-        d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-2))**(-0.5)
+        K1  = 2.
+        K2  = 2.
+        d1 = K1*(self.k**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+        d2 = K2*(self.k**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
         return d1, d2
 
-    def wave_object(self, t, dt):
+    def functional(self,mesh,w):
+
+      (u, eta) = (as_vector((w[0], w[1])), w[2])
+
+      M = u[0]*dx # Mean of the x-velocity in the whole domain
+
+      return M
+
+    def seabed(self,problem,Q,t0,epsilon):
+        D = Expression(problem.D, element=Q.ufl_element())
+        zeta = Expression(problem.zeta0, t0=t0, t=t0,element=Q.ufl_element())
+        zeta_ = Expression(problem.zeta0, t0=t0, t=t0, element=Q.ufl_element())
+        zeta__ = Expression(problem.zeta0, t0=t0, t=t0, element=Q.ufl_element())
+        bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', \
+                epsilon=epsilon, t0=t0, t=t0, element=Q.ufl_element())
+        H = interpolate(bottom, Q)
+        H_ = interpolate(bottom, Q)
+
+        return D, zeta, zeta_, zeta__, bottom, H, H_
+
+    def wave_object(self, Q, t, k):
         self.zeta.t = t
-        self.zeta_.t = max(t - dt, self.t0)
-        self.zeta__.t = max(t - 2*dt, self.t0)
-        self.h_.assign(self.h)
+        self.zeta_.t = max(t - k, self.t0)
+        self.zeta__.t = max(t - 2*k, self.t0)
+        self.H_.assign(self.H)
         self.bottom.t = t
-        self.h = interpolate(self.bottom, self.Q)
+        self.H = interpolate(self.bottom, Q)
 
     def __str__(self):
           return 'Peregrine'

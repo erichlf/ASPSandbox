@@ -50,12 +50,19 @@ class Solver(SolverBase):
         return R1, R2
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,w,w_,wt):
+    def weak_residual(self,W,w,w_,wt,ei_mode=False):
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
-        h = CellSize(self.mesh) #mesh size
+        problem = self.problem
+
+        h = CellSize(W.mesh()) #mesh size
+        d1, d2 = self.stabilization_parameters(U_,eta_,h) #stabilization parameters
+
+        #set up error indicators
+        Z = FunctionSpace(W.mesh(), "DG", 0)
+        z = TestFunction(Z)
 
         #get problem parameters
         Re = self.Re #Reynolds number
@@ -67,11 +74,9 @@ class Solver(SolverBase):
         NonLinear = self.NonLinear
         inviscid = self.inviscid
 
-        problem = self.problem
-
         alpha = self.alpha #time stepping method
-        dt = self.dt
-        t0 = self.t0
+        k = problem.k
+        t0 = problem.t0
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
@@ -79,39 +84,51 @@ class Solver(SolverBase):
         #p_(k+alpha)
         eta_alpha = (1.0-alpha)*eta_ + alpha*eta
 
-        t = t0 + dt
+        t = t0 + k
         #forcing and mass source/sink
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
+        #least squares stabilization
+        if(not self.options["stabilize"] or ei_mode):
+          d1 = 0
+          d2 = 0
+        if(not ei_mode):
+          z = 1.
+
         #weak form of the equations
         #momentum equation
-        r = (1./dt)*inner(U - U_,v)*dx \
-            + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0])*dx \
-            - Fr**(-2)*Th*eta_alpha*div(v)*dx
-        r += inviscid/Re*inner(grad(U_alpha),grad(v))*dx
+        r = z*((1./k)*inner(U - U_,v) \
+            + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0]) \
+            - Fr**(-2)*Th*eta_alpha*div(v))*dx
+        r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         #add the terms for the non-linear SWE
-        r += NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
+        r += z*NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
         #continuity equation
-        r += (1./dt)*(eta - eta_)*chi*dx \
-            + H/Th*div(U_alpha)*chi*dx
+        r += z*((1./k)*(eta - eta_)*chi \
+            + H/Th*div(U_alpha)*chi)*dx
 
-        r -= inner(F1_alpha,v)*dx + F2_alpha*chi*dx
+        r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
 
-        #least squares stabilization
-        if(self.options["stabilize"]):
-            d1, d2 = self.stabilization_parameters(U_,eta_,h)
-            R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
-            Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
-            r += d1*inner(R1 - F1_alpha, Rv1)*dx + d2*(R2 - F2_alpha)*Rv2*dx
+        R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
+        Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
+        r += z*(d1*inner(R1 - F1_alpha, Rv1) + d2*(R2 - F2_alpha)*Rv2)*dx
 
         return r
 
+    def functional(self,mesh,w):
+
+      (u, eta) = (as_vector((w[0], w[1])), w[2])
+
+      M = u[0]*dx # Mean of the x-velocity in the whole domain
+
+      return M
+
     def stabilization_parameters(self,U_,eta_,h):
-        k1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
-        k2  = self.Th/(2*self.H)
-        d1 = k1*(self.dt**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
-        d2 = k2*(self.dt**(-2) + eta_*eta_*h**(-1))**(-0.5)
+        K1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
+        K2  = self.Th/(2*self.H)
+        d1 = K1*(self.k**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
+        d2 = K2*(self.k**(-2) + eta_*eta_*h**(-1))**(-0.5)
 
         return d1, d2
 

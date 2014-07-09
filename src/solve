@@ -34,6 +34,7 @@ OPTIONS = { "Nx": 20, #number of elements along x axis
             "a0": 0.8, #Typical wave height
             "h0": 2., #Typical depth
             "alpha": 0.5, #time-stepping method
+            "adaptive": False, #mesh adaptivity
             "save_solution": True,
             "save_frequency": 1,
             "plot_solution": False,

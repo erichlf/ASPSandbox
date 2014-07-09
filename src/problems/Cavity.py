@@ -34,7 +34,11 @@ class Problem(ProblemBase):
         # Create mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
-        self.mesh = UnitSquare(Nx, Ny)
+        self.mesh = UnitSquareMesh(Nx, Ny)
+
+        self.t0 = 0.
+        self.T = options['T']
+        self.k = options['dt']
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))

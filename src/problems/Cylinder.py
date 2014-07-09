@@ -48,7 +48,11 @@ class Problem(ProblemBase):
         # Load mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
-        self.mesh = Mesh('data/cylinder_4.xml.gz')
+        self.mesh = Mesh('data/cylinder_0.xml.gz')
+
+        self.t0 = 0.
+        self.T = options['T']
+        self.k = options['dt']
 
     def initial_conditions(self, V, Q):
 
