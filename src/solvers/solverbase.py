@@ -68,7 +68,7 @@ class SolverBase:
         self.problem = problem
         mesh = problem.mesh
 
-        maxiters = 10 #max number of adaptive steps
+        maxiters = 4 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
 
@@ -139,6 +139,7 @@ class SolverBase:
         return U_, eta_
 
     def adaptive_solve(self, mesh):
+        parameters["adjoint"]["stop_annotating"] = False
         problem = self.problem
         h = CellSize(mesh) #mesh size
 
@@ -151,6 +152,7 @@ class SolverBase:
         Z = FunctionSpace(mesh, "DG", 0)
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
         Q = FunctionSpace(mesh, 'CG', self.Pp)
+        self.Q = Q
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
@@ -160,8 +162,8 @@ class SolverBase:
         wt = TestFunction(W)
         v, chi = TestFunctions(W)
 
-        w = Function(W, name='State')
-        w_ = Function(W, name='PreviousState')
+        w = Function(W, name='w')
+        w_ = Function(W, name='w_')
 
         #initial condition
         w_ = self.InitialConditions(problem, W)
@@ -173,6 +175,14 @@ class SolverBase:
         F = self.weak_residual(W, w, w_, wt, ei_mode=False)
 
         w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
+        parameters["adjoint"]["stop_annotating"] = True
+
+        adj_html("forward.html", "forward")
+        adj_html("adjoint.html", "adjoint")
+        success = replay_dolfin(forget=False)
+
+        if not success:
+            sys.exit(1)
 
         phi = Function(W)
 
@@ -182,18 +192,22 @@ class SolverBase:
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(self.functional(mesh, v, chi)*dt)
-        i = int(math.ceil(T/k)) #last time step
-        adjoint = compute_adjoint(J,forget=False)
-        for (phi, var) in adjoint:
-          if var.name == 'State':
-            # Compute error indicators ei
-            wtape = DolfinAdjointVariable(w).tape_value(iteration=i)
-            if i>0:
-                wtape_ = DolfinAdjointVariable(w).tape_value(iteration=i-1)
-            LR1 = k*self.weak_residual(W, wtape, wtape_, phi, ei_mode=True)
+        J = Functional(self.functional(mesh, w)*dt, name='DualArgument')
+        timestep = None
+        wtape = []
+        phi = []
+
+        adjoint = compute_adjoint(J,forget=False) #adjoint solution
+        for (adj, var) in adjoint:
+            if var.name == 'w' and timestep != var.timestep:
+                timestep = var.timestep
+                # Compute error indicators ei
+                wtape.append(DolfinAdjointVariable(w).tape_value(timestep=timestep))
+                phi.append(adj)
+
+        for i in range(0, len(wtape)-1):
+            LR1 = k*self.weak_residual(W, wtape[i], wtape[i+1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1,annotate=False).array()
-            i -= 1
 
         return U_, eta_, ei
 
@@ -262,6 +276,7 @@ class SolverBase:
         #plot and save initial condition
         self.update(problem, t, w_.split()[0], w_.split()[1])
 
+        adj_start_timestep(t)
         while t<(T-k/2.):
             t += k
 
@@ -278,6 +293,7 @@ class SolverBase:
             #F2 = self.Q_project(self.problem.F2(t),W)
 
             w_.assign(w)
+            adj_inc_timestep(t,finished=t>=(T-k/2.))
 
             # Update
             self.update(problem, t, w.split()[0], w.split()[1])

@@ -106,7 +106,9 @@ class Solver(SolverBase):
 
         return d1, d2
 
-    def functional(self,mesh,u,eta):
+    def functional(self,mesh,w):
+
+      (u, eta) = (as_vector((w[0], w[1])), w[2])
 
       M = u[0]*dx # Mean of the x-velocity in the whole domain
 
