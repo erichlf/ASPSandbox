@@ -56,6 +56,9 @@ class SolverBase:
         self._ufile = None
         self._pfile = None
         self._bfile = None
+        self._uDualfile = None
+        self._pDualfile = None
+        self._eifile = None
 
         # Reset storage for functional values and errors
         self._t = []
@@ -68,7 +71,7 @@ class SolverBase:
         self.problem = problem
         mesh = problem.mesh
 
-        maxiters = 10 #max number of adaptive steps
+        maxadaps = 4 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
 
@@ -76,7 +79,7 @@ class SolverBase:
             U_, eta_ = self.forward_solve(mesh)
         else:
             # Adaptive loop
-            for i in range(0, maxiters):
+            for i in range(0, maxadaps):
                 if i==0:
                     print 'Solving on initial mesh.'
                 else:
@@ -87,8 +90,9 @@ class SolverBase:
                 # Solve primal and dual problems and compute error indicators
                 (U_, eta_, ei) = self.adaptive_solve(mesh)
                 if(i == 0 and self.options['plot_solution']):
+                    plot(ei, title="Error Indicators.")
                     plot(mesh, title="Initial mesh", size=((600, 300)))
-                elif(i == maxiters - 1 and self.options['plot_solution']):
+                elif(i == maxadaps - 1 and self.options['plot_solution']):
                     plot(mesh, title="Finest mesh", size=((600, 300)))
 
                 # Refine the mesh
@@ -187,6 +191,7 @@ class SolverBase:
 
         # Generate the dual problem
         J = Functional(self.functional(mesh, w)*dt, name='DualArgument')
+        #print 'The size of the function is: %d' % norm(J,'L2')
         timestep = None
         wtape = []
         phi = []
@@ -200,6 +205,8 @@ class SolverBase:
                 # Compute error indicators ei
                 wtape.append(DolfinAdjointVariable(w).tape_value(timestep=timestep))
                 phi.append(adj)
+                if self.options['save_solution']:
+                    self.update(problem, None, adj.split()[0], adj.split()[1], dual=True)
 
         print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
@@ -297,7 +304,7 @@ class SolverBase:
 
         return w_
 
-    def update(self, problem, t, u, p):
+    def update(self, problem, t, u, p, dual=False):
         #Update problem at time t
 
         # Add to accumulated CPU time
@@ -308,7 +315,8 @@ class SolverBase:
         #problem.update_problem(t, u, p)
 
         # Store values
-        self._t.append(t)
+        if t is not None:
+            self._t.append(t)
 
         # Save solution
         if self.options['save_solution']:
@@ -330,10 +338,18 @@ class SolverBase:
                     self._pfile = File(s + '_p.pvd')
                 if self._bfile is None:
                     self._bfile = File(s + '_b.pvd')
-                self._ufile << u
-                self._pfile << p
-                if self.zeta is not None:
-                    self._bfile << self.H_
+                if self._uDualfile is None:
+                    self._uDualfile = File(s + '_uDual.pvd')
+                if self._pDualfile is None:
+                    self._pDualfile = File(s + '_pDual.pvd')
+                if not dual:
+                    self._ufile << u
+                    self._pfile << p
+                    if self.zeta is not None:
+                        self._bfile << self.H_
+                else:
+                    self._uDualfile << u
+                    self._pDualfile << p
         else:
             self.options['plot_solution'] = True
 
@@ -360,15 +376,16 @@ class SolverBase:
             print 'Memory usage is:' , self.getMyMemoryUsage()
 
         # Print progress
-        s = 'Time step %d finished in %g seconds, %g%% done (t = %g, T = %g).' \
-            % (self._timestep, timestep_cputime, 100.0*(t / problem.T), t, problem.T)
-        sys.stdout.flush()
-        sys.stdout.write('\033[K')
-        sys.stdout.write(s + '\r')
+        if not dual:
+            s = 'Time step %d finished in %g seconds, %g%% done (t = %g, T = %g).' \
+                % (self._timestep, timestep_cputime, 100.0*(t / problem.T), t, problem.T)
+            sys.stdout.flush()
+            sys.stdout.write('\033[K')
+            sys.stdout.write(s + '\r')
 
-        # Increase time step and record current time
-        self._timestep += 1
-        self._time = time()
+            # Increase time step and record current time
+            self._timestep += 1
+            self._time = time()
 
     def prefix(self, problem):
         #Return file prefix for output files
