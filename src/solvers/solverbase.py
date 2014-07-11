@@ -81,7 +81,6 @@ class SolverBase:
             # Adaptive loop
             for i in range(0, maxadaps):
                 if i==0:
-                    print
                     print 'Solving on initial mesh.'
                 elif i < len(nth):
                     print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
@@ -100,10 +99,17 @@ class SolverBase:
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
                 self._timestep = 0 #reset the time step to zero
                 adj_reset() #reset the dolfin-adjoint
-        #recording isn't needed
         print 'Solving the primal problem.'
-        parameters["adjoint"]["stop_annotating"] = True
+        #recording isn't needed if not optimizing
+        parameters["adjoint"]["stop_annotating"] = self.options['optimize'] \
+                and ('Optimization' in dir(self))
         W, w = self.forward_solve(self.problem, mesh, k)
+        #solve the optimization problem
+        if(self.options['optimize'] and  'Optimize' in dir(self)):
+            opt = self.Optimize(self.problem, w)
+            if self.options['plot_solution']:
+                plot(opt, title='Optimization result.')
+                interactive()
 
         return w.split()[0], w.split()[1]
 
