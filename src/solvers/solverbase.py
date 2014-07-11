@@ -76,6 +76,8 @@ class SolverBase:
         nth = ('st','nd','rd','th') #numerical descriptors
 
         if not self.options['adaptive']: #solve without adaptivity
+            #recording isn't needed
+            parameters["adjoint"]["stop_annotating"] = False
             U_, eta_ = self.forward_solve(mesh)
         else:
             # Adaptive loop
