@@ -131,7 +131,7 @@ class SolverBase:
         w_ = Function(W, name='w_previous')
 
         #initial condition
-        w_ = self.InitialConditions(problem, W)
+        w_.assign(self.InitialConditions(problem, W))
 
         #weak form of the primal problem
         F = self.weak_residual(W, w, w_, wt, ei_mode=False)
@@ -189,7 +189,7 @@ class SolverBase:
 
         A = inner(u,w)*dx - inner(f1,e1)*dx - f2*e2*dx
 
-        solve(A == 0, u)
+        solve(A == 0, u, annotate=False)
 
         return u
 
