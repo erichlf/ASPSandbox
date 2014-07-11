@@ -70,27 +70,25 @@ class SolverBase:
     def solve(self, problem):
         self.problem = problem
         mesh = problem.mesh
+        k = problem.k #time step
+        self.k = k
 
-        maxadaps = 4 #max number of adaptive steps
+        maxadaps = 2 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
 
-        if not self.options['adaptive']: #solve without adaptivity
-            #recording isn't needed
-            parameters["adjoint"]["stop_annotating"] = True
-            U_, eta_ = self.forward_solve(mesh)
-        else:
+        if self.options['adaptive']: #solve with adaptivity
             # Adaptive loop
             for i in range(0, maxadaps):
                 if i==0:
+                    print
                     print 'Solving on initial mesh.'
+                elif i < len(nth):
+                    print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
                 else:
-                    if i < len(nth):
-                        print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
-                    else:
-                        print 'Solving on %d%s adapted mesh.' % (i, nth[len(nth)-1])
+                    print 'Solving on %d%s adapted mesh.' % (i, nth[len(nth)-1])
                 # Solve primal and dual problems and compute error indicators
-                (U_, eta_, ei) = self.adaptive_solve(mesh)
+                w, ei = self.adaptive_solve(mesh,k)
                 if(i == 0 and self.options['plot_solution']):
                     plot(ei, title="Error Indicators.")
                     plot(mesh, title="Initial mesh", size=((600, 300)))
@@ -102,18 +100,19 @@ class SolverBase:
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
                 self._timestep = 0 #reset the time step to zero
                 adj_reset() #reset the dolfin-adjoint
-            interactive()
+        #recording isn't needed
+        print 'Solving the primal problem.'
+        parameters["adjoint"]["stop_annotating"] = True
+        W, w = self.forward_solve(mesh,k)
 
-        return U_, eta_
+        return w.split()[0], w.split()[1]
 
-    def forward_solve(self,mesh):
+    def forward_solve(self,mesh,k):
         problem = self.problem
         h = CellSize(mesh) #mesh size
 
         t = problem.t0
         T = problem.T #final time
-        k = problem.k #time step
-        self.k = k
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
@@ -128,65 +127,30 @@ class SolverBase:
         wt = TestFunction(W)
         v, chi = TestFunctions(W)
 
-        w = Function(W)
-        w_ = Function(W)
-
-        #initial condition
-        w_ = self.InitialConditions(problem, W)
-
-        U, eta = (as_vector((w[0], w[1])), w[2])
-        U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
-
-        #weak form of the primal problem
-        F = self.weak_residual(W, w, w_, wt, ei_mode=False)
-
-        w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
-
-        return U_, eta_
-
-    def adaptive_solve(self, mesh):
-        parameters["adjoint"]["stop_annotating"] = False
-        problem = self.problem
-        h = CellSize(mesh) #mesh size
-
-        t = problem.t0
-        T = problem.T #final time
-        k = problem.k
-        self.k = k
-
-        # Define function spaces
-        Z = FunctionSpace(mesh, "DG", 0)
-        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        Q = FunctionSpace(mesh, 'CG', self.Pp)
-        self.Q = Q
-        W = MixedFunctionSpace([V, Q])
-
-        # Get boundary conditions
-        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
-
-        #define trial and test function
-        wt = TestFunction(W)
-        v, chi = TestFunctions(W)
-
         w = Function(W, name='w')
-        w_ = Function(W, name='w_')
+        w_ = Function(W, name='w_previous')
 
         #initial condition
         w_ = self.InitialConditions(problem, W)
 
-        U, eta = (as_vector((w[0], w[1])), w[2])
-        U_, eta_ = (as_vector((w_[0], w_[1])), w_[2])
-
         #weak form of the primal problem
         F = self.weak_residual(W, w, w_, wt, ei_mode=False)
+
+        w = self.timeStepper(problem, t, T, k, W, w, w_, F)
+
+        return W, w
+
+    def adaptive_solve(self, mesh, k):
 
         print 'Solving the primal problem.'
-        w_ = self.timeStepper(problem, t, T, k, W, w, w_, F)
+        parameters["adjoint"]["stop_annotating"] = False
+        W, w = self.forward_solve(mesh,k)
         parameters["adjoint"]["stop_annotating"] = True
 
         phi = Function(W)
 
         # Generate error indicators
+        Z = FunctionSpace(mesh, "DG", 0)
         ei = Function(Z)
         z = TestFunction(Z)
         LR1 = 0.
@@ -200,8 +164,7 @@ class SolverBase:
 
         print
         print 'Solving the dual problem.'
-        adjoint = compute_adjoint(J,forget=False) #adjoint solution
-        for (adj, var) in adjoint:
+        for (adj, var) in compute_adjoint(J,forget=False):
             if var.name == 'w' and timestep != var.timestep:
                 timestep = var.timestep
                 # Compute error indicators ei
@@ -215,7 +178,7 @@ class SolverBase:
             LR1 = k*self.weak_residual(W, wtape[i], wtape[i+1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1,annotate=False).array()
 
-        return U_, eta_, ei
+        return w, ei
 
     def W_project(self,f1,f2,W):
         #This function will project an expressions into W
