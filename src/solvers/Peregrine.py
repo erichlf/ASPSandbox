@@ -105,14 +105,29 @@ class Solver(SolverBase):
         d2 = K2*(self.k**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
         return d1, d2
+"""
+    #Optimization Function
+    def optimization(self, w):
+        eta = w.split()[1]
+        #Functionnal to be minimized: L2 norme over a subdomain
+        J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.zeta0*dx)
+        shape = InitialConditionParameter(self.zeta,self.zeta0)
+        Jhat = ReducedFunctional(J, shape, eval_cb=Visualize) #Reduced Functional
+        shape_opt = minimize(Jhat)
+
+        return shape_opt
+"""
+    def Visualize(j, shape):
+        shape_viz.assign(shape)
+        controls << shape_viz
 
     def functional(self,mesh,w):
 
-      (u, eta) = (as_vector((w[0], w[1])), w[2])
+        (u, eta) = (as_vector((w[0], w[1])), w[2])
 
-      M = u[0]*dx # Mean of the x-velocity in the whole domain
+        M = u[0]*dx # Mean of the x-velocity in the whole domain
 
-      return M
+        return M
 
     def seabed(self,problem,Q,t0,epsilon):
         D = Expression(problem.D, element=Q.ufl_element())

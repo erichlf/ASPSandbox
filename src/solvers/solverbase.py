@@ -100,10 +100,17 @@ class SolverBase:
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
                 self._timestep = 0 #reset the time step to zero
                 adj_reset() #reset the dolfin-adjoint
-        #recording isn't needed
         print 'Solving the primal problem.'
-        parameters["adjoint"]["stop_annotating"] = True
+        #recording isn't needed if not optimizing
+        parameters["adjoint"]["stop_annotating"] = options['optimize'] \
+                and ('Optimization' in dir(self)):
         W, w = self.forward_solve(mesh,k)
+        #solve the optimization problem
+        if(options['optimize'] and  'Optimization' in dir(self)):
+            opt = Optimize(mesh, w)
+            if options['plot_solution']:
+                plot(opt, title='Optimization result.')
+                interactive()
 
         return w.split()[0], w.split()[1]
 
