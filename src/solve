@@ -35,6 +35,7 @@ OPTIONS = { "Nx": 20, #number of elements along x axis
             "h0": 2., #Typical depth
             "alpha": 0.5, #time-stepping method
             "adaptive": False, #mesh adaptivity
+            "optimize": False, #optimize as defined in solver
             "save_solution": True,
             "save_frequency": 1,
             "plot_solution": False,
@@ -127,7 +128,7 @@ def main(args):
     # Set debug level
     set_log_active(options["debug"])
 
-    sys.stdout.write('Solving %s for the %s problem.\r' % (solver_name,problem_name))
+    print 'Solving %s for the %s problem.' % (solver_name,problem_name)
     # Create problem and solver
     problem = Problem(problem_name, options)
     solver = Solver(solver_name, options)
@@ -143,8 +144,7 @@ def main(args):
     #num_dofs = u.vector().size() + p.vector().size()
     sys.stdout.flush()
     sys.stdout.write('\033[K')
-    sys.stdout.write('Solved %s for the %s problem in %g seconds.\n' %
-            (solver_name,problem_name,wct))
+    print 'Solved %s for the %s problem in %g seconds.' % (solver_name,problem_name,wct)
 
     return 0
 

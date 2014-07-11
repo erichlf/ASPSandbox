@@ -62,13 +62,19 @@ class Solver(SolverBase):
         D, self.zeta, self.zeta_, self.zeta__, self.bottom, self.H, self.H_ \
             = self.seabed(problem,self.Q,t0,epsilon)
 
-        zeta_tt = 1./k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
-        zeta_t = 1./k*(self.zeta - self.zeta_)
+        #We need to save the wave object for optimization
+        self.Zeta = project(self.zeta, self.Q, name='zeta')
+        self.Zeta_ = project(self.zeta_, self.Q, name='zeta_')
+        self.Zeta__ = project(self.zeta__, self.Q, name='zeta__')
+        self.zeta0 = project(self.zeta,self.Q, name='InitialShape')
+
+        zeta_tt = 1./k**2*(self.Zeta - 2*self.Zeta_ + self.Zeta__)
+        zeta_t = 1./k*(self.Zeta - self.Zeta_)
 
         #Time stepping method
         U_alpha = (1. - alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
-        zeta_alpha = (1. - alpha)*self.zeta_ + alpha*self.zeta
+        zeta_alpha = (1. - alpha)*self.Zeta_ + alpha*self.Zeta
 
         t = t0 + k
         #forcing and mass source/sink
@@ -105,21 +111,20 @@ class Solver(SolverBase):
         d2 = K2*(self.k**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
         return d1, d2
-"""
+
     #Optimization Function
-    def optimization(self, w):
+    def Optimize(self, problem, w):
         eta = w.split()[1]
+
         #Functionnal to be minimized: L2 norme over a subdomain
-        J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.zeta0*dx)
-        shape = InitialConditionParameter(self.zeta,self.zeta0)
-        Jhat = ReducedFunctional(J, shape, eval_cb=Visualize) #Reduced Functional
+        J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*dx)
+
+        #initial shape
+        shape = InitialConditionParameter(self.Zeta, value=self.zeta0)
+        Jhat = ReducedFunctional(J, shape) #Reduced Functional
         shape_opt = minimize(Jhat)
 
         return shape_opt
-"""
-    def Visualize(j, shape):
-        shape_viz.assign(shape)
-        controls << shape_viz
 
     def functional(self,mesh,w):
 
@@ -136,8 +141,8 @@ class Solver(SolverBase):
         zeta__ = Expression(problem.zeta0, t0=t0, t=t0, element=Q.ufl_element())
         bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', \
                 epsilon=epsilon, t0=t0, t=t0, element=Q.ufl_element())
-        H = interpolate(bottom, Q)
-        H_ = interpolate(bottom, Q)
+        H = interpolate(bottom, Q,name='Bathymetry')
+        H_ = interpolate(bottom, Q,name='PreviousBathymetry')
 
         return D, zeta, zeta_, zeta__, bottom, H, H_
 
@@ -147,7 +152,12 @@ class Solver(SolverBase):
         self.zeta__.t = max(t - 2*k, self.t0)
         self.H_.assign(self.H)
         self.bottom.t = t
-        self.H = interpolate(self.bottom, Q)
+        self.H = interpolate(self.bottom, Q,name='Bathymetry')
+
+        #We need to save the wave object as a function for optimization
+        self.Zeta.assign(project(self.zeta,Q))
+        self.Zeta_.assign(project(self.zeta_,Q))
+        self.Zeta__.assign(project(self.zeta__,Q))
 
     def __str__(self):
           return 'Peregrine'
