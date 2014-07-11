@@ -23,6 +23,10 @@ y1 = 25.
 hd = 2. #Depth of the pool in the central lane [m]
 hb = 0.3 #Depth at the boundaries [m]
 ad = 0.8 #height of the moving object [m]
+g = 9.8 #Gravity
+lambda0 = 20. #typical wavelength
+a0 = 0.8 #Typical wave height
+h0 = 2. #Typical depth
 
 # Slip boundary
 class Y_SlipBoundary(SubDomain):
@@ -42,13 +46,9 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
-        global x0, x1, y0, y1, hd, hb, ad
+        global x0, x1, y0, y1, hd, hb, ad, a0, h0, g
 
         #Scaling Parameters
-        g = 9.8 #Gravity
-        lambda0 = options['lambda0'] #typical wavelength
-        a0 = options['a0'] #Typical wave height
-        h0 = options['h0'] #Typical depth
         self.sigma = h0/lambda0
         c0 = (h0*g)**(0.5)
         self.epsilon = a0/h0
@@ -95,6 +95,24 @@ class Problem(ProblemBase):
             + str(lambda0) + ' ? 1. : 0.)*(' + str(lambda0) + '*x[1]-4.)' \
             + ' +  ' + str((hd-hb)/21.) + '*(x[1]<(-4./' + str(lambda0) \
             + ') ? 1. : 0.)*(' + str(lambda0) + '*x[1]+4.)'
+
+        #Define the bounds
+        self.ub = '(-' + str(ad) + '*(x[1]<0. ? 1. : 0.)' \
+                        + '*(x[1]>' + str(-3./lambda0) \
+                        + '? 1. : 0.)*(x[0]>' + str(-1.5/lambda0) + '? 1. : 0.)' \
+                        + '*(x[0]<' + str(-1.5/lambda0) + '? 1. : 0.) < -0.5 ? -' \
+                        + str(ad) + '*(x[1]<0. ? 1. : 0.)' \
+                        + '*(x[1]>' + str(-3./lambda0) \
+                        + '? 1. : 0.)*(x[0]>' + str(-1.5/lambda0) + '? 1. : 0.)'\
+                        + '*(x[0]<' + str(2./lambda0) + '? 1. : 0.) : 0 )'
+        self.lb = '(-' + str(ad) + '*(x[1]<' + str(3./lambda0) + ' ? 1. : 0.)' \
+                        + '*(x[1]>' + str(-3./lambda0) \
+                        + '? 1. : 0.)*(x[0]>' + str(-3./lambda0) + '? 1. : 0.)'\
+                        + '*(x[0]<' + str(1.5/lambda0) + '? 1. : 0.) < -0.5 ? -' \
+                        + str(ad) + '*(x[1]<' + str(3./lambda0) + '? 1. : 0.)'\
+                        + '*(x[1]>' + str(-3./lambda0) \
+                        + '? 1. : 0.)*(x[0]>' + str(-3./lambda0) + ' ? 1. : 0.)'\
+                        + '*(x[0]<' + str(1.5/lambda0) + ' ? 1. : 0.) : 0 )'
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))

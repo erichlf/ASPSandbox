@@ -110,6 +110,13 @@ class SolverBase:
             if self.options['plot_solution']:
                 plot(opt, title='Optimization result.')
                 interactive()
+            else:
+                s = 'results/' + self.prefix(problem) \
+                        + self.suffix() \
+                        + 'Nx' + str(Nx) \
+                        + 'Ny' + str(Ny) \
+                        + 'K' + str(int(1./k))
+                zetafile = File(s + '_Opt.pvd')
 
         return w.split()[0], w.split()[1]
 

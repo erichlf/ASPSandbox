@@ -115,14 +115,17 @@ class Solver(SolverBase):
     #Optimization Function
     def Optimize(self, problem, w):
         eta = w.split()[1]
+        #bounds on object
+        lb = project(Expression('-0.5'), self.Q, name='LowerBound')
+        ub = project(Expression('0.0'), self.Q, name='UpperBound')
 
         #Functionnal to be minimized: L2 norme over a subdomain
-        J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*dx)
+        J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*self.Zeta*dx)
 
         #initial shape
         shape = InitialConditionParameter(self.Zeta, value=self.zeta0)
         Jhat = ReducedFunctional(J, shape) #Reduced Functional
-        shape_opt = minimize(Jhat)
+        shape_opt = minimize(Jhat, bounds=(lb, ub))
 
         return shape_opt
 
