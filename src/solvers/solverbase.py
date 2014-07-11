@@ -88,7 +88,7 @@ class SolverBase:
                 else:
                     print 'Solving on %d%s adapted mesh.' % (i, nth[len(nth)-1])
                 # Solve primal and dual problems and compute error indicators
-                w, ei = self.adaptive_solve(mesh,k)
+                w, ei = self.adaptive_solve(self.problem, mesh, k)
                 if(i == 0 and self.options['plot_solution']):
                     plot(ei, title="Error Indicators.")
                     plot(mesh, title="Initial mesh", size=((600, 300)))
@@ -103,12 +103,11 @@ class SolverBase:
         #recording isn't needed
         print 'Solving the primal problem.'
         parameters["adjoint"]["stop_annotating"] = True
-        W, w = self.forward_solve(mesh,k)
+        W, w = self.forward_solve(self.problem, mesh, k)
 
         return w.split()[0], w.split()[1]
 
-    def forward_solve(self,mesh,k):
-        problem = self.problem
+    def forward_solve(self, problem, mesh, k):
         h = CellSize(mesh) #mesh size
 
         t = problem.t0
@@ -140,11 +139,11 @@ class SolverBase:
 
         return W, w
 
-    def adaptive_solve(self, mesh, k):
+    def adaptive_solve(self, problem, mesh, k):
 
         print 'Solving the primal problem.'
         parameters["adjoint"]["stop_annotating"] = False
-        W, w = self.forward_solve(mesh,k)
+        W, w = self.forward_solve(problem, mesh, k)
         parameters["adjoint"]["stop_annotating"] = True
 
         phi = Function(W)
