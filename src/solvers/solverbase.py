@@ -77,7 +77,7 @@ class SolverBase:
 
         if not self.options['adaptive']: #solve without adaptivity
             #recording isn't needed
-            parameters["adjoint"]["stop_annotating"] = False
+            parameters["adjoint"]["stop_annotating"] = True
             U_, eta_ = self.forward_solve(mesh)
         else:
             # Adaptive loop
@@ -118,7 +118,7 @@ class SolverBase:
         # Define function spaces
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
         Q = FunctionSpace(mesh, 'CG', self.Pp)
-        self.Q = Q
+        self.Q = Q #Bad hack for being able to project into Q space
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
