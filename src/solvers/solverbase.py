@@ -76,6 +76,15 @@ class SolverBase:
         maxadaps = 2 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
+        #file naming
+        s = 'results/' + self.prefix(problem) \
+                + self.suffix() \
+                + 'Nx' + str(self.options['Nx']) \
+                + 'Ny' + str(self.options['Ny']) \
+                + 'K' + str(int(1./k))
+        eifile = File(s + '_ei.pvd') #error indicators
+        meshfile = File(s + '_mesh.pvd')
+        optfile = File(s + '_Opt.pvd') #solution to optimization
 
         if self.options['adaptive']: #solve with adaptivity
             # Adaptive loop
@@ -91,8 +100,15 @@ class SolverBase:
                 if(i == 0 and self.options['plot_solution']):
                     plot(ei, title="Error Indicators.")
                     plot(mesh, title="Initial mesh", size=((600, 300)))
+                elif i == 0:
+                    meshfile << mesh
+                    eifile << ei
                 elif(i == maxadaps - 1 and self.options['plot_solution']):
+                    plot(ei, title="Error Indicators.")
                     plot(mesh, title="Finest mesh", size=((600, 300)))
+                elif i == maxadaps - 1:
+                    meshfile << mesh
+                    eifile << ei
 
                 # Refine the mesh
                 print 'Refining mesh.'
@@ -111,12 +127,7 @@ class SolverBase:
                 plot(opt, title='Optimization result.')
                 interactive()
             else:
-                s = 'results/' + self.prefix(problem) \
-                        + self.suffix() \
-                        + 'Nx' + str(Nx) \
-                        + 'Ny' + str(Ny) \
-                        + 'K' + str(int(1./k))
-                zetafile = File(s + '_Opt.pvd')
+                optfile << opt
 
         return w.split()[0], w.split()[1]
 
