@@ -65,6 +65,7 @@ class Solver(SolverBase):
         r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         r += z*div(U_alpha)*q*dx
 
+        #forcing function
         r -= z*(inner(F1_alpha,v) + F2_alpha*q)*dx
 
         R1, R2 = self.strong_residual(U_alpha,U_alpha,p_alpha)
