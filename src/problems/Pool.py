@@ -13,6 +13,7 @@ This is basically a blank problem that we can adapt with optional inputs.
 
 from problembase import *
 from numpy import array
+from numpy import concatenate
 
 x0 = -6.
 x1 = 60.
@@ -51,7 +52,7 @@ hb = hb/h0 #depth at the boundary
 c0 = (h0*g)**(0.5)
 
 #maximum velocity of wave object
-vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
+vmax = ((hd*h0+ad*a0)*g)**(0.5)/100 #Max Speed of the moving object [m.s^(-1)]
 
 # Slip boundary
 class Y_SlipBoundary(SubDomain):
@@ -73,14 +74,14 @@ class Object(Expression):
         written by Pramudita Satria Palar for matlab which can be found at
         http://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method
     '''
-    def __init__(self, N, w, dz, t):
+    def __init__(self, params, t):
         global x0, x1, y0, y1, x2, x3, y2, y3, hd, hb, ad, a0, h0, c0, g, vmax
 
-        self.N1 = N[0]
-        self.N2 = N[1]
-        self.w = w
+        self.N1 = params[0]
+        self.N2 = params[1]
+        self.w = params[2:5]
+        self.dz = params[6]
         self.t = t
-        self.dz = dz
 
     def eval(self, value, x):
         N1 = self.N1
@@ -125,14 +126,16 @@ class Problem(ProblemBase):
         self.sigma = h0/lambda0
         self.epsilon = a0/h0
 
-        self.N = (0.005, 5E-6)
-        self.w = (1.,1.,1.,1.)
-        self.dz = 0.1
+        #set up the CST shape parameterization
+        #(N1, N2, W1, W2, W3, W4, dz)
+        self.params = (1, 1, 1., 1., 1., 1., 0.)
 
         # Create mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
         self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
+
+        self.mesh = self.Refine(self.mesh)
 
         #Scaled Parameters
         self.t0 = 0.
@@ -140,7 +143,7 @@ class Problem(ProblemBase):
         self.k = options['dt']*c0/lambda0 #time step
 
         Q = FunctionSpace(self.mesh, 'CG', 1)
-        self.zeta0 = Object(N=self.N,w=self.w,dz=self.dz,t=self.t0)
+        self.zeta0 = Object(params=self.params,t=self.t0)
 
         #Defintion of the shape of the seabed
         self.D = str(hd) + ' - ' + str((hd-hb)/21.) + '*(x[1]>4./' \
@@ -165,6 +168,19 @@ class Problem(ProblemBase):
                         + '*(x[1]>' + str(-3./lambda0) \
                         + '? 1. : 0.)*(x[0]>' + str(-3./lambda0) + ' ? 1. : 0.)'\
                         + '*(x[0]<' + str(1.5/lambda0) + ' ? 1. : 0.) : 0 )'
+
+    def Refine(self, mesh):
+        #Refine the mesh along the object's trajectory
+        for i in range(0,4):
+            cell_markers = CellFunction("bool", mesh)
+            cell_markers.set_all(False)
+            for cell in cells(mesh):
+               p = cell.midpoint()
+               if(p.y() > (y2 - 2./(2.**i*lambda0)) and p.y() < (y3 + 2./(2.**i*lambda0))):
+                    cell_markers[cell] = True
+            mesh = refine(mesh, cell_markers)
+
+        return mesh
 
     def initial_conditions(self, V, Q):
         u0 = Expression(("0.0", "0.0"))

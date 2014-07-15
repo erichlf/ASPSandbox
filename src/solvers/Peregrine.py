@@ -123,8 +123,8 @@ class Solver(SolverBase):
         J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*self.Zeta*dx)
 
         #initial shape
-        shape = InitialConditionParameter(self.Zeta, value=self.zeta0)
-        Jhat = ReducedFunctional(J, shape) #Reduced Functional
+        m = ScalarParameters(problem.params)
+        Jhat = ReducedFunctional(J, m) #Reduced Functional
         shape_opt = minimize(Jhat, bounds=(lb, ub))
 
         return shape_opt
