@@ -59,7 +59,7 @@ class Solver(SolverBase):
         T = problem.T #Final time
         k = problem.k #time step
 
-        D, self.zeta, self.zeta_, self.zeta__, self.bottom, self.H, self.H_ \
+        D, self.zeta, self.zeta_, self.zeta__, bottom, self.H, self.H_ \
             = self.seabed(problem,self.Q,t0,epsilon)
 
         #We need to save the wave object for optimization
@@ -80,7 +80,6 @@ class Solver(SolverBase):
         #forcing and mass source/sink
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
-
 
         if(not self.options["stabilize"] or ei_mode):
           d = 0
@@ -139,23 +138,23 @@ class Solver(SolverBase):
 
     def seabed(self,problem,Q,t0,epsilon):
         D = Expression(problem.D, element=Q.ufl_element())
-        zeta = Expression(problem.zeta0, t0=t0, t=t0,element=Q.ufl_element())
-        zeta_ = Expression(problem.zeta0, t0=t0, t=t0, element=Q.ufl_element())
-        zeta__ = Expression(problem.zeta0, t0=t0, t=t0, element=Q.ufl_element())
-        bottom = Expression(problem.D + ' + epsilon*(' + problem.zeta0 +')', \
-                epsilon=epsilon, t0=t0, t=t0, element=Q.ufl_element())
-        H = interpolate(bottom, Q,name='Bathymetry')
-        H_ = interpolate(bottom, Q,name='PreviousBathymetry')
+        zeta = problem.zeta0
+        zeta_ = zeta
+        zeta__ = zeta
+        bottom = D - epsilon*zeta
+        H = project(bottom, Q, name='Bathymetry')
+        H_ = project(bottom, Q, name='PreviousBathymetry')
 
         return D, zeta, zeta_, zeta__, bottom, H, H_
 
     def wave_object(self, Q, t, k):
+        D = Expression(self.problem.D, element=Q.ufl_element())
         self.zeta.t = t
         self.zeta_.t = max(t - k, self.t0)
         self.zeta__.t = max(t - 2*k, self.t0)
         self.H_.assign(self.H)
-        self.bottom.t = t
-        self.H = interpolate(self.bottom, Q,name='Bathymetry')
+        bottom = D - self.problem.epsilon*self.zeta
+        self.H = project(bottom, Q,name='Bathymetry')
 
         #We need to save the wave object as a function for optimization
         self.Zeta.assign(project(self.zeta,Q))
