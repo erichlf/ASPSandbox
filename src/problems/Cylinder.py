@@ -53,7 +53,6 @@ class Problem(ProblemBase):
         circ = Circle(xcenter, ycenter, radius)
         domain = rect - circ
         self.mesh = Mesh(domain, Nx)
-#        self.mesh = Mesh('data/cylinder_0.xml.gz')
 
         self.t0 = 0.
         self.T = options['T']

@@ -73,7 +73,7 @@ class SolverBase:
         k = problem.k #time step
         self.k = k
 
-        maxadaps = 2 #max number of adaptive steps
+        maxadaps = 10 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
         #file naming
