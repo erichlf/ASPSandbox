@@ -59,14 +59,15 @@ class Solver(SolverBase):
         T = problem.T #Final time
         k = problem.k #time step
 
-        D, self.zeta, self.zeta_, self.zeta__, bottom, self.H, self.H_ \
-            = self.seabed(problem,self.Q,t0,epsilon)
+        self.D, self.zeta, self.zeta_, self.zeta__, bottom, self.H, self.H_ \
+            = self.seabed(problem, self.Q, t0, epsilon)
 
         #We need to save the wave object for optimization
         self.Zeta = project(self.zeta, self.Q, name='zeta')
         self.Zeta_ = project(self.zeta_, self.Q, name='zeta_')
         self.Zeta__ = project(self.zeta__, self.Q, name='zeta__')
         self.zeta0 = project(self.zeta,self.Q, name='InitialShape')
+        D = project(self.D, self.Q, name='Bottom')
 
         zeta_tt = 1./k**2*(self.Zeta - 2*self.Zeta_ + self.Zeta__)
         zeta_t = 1./k*(self.Zeta - self.Zeta_)
@@ -147,19 +148,17 @@ class Solver(SolverBase):
 
         return D, zeta, zeta_, zeta__, bottom, H, H_
 
-    def wave_object(self, Q, t, k):
-        D = Expression(self.problem.D, element=Q.ufl_element())
-        self.zeta.t = t
-        self.zeta_.t = max(t - k, self.t0)
-        self.zeta__.t = max(t - 2*k, self.t0)
-        self.H_.assign(self.H)
-        bottom = D - self.problem.epsilon*self.zeta
-        self.H = project(bottom, Q,name='Bathymetry')
+    def wave_object(self, problem, Q, t, k):
+        problem.zeta0.t = t
+        self.Zeta.assign(project(problem.zeta0,Q))
+        problem.zeta0.t = max(t - k, self.t0)
+        self.Zeta_.assign(project(problem.zeta0,Q))
+        problem.zeta0.t = max(t - 2*k, self.t0)
+        self.Zeta__.assign(project(problem.zeta0,Q))
 
-        #We need to save the wave object as a function for optimization
-        self.Zeta.assign(project(self.zeta,Q))
-        self.Zeta_.assign(project(self.zeta_,Q))
-        self.Zeta__.assign(project(self.zeta__,Q))
+        self.H_.assign(self.H)
+        bottom = self.D - problem.epsilon*self.zeta
+        self.H = project(bottom, Q, name='Bathymetry')
 
     def __str__(self):
           return 'Peregrine'

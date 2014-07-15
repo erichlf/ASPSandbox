@@ -89,8 +89,7 @@ class Object(Expression):
         dz = self.dz
         t = self.t
 
-        #u = vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))
-        u = vmax
+        u = vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))
 
         X = ((x[0] - x2 - u*t)/(x3 - x2), (x[1] - y2)/(y3 - y2))
 
@@ -126,7 +125,7 @@ class Problem(ProblemBase):
         self.sigma = h0/lambda0
         self.epsilon = a0/h0
 
-        self.N = (0.5, 0.5)
+        self.N = (0.005, 5E-6)
         self.w = (1.,1.,1.,1.)
         self.dz = 0.1
 

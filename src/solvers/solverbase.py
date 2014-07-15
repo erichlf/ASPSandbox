@@ -273,7 +273,7 @@ class SolverBase:
             t += k
 
             if('wave_object' in dir(self)):
-                self.wave_object(self.Q, t, k)
+                self.wave_object(problem, self.Q, t, k)
 
             #evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
