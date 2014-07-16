@@ -43,13 +43,10 @@ class Solver(SolverBase):
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
 
-        #p_(k+alpha)
-        p_alpha = (1.0-alpha)*p_ + alpha*p
-
         t = t0 + k
         #forcing and mass source/sink
-        F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
-        F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
+        F1 = problem.F1(t)
+        F2 = problem.F2(t)
 
         #least squares stabilization
         if(not self.options["stabilize"] or ei_mode):
@@ -60,17 +57,17 @@ class Solver(SolverBase):
 
         #weak form of the equations
         r = z*((1./k)*inner(U - U_,v) \
-            - p_alpha*div(v) \
+            - p*div(v) \
             + inner(grad(U_alpha)*U_alpha,v))*dx
         r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         r += z*div(U_alpha)*q*dx
 
         #forcing function
-        r -= z*(inner(F1_alpha,v) + F2_alpha*q)*dx
+        r -= z*(inner(F1,v) + F2*q)*dx
 
-        R1, R2 = self.strong_residual(U_alpha,U_alpha,p_alpha)
+        R1, R2 = self.strong_residual(U_alpha,U_alpha,p)
         Rv1, Rv2 = self.strong_residual(U_alpha,v,q)
-        r += z*(d1*inner(R1 - F1_alpha, Rv1) + d2*(R2 - F2_alpha)*Rv2)*dx
+        r += z*(d1*inner(R1 - F1, Rv1) + d2*(R2 - F2)*Rv2)*dx
 
         return r
 
