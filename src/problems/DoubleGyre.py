@@ -40,10 +40,10 @@ class Problem(ProblemBase):
 
         return q0, psi0
 
-    def boundary_conditions(self, Q, Psi, t):
+    def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
-        noslipQ = DirichletBC(Q, Constant(0.), NoslipBoundary())
-        noslipPsi = DirichletBC(Psi, Constant(0.), NoslipBoundary())
+        noslipQ = DirichletBC(W.sub(0), Constant(0.), NoslipBoundary())
+        noslipPsi = DirichletBC(W.sub(1), Constant(0.), NoslipBoundary())
 
         bcs = [noslipQ, noslipPsi]
 

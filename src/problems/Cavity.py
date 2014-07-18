@@ -46,15 +46,15 @@ class Problem(ProblemBase):
 
         return u0, p0
 
-    def boundary_conditions(self, V, Q, t):
+    def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
-        noslip = DirichletBC(V, Constant((0, 0)), NoslipBoundary())
+        noslip = DirichletBC(W.sub(0), Constant((0, 0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        lid = DirichletBC(V, Constant((1.0,0)), Lid())
+        lid = DirichletBC(W.sub(0), Constant((1.0,0)), Lid())
 
         #pressure boundary
-        pressure = DirichletBC(Q, Constant(0), Pressure())
+        pressure = DirichletBC(W.sub(1), Constant(0), Pressure())
 
         bcs = [noslip, lid, pressure]
 

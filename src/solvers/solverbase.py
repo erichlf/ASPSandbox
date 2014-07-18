@@ -144,7 +144,7 @@ class SolverBase:
         W = MixedFunctionSpace([V, Q])
 
         # Get boundary conditions
-        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+        bcs = problem.boundary_conditions(W, t)
 
         #define trial and test function
         wt = TestFunction(W)
@@ -261,7 +261,7 @@ class SolverBase:
         return mesh
 
     def timeStepper(self, problem, t, T, k, W, w, w_, F):
-        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+        bcs = problem.boundary_conditions(W, t)
         # Time loop
         self.start_timing()
 
@@ -276,7 +276,7 @@ class SolverBase:
                 self.wave_object(problem, self.Q, t, k)
 
             #evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+            bcs = problem.boundary_conditions(W, t)
 
             solve(F==0, w, bcs=bcs)
 

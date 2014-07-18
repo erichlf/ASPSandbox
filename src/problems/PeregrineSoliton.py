@@ -89,13 +89,14 @@ class Problem(ProblemBase):
 
         return u_0, eta_0
 
-    def boundary_conditions(self, V, Q, t):
+    def boundary_conditions(self, W, t):
+        V = W.sub(0)
         # Create no-slip boundary condition for velocity
         bc_X = DirichletBC(V.sub(0), 0.0, X_SlipBoundary())
         bc_Y = DirichletBC(V.sub(1), 0.0, Y_SlipBoundary())
-        
+
         bcs = [bc_X, bc_Y]
-        
+
         return bcs
 
     def F1(self, t):

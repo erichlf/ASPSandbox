@@ -6,8 +6,18 @@ __license__  = "GNU GPL version 3 or any later version"
 #   by Kent-Andre Mardal <kent-and@simula.no>
 #
 
+'''
+This is an extremely boring problem with no forcing and on a square.
+This is basically a blank problem that we can adapt with optional inputs.
+'''
+
 from problembase import *
 from numpy import array
+
+x0 = 0.
+x1 = 1.
+y0 = 0.
+y1 = 1.
 
 # No-slip boundary
 class NoslipBoundary(SubDomain):
@@ -22,19 +32,21 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        Nx = options["Nx"]
-        Ny = options["Ny"]
-        self.mesh = RectangleMesh(-1,-1,1,1,Nx, Ny)
+        Nx = options['Nx']
+        Ny = options['Ny']
+        self.mesh = RectangleMesh(x0,y0,x1,y1,Nx, Ny)
+        self.Fr = options['Fr']
 
         self.t0 = 0.
         self.T = options['T']
         self.k = options['dt']
 
-    def initial_conditions(self, V, Q):
-        u0 = Constant((0, 0))
-        eta0 = Expression('A*exp(-(x[0]*x[0]+x[1]*x[1])/(2*S*S))', A=1.0, S=5E-2)
+    def initial_conditions(self, V, R, Q):
+        U0 = Constant((0, 0))
+        rho0 = Expression('x[0]<(x1-x0)/2. ? 1 : 0', x1=x1, x0=x0)
+        p0 = Constant(0)
 
-        return u0, eta0
+        return U0, rho0, p0
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
@@ -44,11 +56,11 @@ class Problem(ProblemBase):
 
     def F1(self, t):
         #forcing function for the momentum equation
-        return Constant((0,0))
+        return Expression(('0.','1./Fr'),Fr=self.Fr,t=t)
 
     def F2(self, t):
         #mass source for the continuity equation
-        return Constant(0)
+        return Expression('0.0',t=t)
 
     def __str__(self):
-        return 'Drop'
+        return 'TwoFluid'

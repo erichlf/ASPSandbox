@@ -42,24 +42,21 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, V, Q):
         u0 = Constant((0, 0))
-        p0 = Constant(0)#self.pressure_bc(V, Q, 0)
+        p0 = Constant(0)
 
         return u0, p0
 
-    def boundary_conditions(self, V, Q, t):
+    def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
-        noslip = DirichletBC(V, (0, 0), NoslipBoundary())
+        noslip = DirichletBC(W.sub(0), (0, 0), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        inflow = DirichletBC(V, Constant((1,0)), InflowBoundary())
-        outflow = DirichletBC(Q, Constant(0), OutflowBoundary())
+        inflow = DirichletBC(W.sub(0), Constant((1,0)), InflowBoundary())
+        outflow = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
 
         bcs = [noslip, inflow, outflow]
 
         return bcs
-
-    def pressure_bc(self, V, Q, t):
-        return Expression('p*(1.-x[0])',p=1.,t=t)
 
     def F1(self, t):
         #forcing function for the momentum equation

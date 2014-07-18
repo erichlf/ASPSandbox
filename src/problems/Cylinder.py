@@ -65,29 +65,26 @@ class Problem(ProblemBase):
 
         return u0, p0
 
-    def boundary_conditions(self, V, Q, t):
+    def boundary_conditions(self, W, t):
         # Create inflow boundary condition
-        self.g0 = Expression( ('4*Um*(x[1]*(ymax-x[1]))/(ymax*ymax)*4*t*t/(4*t*t+1)', '0.0'), Um=1.5, ymax=ymax, t=t)
+        self.g0 = Expression(('4*Um*(x[1]*(ymax-x[1]))/(ymax*ymax)*4*t*t/(4*t*t+1)', '0.0'), Um=1.5, ymax=ymax, t=t)
         self.b0 = InflowBoundary()
-        bc0 = DirichletBC(V, self.g0, self.b0)
+        bc0 = DirichletBC(W.sub(0), self.g0, self.b0)
 
         # Create no-slip boundary condition
         self.b1 = NoslipBoundary()
         self.g1 = Constant((0, 0))
-        bc1     = DirichletBC(V, self.g1, self.b1)
+        bc1     = DirichletBC(W.sub(0), self.g1, self.b1)
 
         # Create outflow boundary condition for pressure
         self.b2 = OutflowBoundary()
         self.g2 = Constant(0)
-        bc2     = DirichletBC(Q, self.g2, self.b2)
+        bc2     = DirichletBC(W.sub(1), self.g2, self.b2)
 
         # Collect boundary conditions
         bcs = [bc0, bc1, bc2]
 
         return bcs
-
-    def update(self, t, u, p):
-        self.g0.t = t
 
     def F1(self, t):
         #forcing function for the momentum equation

@@ -43,9 +43,9 @@ class Problem(ProblemBase):
 
         return u0, eta0
 
-    def boundary_conditions(self, V, Q, t):
+    def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
-        bcs = DirichletBC(V, Constant((0.0, 0.0)), NoslipBoundary())
+        bcs = DirichletBC(W.sub(0), Constant((0.0, 0.0)), NoslipBoundary())
 
         return bcs
 
