@@ -45,8 +45,7 @@ class Solver(SolverBase):
 
         t = t0 + k
         #forcing and mass source/sink
-        F1 = problem.F1(t)
-        F2 = problem.F2(t)
+        F = problem.F1(t)
 
         #least squares stabilization
         if(not self.options["stabilize"] or ei_mode):
@@ -63,11 +62,11 @@ class Solver(SolverBase):
         r += z*div(U_alpha)*q*dx
 
         #forcing function
-        r -= z*(inner(F1,v) + F2*q)*dx
+        r -= z*inner(F,v)*dx
 
         R1, R2 = self.strong_residual(U_alpha,U_alpha,p)
         Rv1, Rv2 = self.strong_residual(U_alpha,v,q)
-        r += z*(d1*inner(R1 - F1, Rv1) + d2*(R2 - F2)*Rv2)*dx
+        r += z*(d1*inner(R1 - F, Rv1) + d2*R2*Rv2)*dx
 
         return r
 
@@ -79,11 +78,11 @@ class Solver(SolverBase):
 
       return M
 
-    def stabilization_parameters(self,U_,eta_,h):
+    def stabilization_parameters(self,U,p,h):
         K1  = 1.
         K2  = 0.5
-        d1 = K1*(self.k**(-2) + eta_*eta_*h**(-2))**(-0.5)
-        d2 = K2*(self.k**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+        d1 = K1*(self.k**(-2) + inner(U,U)*h**(-2))**(-0.5)
+        d2 = K2*h**(-1)
 
         return d1, d2
 
