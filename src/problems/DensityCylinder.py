@@ -75,6 +75,7 @@ class Problem(ProblemBase):
         # Create inflow boundary condition
         g0 = Expression(('4*Um*(x[1]*(ymax-x[1]))/(ymax*ymax)*4*t*t/(4*t*t+1)', '0.0'), Um=1.5, ymax=ymax, t=t)
         f0 = Expression('sin(p*pi*t)<0 ? -exp(-256*pow(x[1]-y0,2))*sin(p*pi*t) : 0',y0=ycenter,p=2.,t=t)
+        f1 = Expression('exp(-256*(pow(x[1]-y0,2)+pow(x[0]-x0,2)))',y0=ycenter,x0=xcenter,t=t)
 
         bc0 = DirichletBC(W.sub(0), g0, InflowBoundary())
 
@@ -85,11 +86,11 @@ class Problem(ProblemBase):
         bc2 = DirichletBC(W.sub(2), Constant(0), OutflowBoundary())
 
         # Density boundary conditions for cool effects
-        bc3 = DirichletBC(W.sub(1), f0, InflowBoundary())
-        #bc3 = DirichletBC(W.sub(1), Constant(1.0), InflowBoundary())
+        bc3 = DirichletBC(W.sub(1), Constant(0), InflowBoundary())
+        bc4 = DirichletBC(W.sub(1), f1, CylinderBoundary())
 
         # Collect boundary conditions
-        bcs = [bc0, bc1, bc2, bc3]
+        bcs = [bc0, bc1, bc2, bc3, bc4]
 
         return bcs
 
