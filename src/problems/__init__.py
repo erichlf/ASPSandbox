@@ -4,7 +4,7 @@ __license__  = "GNU GPL version 3 or any later version"
 
 # List of problems
 problems = ['Channel', 'Drop', 'Cavity', 'Cylinder', 'Square', \
-        'PeregrineSoliton', 'Point', 'Pool', 'DoubleGyre', 'TwoFluid']
+        'PeregrineSoliton', 'Point', 'Pool', 'DoubleGyre', 'DensityCylinder', 'TwoFluid']
 
 # Wrapper for problem classes
 def Problem(name, options):

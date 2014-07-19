@@ -12,7 +12,7 @@ class Solver(SolverBase):
 
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,rho,Rho,p):
-        R1 = rho*grad(U)*u + grad(p) 
+        R1 = rho*grad(U)*u + grad(p)
         R2 = inner(U,grad(rho))
         R3 = div(U)
 
