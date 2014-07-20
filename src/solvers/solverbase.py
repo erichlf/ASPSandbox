@@ -68,7 +68,6 @@ class SolverBase:
         self.vizP = None
 
     def solve(self, problem):
-        self.problem = problem
         mesh = problem.mesh
         k = problem.k #time step
         self.k = k
@@ -96,7 +95,7 @@ class SolverBase:
                 else:
                     print 'Solving on %d%s adapted mesh.' % (i, nth[len(nth)-1])
                 # Solve primal and dual problems and compute error indicators
-                w, ei = self.adaptive_solve(self.problem, mesh, k)
+                w, ei = self.adaptive_solve(problem, mesh, k)
                 if(i == 0 and self.options['plot_solution']):
                     plot(ei, title="Error Indicators.")
                     plot(mesh, title="Initial mesh", size=((600, 300)))
@@ -119,10 +118,10 @@ class SolverBase:
         #recording isn't needed if not optimizing
         parameters["adjoint"]["stop_annotating"] = self.options['optimize'] \
                 and ('Optimization' in dir(self))
-        W, w = self.forward_solve(self.problem, mesh, k)
+        W, w = self.forward_solve(problem, mesh, k)
         #solve the optimization problem
         if(self.options['optimize'] and  'Optimize' in dir(self)):
-            opt = self.Optimize(self.problem, w)
+            opt = self.Optimize(problem, w)
             if self.options['plot_solution']:
                 plot(opt, title='Optimization result.')
                 interactive()
@@ -193,7 +192,7 @@ class SolverBase:
         w_.assign(self.InitialConditions(problem, W))
 
         #weak form of the primal problem
-        F = self.weak_residual(W, w, w_, wt, ei_mode=False)
+        F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
 
         w = self.timeStepper(problem, t, T, k, W, w, w_, F)
 
@@ -206,41 +205,6 @@ class SolverBase:
         W = MixedFunctionSpace([V, Q])
 
         return W
-
-    def W_project(self,f1,f2,W):
-        #This function will project an expressions into W
-        e1, e2 = TestFunctions(W)
-        w = TestFunction(W)
-
-        u = Function(W)
-
-        A = inner(u,w)*dx - inner(f1,e1)*dx - f2*e2*dx
-
-        solve(A == 0, u, annotate=False)
-
-        return u
-
-    def V_project(self,f1,W):
-        #This function will project an expression into W.sub(1)
-
-        #filler function
-        f2 = Expression('0.0')
-
-        f1 = self.W_project(f1,f2,W)
-        f1 = f1.split()[0]
-
-        return f1
-
-    def Q_project(self,f2,W):
-        #This function will project an expression into W.sub(1)
-
-        #filler function
-        f1 = Expression(('0.0','0.0'))
-
-        f2 = self.W_project(f1,f2,W)
-        f2 = f2.split()[1]
-
-        return f2
 
     def InitialConditions(self,problem,W):
         #project the given initial condition into W
@@ -295,6 +259,44 @@ class SolverBase:
             self.update(problem, t, w.split()[0], w.split()[1])
 
         return w_
+
+    def W_project(self,f1,f2,W):
+        #This function will project an expressions into W
+        e1, e2 = TestFunctions(W)
+        w = TestFunction(W)
+
+        u = Function(W)
+
+        A = inner(u,w)*dx - inner(f1,e1)*dx - f2*e2*dx
+
+        solve(A == 0, u, annotate=False)
+
+        return u
+
+    def V_project(self,f1,W):
+        #This function will project an expression into W.sub(1)
+
+        #filler function
+        f2 = Expression('0.0')
+
+        f1 = self.W_project(f1,f2,W)
+        f1 = f1.split()[0]
+
+        return f1
+
+    def Q_project(self,f2,W):
+        #This function will project an expression into W.sub(1)
+
+        #filler function
+        if W.mesh().topology().dim() == 2:
+            f1 = Expression(('0.0','0.0'))
+        else:
+            f1 = Expression(('0.0','0.0','0.0'))
+
+        f2 = self.W_project(f1,f2,W)
+        f2 = f2.split()[1]
+
+        return f2
 
     def update(self, problem, t, u, p, dual=False):
         #Update problem at time t
@@ -371,6 +373,15 @@ class SolverBase:
         if not dual:
             s = 'Time step %d finished in %g seconds, %g%% done (t = %g, T = %g).' \
                 % (self._timestep, timestep_cputime, 100.0*(t / problem.T), t, problem.T)
+            sys.stdout.flush()
+            sys.stdout.write('\033[K')
+            sys.stdout.write(s + '\r')
+
+            # Increase time step and record current time
+            self._timestep += 1
+            self._time = time()
+        else:
+            s = 'Calculating the dual finished in %g seconds.' % timestep_cputime
             sys.stdout.flush()
             sys.stdout.write('\033[K')
             sys.stdout.write(s + '\r')

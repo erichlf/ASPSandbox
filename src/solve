@@ -17,6 +17,7 @@ from solvers import Solver, solvers
 # Default options
 OPTIONS = { "Nx": 20, #number of elements along x axis
 	    "Ny" : 20, #number of elements along y axis
+	    "Nz" : 20, #number of elements along z axis
             "dt": 0.01, #time-step
             "T": 1.0, #final-time
             "Re": 1000, #Reynolds number

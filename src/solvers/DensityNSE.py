@@ -29,7 +29,7 @@ class Solver(SolverBase):
         return R1, R2, R3
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,W,w,w_,wt,ei_mode=False):
+    def weak_residual(self,problem,W,w,w_,wt,ei_mode=False):
         #rho = 1/rho' - 1
         (U, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
         (U_, rho_, p_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
@@ -44,8 +44,6 @@ class Solver(SolverBase):
         z = TestFunction(Z)
 
         Re = self.Re #Reynolds Number
-
-        problem = self.problem
 
         alpha = self.alpha #time stepping method
         k = problem.k
