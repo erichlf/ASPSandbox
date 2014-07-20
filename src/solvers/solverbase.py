@@ -178,6 +178,7 @@ class SolverBase:
         T = problem.T #final time
 
         # Define function spaces
+        #we do it this way so that it can be overloaded
         W = self.function_space(mesh)
 
         # Get boundary conditions
