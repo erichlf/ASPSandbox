@@ -148,8 +148,6 @@ class SolverBase:
 
         #define trial and test function
         wt = TestFunction(W)
-        v, chi = TestFunctions(W)
-
         w = Function(W, name='w')
         w_ = Function(W, name='w_previous')
 
