@@ -131,36 +131,6 @@ class SolverBase:
 
         return w.split()[0], w.split()[1]
 
-    def forward_solve(self, problem, mesh, k):
-        h = CellSize(mesh) #mesh size
-
-        t = problem.t0
-        T = problem.T #final time
-
-        # Define function spaces
-        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        Q = FunctionSpace(mesh, 'CG', self.Pp)
-        self.Q = Q #Bad hack for being able to project into Q space
-        W = MixedFunctionSpace([V, Q])
-
-        # Get boundary conditions
-        bcs = problem.boundary_conditions(W, t)
-
-        #define trial and test function
-        wt = TestFunction(W)
-        w = Function(W, name='w')
-        w_ = Function(W, name='w_previous')
-
-        #initial condition
-        w_.assign(self.InitialConditions(problem, W))
-
-        #weak form of the primal problem
-        F = self.weak_residual(W, w, w_, wt, ei_mode=False)
-
-        w = self.timeStepper(problem, t, T, k, W, w, w_, F)
-
-        return W, w
-
     def adaptive_solve(self, problem, mesh, k):
 
         print 'Solving the primal problem.'
@@ -200,6 +170,33 @@ class SolverBase:
             ei.vector()[:] += assemble(LR1,annotate=False).array()
 
         return w, ei
+
+    def forward_solve(self, problem, mesh, k):
+        h = CellSize(mesh) #mesh size
+
+        t = problem.t0
+        T = problem.T #final time
+
+        # Define function spaces
+        W = self.function_space(mesh)
+
+        # Get boundary conditions
+        bcs = problem.boundary_conditions(W, t)
+
+        #define trial and test function
+        wt = TestFunction(W)
+        w = Function(W, name='w')
+        w_ = Function(W, name='w_previous')
+
+        #initial condition
+        w_.assign(self.InitialConditions(problem, W))
+
+        #weak form of the primal problem
+        F = self.weak_residual(W, w, w_, wt, ei_mode=False)
+
+        w = self.timeStepper(problem, t, T, k, W, w, w_, F)
+
+        return W, w
 
     def W_project(self,f1,f2,W):
         #This function will project an expressions into W

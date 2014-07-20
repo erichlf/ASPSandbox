@@ -14,6 +14,16 @@ class Solver(SolverBase):
         self.Re = None
         self.Ro = None
 
+    #define functions spaces
+    def function_space(self, mesh):
+        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        Q = FunctionSpace(mesh, 'CG', self.Pp)
+        self.Q = Q #Bad hack for being able to project into Q space
+        W = MixedFunctionSpace([V, Q])
+
+        return W
+
+
     def strong_residual(self,u,U,eta):
         #Parameters
         sigma = problem.sigma

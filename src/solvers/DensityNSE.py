@@ -10,6 +10,16 @@ class Solver(SolverBase):
         SolverBase.__init__(self, options)
         self.Re = options['Re']
 
+    # Define function spaces
+    def function_space(self, mesh):
+        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        R = FunctionSpace(mesh, 'CG', self.Pp)
+        Q = FunctionSpace(mesh, 'CG', self.Pp)
+
+        W = MixedFunctionSpace([V, R, Q])
+
+        return W
+
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,rho,Rho,p):
         R1 = rho*grad(U)*u + grad(p)
@@ -92,36 +102,6 @@ class Solver(SolverBase):
         d3 = K3*h**(-1)
 
         return d1, d2, d3
-
-    def forward_solve(self, problem, mesh, k):
-        h = CellSize(mesh) #mesh size
-
-        t = problem.t0
-        T = problem.T #final time
-
-        # Define function spaces
-        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        R = FunctionSpace(mesh, 'CG', self.Pp)
-        Q = FunctionSpace(mesh, 'CG', self.Pp)
-        W = MixedFunctionSpace([V, R, Q])
-
-        # Get boundary conditions
-        bcs = problem.boundary_conditions(W, t)
-
-        #define trial and test function
-        wt = TestFunction(W)
-        w = Function(W, name='w')
-        w_ = Function(W, name='w_previous')
-
-        #initial condition
-        w_.assign(self.InitialConditions(problem, W))
-
-        #weak form of the primal problem
-        F = self.weak_residual(W, w, w_, wt, ei_mode=False)
-
-        w = self.timeStepper(problem, t, T, k, W, w, w_, F)
-
-        return W, w
 
     def InitialConditions(self,problem,W):
         #project the given initial condition into W

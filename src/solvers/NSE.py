@@ -10,6 +10,14 @@ class Solver(SolverBase):
         SolverBase.__init__(self, options)
         self.Re = options['Re']
 
+    #define functions spaces
+    def function_space(self, mesh):
+        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        Q = FunctionSpace(mesh, 'CG', self.Pp)
+        W = MixedFunctionSpace([V, Q])
+
+        return W
+
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,p):
         R1 = grad(u)*U + grad(p)
