@@ -27,6 +27,7 @@ class Solver(SolverBase):
 
         h = CellSize(W.mesh()) #mesh size
         d1, d2, d3 = self.stabilization_parameters(U_, rho_, p_, h) #stabilization parameters
+        d = 0.1*h**(3./2.) #stabilization parameter
 
         #set up error indicators
         Z = FunctionSpace(W.mesh(), "DG", 0)
@@ -53,6 +54,7 @@ class Solver(SolverBase):
           d1 = 0
           d2 = 0
           d3 = 0
+          d = 0
         if(not ei_mode):
           z = 1.
 
@@ -68,6 +70,8 @@ class Solver(SolverBase):
         R1, R2, R3 = self.strong_residual(U_alpha,U_alpha,rho_alpha,rho_alpha,p)
         Rv1, Rv2, Rv3 = self.strong_residual(U_alpha,v,rho_alpha,r,q)
         r += z*(d1*inner(R1, Rv1) + d2*R2*Rv2 + d3*R3*Rv3)*dx
+        r += z*d*(inner(grad(U_alpha),grad(v)))*dx
+        #r += z*d*(inner(grad(rho_alpha),grad(r)))*dx
 
         return r
 
