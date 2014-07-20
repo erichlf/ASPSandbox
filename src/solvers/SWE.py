@@ -28,14 +28,6 @@ class Solver(SolverBase):
         else:
             self.inviscid = 1
 
-    def function_space(self, mesh):
-        #define functions spaces
-        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        Q = FunctionSpace(mesh, 'CG', self.Pp)
-        W = MixedFunctionSpace([V, Q])
-
-        return W
-
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,eta):
         #get problem parameters

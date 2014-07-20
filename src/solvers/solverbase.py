@@ -198,6 +198,14 @@ class SolverBase:
 
         return W, w
 
+    #define functions spaces
+    def function_space(self, mesh):
+        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        Q = FunctionSpace(mesh, 'CG', self.Pp)
+        W = MixedFunctionSpace([V, Q])
+
+        return W
+
     def W_project(self,f1,f2,W):
         #This function will project an expressions into W
         e1, e2 = TestFunctions(W)
