@@ -71,7 +71,7 @@ class Solver(SolverBase):
         r += z*(rho_alpha*((1./k)*inner(U - U_,v) \
             + inner(grad(U_alpha)*U_alpha,v)) \
             - p*div(v) \
-            + 1./Re*inner(grad(U_alpha),grad(v))
+            + 1./Re*inner(grad(U_alpha),grad(v)) \
             + rho_alpha*dot(f,v))*dx #momentum equation
         r += z*div(U_alpha)*q*dx #continuity equation
 
