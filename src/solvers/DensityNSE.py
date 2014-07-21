@@ -67,11 +67,11 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*(1./k)*(rho - rho_)*r*dx + dot(U_alpha,grad(rho_alpha))*r*dx #mass equation
+        r = z*((1./k)*(rho - rho_) + inner(U_alpha,grad(rho_alpha)))*r*dx #mass equation
         r += z*(rho_alpha*((1./k)*inner(U - U_,v) \
             + inner(grad(U_alpha)*U_alpha,v)) \
             - p*div(v) \
-            + 1./Re*inner(grad(U_alpha),grad(v)) 
+            + 1./Re*inner(grad(U_alpha),grad(v))
             + rho_alpha*dot(f,v))*dx #momentum equation
         r += z*div(U_alpha)*q*dx #continuity equation
 
@@ -100,13 +100,6 @@ class Solver(SolverBase):
         d3 = K3*h**(-1)
 
         return d1, d2, d3
-
-    def InitialConditions(self,problem,W):
-        #project the given initial condition into W
-        U0, rho0, p0 = problem.initial_conditions(W.sub(0),W.sub(1),W.sub(2))
-        W0 = self.project(U0,rho0,p0,W)
-
-        return W0
 
     def project(self,f1,f2,f3,W):
         #This function will project an expressions into W

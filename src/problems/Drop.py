@@ -9,6 +9,22 @@ __license__  = "GNU GPL version 3 or any later version"
 from problembase import *
 from numpy import array
 
+class InitialConditions(Expression):
+    def __init__(self):
+        self.A = 1.0
+        self.S = 5E-2
+
+    def eval(self,values,x):
+        A = self.A
+        S = self.S
+
+        values[0] = 0.
+        values[1] = 0.
+        values[2] = A*exp(-(x[0]*x[0]+x[1]*x[1])/(2.*S*S))
+
+    def value_shape(self):
+      return (3,)
+
 # No-slip boundary
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
@@ -30,11 +46,11 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['dt']
 
-    def initial_conditions(self, V, Q):
-        u0 = Constant((0, 0))
-        eta0 = Expression('A*exp(-(x[0]*x[0]+x[1]*x[1])/(2*S*S))', A=1.0, S=5E-2)
+    def initial_conditions(self, W):
+        w0 = InitialConditions()
+        w0 = project(w0,W)
 
-        return u0, eta0
+        return w0
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity

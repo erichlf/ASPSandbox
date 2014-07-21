@@ -189,7 +189,7 @@ class SolverBase:
         w_ = Function(W, name='w_previous')
 
         #initial condition
-        w_.assign(self.InitialConditions(problem, W))
+        w_.assign(problem.initial_conditions(W))
 
         #weak form of the primal problem
         F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
@@ -259,44 +259,6 @@ class SolverBase:
             self.update(problem, t, w.split()[0], w.split()[1])
 
         return w_
-
-    def W_project(self,f1,f2,W):
-        #This function will project an expressions into W
-        e1, e2 = TestFunctions(W)
-        w = TestFunction(W)
-
-        u = Function(W)
-
-        A = inner(u,w)*dx - inner(f1,e1)*dx - f2*e2*dx
-
-        solve(A == 0, u, annotate=False)
-
-        return u
-
-    def V_project(self,f1,W):
-        #This function will project an expression into W.sub(1)
-
-        #filler function
-        f2 = Expression('0.0')
-
-        f1 = self.W_project(f1,f2,W)
-        f1 = f1.split()[0]
-
-        return f1
-
-    def Q_project(self,f2,W):
-        #This function will project an expression into W.sub(1)
-
-        #filler function
-        if W.mesh().topology().dim() == 2:
-            f1 = Expression(('0.0','0.0'))
-        else:
-            f1 = Expression(('0.0','0.0','0.0'))
-
-        f2 = self.W_project(f1,f2,W)
-        f2 = f2.split()[1]
-
-        return f2
 
     def update(self, problem, t, u, p, dual=False):
         #Update problem at time t

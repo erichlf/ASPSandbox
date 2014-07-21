@@ -13,6 +13,14 @@ x1 = 1
 y0 = -1
 y1 = 1
 
+class InitialConditions(Expression):
+    def eval(self,values,x):
+        values[0] = 0.
+        values[1] = 0.
+
+    def value_shape(self):
+      return (2,)
+
 # No-slip boundary
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
@@ -34,11 +42,11 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['dt']
 
-    def initial_conditions(self, Q, Psi):
-        q0 = Constant(0.)
-        psi0 = Constant(0.)
+    def initial_conditions(self, W):
+        w0 = InitialConditions()
+        w0 = project(w0,W)
 
-        return q0, psi0
+        return w0
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity

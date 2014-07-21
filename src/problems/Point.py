@@ -14,6 +14,28 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
+class InitialConditions(Expression):
+    def __init__(self,p1,p2):
+        self.p1 = p1
+        self.p2 = p2
+        self.Ap = 1.
+        self.An = 1.
+        self.s = 1E-8
+
+    def eval(self,values,x):
+        xp = self.p1[0]; yp = self.p1[1]; 
+        xn = self.p2[0]; yn=self.p2[1] 
+        Ap = self.Ap; An = self.An
+        s = self.s
+
+        values[0] = 0.
+        values[1] = 0.
+        values[2] = Ap*exp(-((x[0]-xp)**2. + (x[1]-yp)**2.)/(2.*s*s)) \
+            + An*exp(-((x[0] - xn)**2. + (x[1] - yn)**2.)/(2.*s*s))
+
+    def value_shape(self):
+      return (3,)
+
 # No-slip boundary
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
@@ -37,11 +59,15 @@ class Problem(ProblemBase):
         self.p2 = Point(x1 - 0.25*(x1-x0),y0 + 0.5*(y1-y0))
         self.mesh = RectangleMesh(x0,y0,x1,y1,Nx, Ny)
 
-    def initial_conditions(self, V, Q):
-        u0 = Constant((0, 0))
-        eta0 = Expression('Ap*exp(-(pow(x[0]-xp,2) + pow(x[1]-yp, 2))/(2*s*s)) + An*exp(-(pow(x[0] - xn,2) + pow(x[1] - yn, 2))/(2*s*s))', xp=self.p1[0], yp=self.p1[1], xn=self.p2[0], yn=self.p2[1], Ap=1.0, An=-1.0, s=1E-8)
+        self.t0 = 0.
+        self.T = options['T']
+        self.k = options['dt']
 
-        return u0, eta0
+    def initial_conditions(self, W):
+        w0 = InitialConditions(self.p1, self.p2)
+        w0 = project(w0,W)
+
+        return w0
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity

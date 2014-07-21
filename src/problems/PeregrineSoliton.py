@@ -26,6 +26,39 @@ x1 = 40.
 y0 = -0.5
 y1 = 0.5
 
+class InitialConditions(Expression):
+    def __init__(self):
+        eta0 = genfromtxt('eta.txt')[np.newaxis] #Get an array of array with the height solution from the Matlab code
+        eta0 = eta0[0] #Get the array with the height solution from the Matlab code
+        eta00 = np.zeros(4096) #Create a new array twice as long as eta0
+
+        u0 = genfromtxt('u.txt')[np.newaxis]#Get an array with the x-velocity solution from the Matlab code
+        u0 = u0[0]  #Get the array with the x-velocity solution from the Matlab code
+        u00 = np.zeros(4096) #Create a new array twice as long as u0
+
+        #Fill the longer arrays to get the right values on the 2D-mesh coordinates
+        i = 0
+        while(i<=4094):
+            i += 1
+            eta00[i] = eta0[floor(i/2.)]
+            u00[i] = u0[floor(i/2.)]
+
+        #u_initial, eta_initial = w_initial.split()#Create an empty function defined on the Q Space
+        eta_initial = Function(Q)
+        eta_initial.vector()[:] = eta00 #Fill the function's nodes with the values of the Matlab solution
+        eta_0 = Expression("eta_initial",eta_initial=eta_initial)
+
+        u_initial = Function(Q)
+        u_initial.vector()[:]=u00
+        self.n_0 = np.argmax(eta_initial.vector())
+        u_0 = Function(V)
+        u_0=Expression(("u_initial","0.0"),u_initial=u_initial)
+
+    def eval(self, values, x):
+
+    def value_shape(self):
+      return (3,)
+
 # No-slip boundary
 class Y_SlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
@@ -58,36 +91,12 @@ class Problem(ProblemBase):
         mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
         self.mesh = mesh
         self.N_iter = floor(float(options["T"])/float(options["dt"]))
-        
-    def initial_conditions(self, V, Q):
 
-        eta0 = genfromtxt('eta.txt')[np.newaxis] #Get an array of array with the height solution from the Matlab code
-        eta0 = eta0[0] #Get the array with the height solution from the Matlab code
-        eta00 = np.zeros(4096) #Create a new array twice as long as eta0
+    def initial_conditions(self, W):
+        w0 = InitialConditions()
+        w0 = project(w0,W)
 
-        u0 = genfromtxt('u.txt')[np.newaxis]#Get an array with the x-velocity solution from the Matlab code
-        u0 = u0[0]  #Get the array with the x-velocity solution from the Matlab code
-        u00 = np.zeros(4096) #Create a new array twice as long as u0
-        
-        #Fill the longer arrays to get the right values on the 2D-mesh coordinates
-        i = 0
-        while(i<=4094):
-            i += 1
-            eta00[i] = eta0[floor(i/2.)]
-            u00[i] = u0[floor(i/2.)]
-
-        #u_initial, eta_initial = w_initial.split()#Create an empty function defined on the Q Space
-        eta_initial = Function(Q)
-        eta_initial.vector()[:] = eta00 #Fill the function's nodes with the values of the Matlab solution
-        eta_0 = Expression("eta_initial",eta_initial=eta_initial,element=Q.ufl_element())
-
-        u_initial = Function(Q)
-        u_initial.vector()[:]=u00
-        self.n_0 = np.argmax(eta_initial.vector())
-        u_0 = Function(V)
-        u_0=Expression(("u_initial","0.0"),u_initial=u_initial, element=V.ufl_element())
-
-        return u_0, eta_0
+        return w0
 
     def boundary_conditions(self, W, t):
         V = W.sub(0)

@@ -54,6 +54,15 @@ c0 = (h0*g)**(0.5)
 #maximum velocity of wave object
 vmax = ((hd*h0+ad*a0)*g)**(0.5)/100 #Max Speed of the moving object [m.s^(-1)]
 
+class InitialConditions(Expression):
+    def eval(self,values,x):
+        values[0] = 0.
+        values[1] = 0.
+        values[2] = 0.
+
+    def value_shape(self):
+      return (3,)
+
 # Slip boundary
 class Y_SlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
@@ -182,11 +191,11 @@ class Problem(ProblemBase):
 
         return mesh
 
-    def initial_conditions(self, V, Q):
-        u0 = Expression(("0.0", "0.0"))
-        eta0 = Expression("0.0")
+    def initial_conditions(self, W):
+        w0 =  InitialConditions()
+        w0 = project(w0,W)
 
-        return u0, eta0
+        return w0
 
     def boundary_conditions(self, W, t):
         V = W.sub(0)

@@ -19,6 +19,15 @@ xcenter = 0.2
 ycenter = 0.2
 radius = 0.05
 
+class InitialConditions(Expression):
+    def eval(self,values,x):
+        values[0] = 0.
+        values[1] = 0.
+        values[2] = 0.
+
+    def value_shape(self):
+      return (3,)
+
 # Inflow boundary
 class InflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
@@ -58,12 +67,11 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['dt']
 
-    def initial_conditions(self, V, Q):
+    def initial_conditions(self, W):
+        w0 = InitialConditions()
+        w0 = project(w0,W)
 
-        u0 = Constant((0, 0))
-        p0 = Constant(0)
-
-        return u0, p0
+        return w0
 
     def boundary_conditions(self, W, t):
         # Create inflow boundary condition

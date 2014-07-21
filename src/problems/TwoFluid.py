@@ -19,10 +19,22 @@ x1 = 1.
 y0 = 0.
 y1 = 1.
 
+class InitialConditions(Expression):
+    def eval(self,values,x):
+        values[0] = 0.
+        values[1] = 0.
+        if x[0] < 0.5:
+            values[2] = 1.
+        else:
+            values[2] = 0.
+        values[3] = 0.
+    def value_shape(self):
+        return (4,)
+
 # No-slip boundary
 class NoslipBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary 
+        return on_boundary
 
 # Problem definition
 class Problem(ProblemBase):
@@ -41,12 +53,12 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['dt']
 
-    def initial_conditions(self, V, R, Q):
-        U0 = Constant((0, 0))
-        rho0 = Expression('x[0]<(x1-x0)/2. ? 1 : 0', x1=x1, x0=x0)
-        p0 = Constant(0)
+    #get the initial condition and project it
+    def initial_conditions(self, W):
+        w0 = InitialConditions()
+        w0 = project(w0,W)
 
-        return U0, rho0, p0
+        return w0
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity

@@ -23,38 +23,15 @@ class Solver(SolverBase):
         self.Re = options['Re']
         self.Ro = options['Ro']
 
-    def forward_solve(self, problem, mesh, k):
-        h = CellSize(mesh) #mesh size
-
-        t = problem.t0
-        T = problem.T #final time
-
+    def function_space(self, mesh):
         # Define function spaces
         Q = FunctionSpace(mesh, 'CG', self.Pu)
         Psi = FunctionSpace(mesh, 'CG', self.Pp)
         W = MixedFunctionSpace([Q, Psi])
 
-        # Get boundary conditions
-        bcs = problem.boundary_conditions(W.sub(0), W.sub(1), t)
+        return W
 
-        #define trial and test function
-        wt = TestFunction(W)
-        chi, p = TestFunctions(W)
-
-        w = Function(W, name='w')
-        w_ = Function(W, name='w_previous')
-
-        #initial condition
-        w_.assign(self.InitialConditions(problem, W))
-
-        #weak form of the primal problem
-        F = self.weak_residual(W, w, w_, wt, ei_mode=False)
-
-        w = self.timeStepper(problem, t, T, k, W, w, w_, F)
-
-        return W, w
-
-    def weak_residual(self, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
         (q, psi) = (w[0], w[1])
         (q_, psi_) = (w_[0], w_[1])
         (p, chi) = (wt[0], wt[1])
@@ -67,8 +44,6 @@ class Solver(SolverBase):
 
         Re = self.Re #Reynolds Number
         Ro = self.Ro #Rossby Number
-
-        problem = self.problem
 
         alpha = self.alpha #time stepping method
         k = problem.k

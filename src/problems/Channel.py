@@ -9,6 +9,15 @@ __license__  = "GNU GPL version 3 or any later version"
 from problembase import *
 from numpy import array
 
+class InitialConditions(Expression):
+    def eval(self,values,x):
+        values[0] = 0.
+        values[1] = 0.
+        values[2] = 0.
+
+    def value_shape(self):
+      return (3,)
+
 # Inflow boundary
 class InflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
@@ -34,24 +43,28 @@ class Problem(ProblemBase):
         # Create mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
-        self.mesh = UnitSquare(Nx, Ny)
+        x0 = float(options["x0"])
+        x1 = float(options["x1"])
+        y0 = float(options["y0"])
+        y1 = float(options["y1"])
+        self.mesh = RectangleMesh(x0,y0,x1,y1,Nx, Ny)
 
         self.t0 = 0.
         self.T = options['T']
         self.k = options['dt']
 
-    def initial_conditions(self, V, Q):
-        u0 = Constant((0, 0))
-        p0 = Constant(0)
+    def initial_conditions(self, W):
+        w0 = InitialConditions()
+        w0 = project(w0,W)
 
-        return u0, p0
+        return w0
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
-        noslip = DirichletBC(W.sub(0), (0, 0), NoslipBoundary())
+        noslip = DirichletBC(W.sub(0), Constant((0, 0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        inflow = DirichletBC(W.sub(0), Constant((1,0)), InflowBoundary())
+        inflow = DirichletBC(W.sub(0), Constant((1, 0)), InflowBoundary())
         outflow = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
 
         bcs = [noslip, inflow, outflow]
