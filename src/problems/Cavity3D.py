@@ -53,7 +53,7 @@ class Problem(ProblemBase):
         noslip = DirichletBC(W.sub(0), Constant((0, 0, 0)), NoslipBoundary())
 
         # Create boundary conditions for pressure
-        lid = DirichletBC(W.sub(0), Constant((1.0, 0, 0)), Lid())
+        lid = DirichletBC(W.sub(0), Constant((1, 0, 0)), Lid())
 
         #pressure boundary
         pressure = DirichletBC(W.sub(1), Constant(0), Pressure())
