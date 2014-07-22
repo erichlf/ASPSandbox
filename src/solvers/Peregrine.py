@@ -21,6 +21,11 @@ class Solver(SolverBase):
         self.Q = Q #Bad hack for being able to project into Q space
         W = MixedFunctionSpace([V, Q])
 
+        self.Zeta = Function(Q, name='zeta')
+        self.Zeta_ = Function(Q, name='zeta_')
+        self.Zeta__ = Function(Q, name='zeta__')
+        self.zeta0 = Function(Q, name='InitialShape')
+
         return W
 
     def strong_residual(self,u,U,eta):
@@ -43,7 +48,7 @@ class Solver(SolverBase):
 
         return R1, R2, z1, z2
 
-    def weak_residual(self,problem,W,w,w_,wt,ei_mode=False):
+    def weak_residual(self,problem, W, w, w_, wt, ei_mode=False):
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
@@ -66,15 +71,15 @@ class Solver(SolverBase):
         T = problem.T #Final time
         k = problem.k #time step
 
-        self.D, self.zeta, self.zeta_, self.zeta__, bottom, self.H, self.H_ \
-            = self.seabed(problem, self.Q, t0, epsilon)
+        D, zeta, zeta_, zeta__, self.H, self.H_ \
+            = self.seabed(problem, self.Q, t0, k, epsilon)
 
         #We need to save the wave object for optimization
-        self.Zeta = project(self.zeta, self.Q, name='zeta')
-        self.Zeta_ = project(self.zeta_, self.Q, name='zeta_')
-        self.Zeta__ = project(self.zeta__, self.Q, name='zeta__')
-        self.zeta0 = project(self.zeta,self.Q, name='InitialShape')
-        D = project(self.D, self.Q, name='Bottom')
+        self.zeta0.assign(zeta)
+        self.Zeta.assign(zeta)
+        self.Zeta_.assign(zeta_)
+        self.Zeta__.assign(zeta__)
+        D = project(D, self.Q, name='Bottom')
 
         zeta_tt = 1./k**2*(self.Zeta - 2*self.Zeta_ + self.Zeta__)
         zeta_t = 1./k*(self.Zeta - self.Zeta_)
@@ -83,6 +88,7 @@ class Solver(SolverBase):
         U_alpha = (1. - alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
         zeta_alpha = (1. - alpha)*self.Zeta_ + alpha*self.Zeta
+        H_alpha = (1. - alpha)*self.H_ + alpha*self.H
 
         t = t0 + k
         #forcing and mass source/sink
@@ -98,12 +104,12 @@ class Solver(SolverBase):
         r = z*(1./k*inner(U-U_,v) + epsilon*inner(grad(U_alpha)*U_alpha,v) \
             - div(v)*eta_alpha)*dx
 
-        r += z*(sigma**2*1./k*div((D + epsilon*zeta_alpha)*(U-U_))*div((D + epsilon*zeta_alpha)*v/2.) \
-              - sigma**2*1./k*div(U-U_)*div((D + epsilon*zeta_alpha)**2*v/6.))*dx
+        r += z*(sigma**2*1./k*div(H_alpha*(U-U_))*div(H_alpha*v/2.) \
+              - sigma**2*1./k*div(U-U_)*div(H_alpha**2*v/6.))*dx
         r += z*sigma**2*zeta_tt*div((D + epsilon*zeta_alpha)*v/2.)*dx
 
         r += z*(1./k*(eta-eta_)*chi + zeta_t*chi)*dx
-        r -= z*inner(U_alpha,grad(chi))*(epsilon*eta_alpha + D + epsilon*zeta_alpha)*dx
+        r -= z*inner(U_alpha,grad(chi))*(epsilon*eta_alpha + H_alpha)*dx
 
         r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
 
@@ -144,28 +150,42 @@ class Solver(SolverBase):
 
         return M
 
-    def seabed(self,problem,Q,t0,epsilon):
-        D = Expression(problem.D, element=Q.ufl_element())
-        zeta = problem.zeta0
-        zeta_ = zeta
-        zeta__ = zeta
-        bottom = D - epsilon*zeta
-        H = project(bottom, Q, name='Bathymetry')
-        H_ = project(bottom, Q, name='PreviousBathymetry')
+    def seabed(self,problem, Q, t, k, epsilon):
+        D = problem.D
 
-        return D, zeta, zeta_, zeta__, bottom, H, H_
+        problem.zeta0.t = t
+        zeta = project(problem.zeta0, Q)
+        problem.zeta0.t = max(t - k, self.t0)
+        zeta_ = project(problem.zeta0, Q)
+        problem.zeta0.t = max(t - 2*k, self.t0)
+        zeta__ = project(problem.zeta0, Q)
+
+        H = project(D + epsilon*zeta, Q, name='Bathymetry')
+        H_ = project(D + epsilon*zeta_, Q, name='PreviousBathymetry')
+
+        return D, zeta, zeta_, zeta__, H, H_
 
     def wave_object(self, problem, Q, t, k):
-        problem.zeta0.t = t
-        self.Zeta.assign(project(problem.zeta0,Q))
-        problem.zeta0.t = max(t - k, self.t0)
-        self.Zeta_.assign(project(problem.zeta0,Q))
-        problem.zeta0.t = max(t - 2*k, self.t0)
-        self.Zeta__.assign(project(problem.zeta0,Q))
+        D, zeta, zeta_, zeta__, self.H, self.H_ \
+            = self.seabed(problem, Q, t, k, problem.epsilon)
 
-        self.H_.assign(self.H)
-        bottom = self.D - problem.epsilon*self.zeta
-        self.H = project(bottom, Q, name='Bathymetry')
+        self.Zeta.assign(zeta)
+        self.Zeta_.assign(zeta_)
+        self.Zeta__.assign(zeta__)
+
+    def Plot(self, problem, W, w):
+        u = w.split()[0]
+        eta = w.split()[1]
+
+        # Plot velocity and height and wave object
+        if self.vizU is None:
+            self.vizU = plot(u, title='Velocity', rescale=True)
+            self.vizP = plot(eta, title='Height', rescale=True)
+            self.vizZ = plot(self.H_, title='Wave Object', rescale=True)
+        else :
+            self.vizU.plot(u)
+            self.vizP.plot(eta)
+            self.vizZ.plot(self.H_)
 
     def __str__(self):
           return 'Peregrine'

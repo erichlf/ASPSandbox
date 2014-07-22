@@ -20,13 +20,19 @@ ycenter = 0.2
 radius = 0.05
 
 class InitialConditions(Expression):
+    def __init__(self):
+        self.A = 0.2 #amplitude
+        self.S = 1./16. #variance
+
     def eval(self,values,x):
+        A = self.A
+        S = self.S
         y0 = ycenter
         x0 = xcenter
 
         values[0] = 0.
         values[1] = 0.
-        values[2] = exp(-256*((x[1]-y0)**2.+(x[0]-x0)**2.))
+        values[2] = A*exp(-((x[1]-y0)**2.+(x[0]-x0)**2.)/(2*S*S))
         values[3] = 0.
 
     def value_shape(self):

@@ -53,9 +53,7 @@ class SolverBase:
         self._timestep = 0
 
         # Reset files for storing solution
-        self._ufile = None
-        self._pfile = None
-        self._bfile = None
+        self._wfile = None
         self._uDualfile = None
         self._pDualfile = None
         self._eifile = None
@@ -128,7 +126,7 @@ class SolverBase:
             else:
                 optfile << opt
 
-        return w.split()[0], w.split()[1]
+        return w
 
     def adaptive_solve(self, problem, mesh, k):
 
@@ -161,7 +159,7 @@ class SolverBase:
                 wtape.append(DolfinAdjointVariable(w).tape_value(timestep=timestep))
                 phi.append(adj)
                 if self.options['save_solution']:
-                    self.update(problem, None, adj.split()[0], adj.split()[1], dual=True)
+                    self.update(problem, None, W, adj, dual=True)
 
         print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
@@ -234,7 +232,7 @@ class SolverBase:
         self.start_timing()
 
         #plot and save initial condition
-        self.update(problem, t, w_.split()[0], w_.split()[1])
+        self.update(problem, t, W, w_)
 
         adj_start_timestep(t)
         while t<(T-k/2.):
@@ -256,19 +254,14 @@ class SolverBase:
             adj_inc_timestep(t,finished=t>=(T-k/2.))
 
             # Update
-            self.update(problem, t, w.split()[0], w.split()[1])
+            self.update(problem, t, W, w_)
 
         return w_
 
-    def update(self, problem, t, u, p, dual=False):
-        #Update problem at time t
-
+    def update(self, problem, t, W, w, dual=False):
         # Add to accumulated CPU time
         timestep_cputime = time() - self._time
         self._cputime += timestep_cputime
-
-        # Update problem
-        #problem.update_problem(t, u, p)
 
         # Store values
         if t is not None:
@@ -283,49 +276,44 @@ class SolverBase:
             Ny = self.options['Ny']
             if (self._timestep - 1) % frequency == 0:
                 # Create files for saving
-                if self._ufile is None:
+                if self._wfile is None:
                     s = 'results/' + self.prefix(problem) \
                             + self.suffix() \
                             + 'Nx' + str(Nx) \
                             + 'Ny' + str(Ny) \
                             + 'K' + str(int(1./k))
-                    self._ufile = File(s + '_u.pvd')
-                if self._pfile is None:
-                    self._pfile = File(s + '_p.pvd')
-                if self._bfile is None:
-                    self._bfile = File(s + '_b.pvd')
-                if self._uDualfile is None:
-                    self._uDualfile = File(s + '_uDual.pvd')
-                if self._pDualfile is None:
-                    self._pDualfile = File(s + '_pDual.pvd')
+                    self._wfile = File(s + '.pvd')
+                if self._Hfile is None:
+                    self._Hfile = File(s + '_b.pvd')
+                if self._Dualfile is None:
+                    self._Dualfile = File(s + '_Dual.pvd')
                 if not dual:
-                    self._ufile << u
-                    self._pfile << p
+                    self._wfile << w
                     if self.zeta is not None:
-                        self._bfile << self.H_
+                        self._Hfile << self.H_
                 else:
-                    self._uDualfile << u
-                    self._pDualfile << p
-        else:
+                    self._Dualfile << w
+        else: # Plot solution
             self.options['plot_solution'] = True
+            self.Plot(problem, W, w)
 
         # Plot solution
-        if self.options['plot_solution']:
-            if self.vizU is None:
-                regex = re.compile('NSE')
-                # Plot velocity and pressure
-                self.vizU = plot(u, title='Velocity', rescale=True)
-                if regex.search(self.prefix(problem)) is None:
-                    self.vizP = plot(p, title='Height', rescale=True)
-                else :
-                    self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
-                if('wave_object' in dir(self)):
-                    self.vizZ = plot(self.H, title='Wave Object', rescale=True)
-            else :
-                self.vizU.plot(u)
-                self.vizP.plot(p)
-                if('wave_object' in dir(self)):
-                    self.vizZ.plot(self.H_)
+#        if self.options['plot_solution']:
+#            if self.vizU is None:
+#                regex = re.compile('NSE')
+#                # Plot velocity and pressure
+#                self.vizU = plot(u, title='Velocity', rescale=True)
+#                if regex.search(self.prefix(problem)) is None:
+#                    self.vizP = plot(p, title='Height', rescale=True)
+#                else :
+#                    self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
+#                if('wave_object' in dir(self)):
+#                    self.vizZ = plot(self.H, title='Wave Object', rescale=True)
+#            else :
+#                self.vizU.plot(u)
+#                self.vizP.plot(p)
+#                if('wave_object' in dir(self)):
+#                    self.vizZ.plot(self.H_)
 
         # Check memory usage
         if self.options['check_mem_usage']:
@@ -351,6 +339,27 @@ class SolverBase:
             # Increase time step and record current time
             self._timestep += 1
             self._time = time()
+
+    #this is a separate function so that it can be overloaded
+    def Plot(self, problem, W, w):
+        u = w.split()[0]
+        p = w.split()[1]
+
+        if self.vizU is None:
+            regex = re.compile('NSE')
+            # Plot velocity and pressure
+            self.vizU = plot(u, title='Velocity', rescale=True)
+            if regex.search(self.prefix(problem)) is None:
+                self.vizP = plot(p, title='Height', rescale=True)
+            else :
+                self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
+            if('wave_object' in dir(self)):
+                self.vizZ = plot(self.H, title='Wave Object', rescale=True)
+        else :
+            self.vizU.plot(u)
+            self.vizP.plot(p)
+            if('wave_object' in dir(self)):
+                self.vizZ.plot(self.H_)
 
     def prefix(self, problem):
         #Return file prefix for output files

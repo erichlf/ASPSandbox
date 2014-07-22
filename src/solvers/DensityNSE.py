@@ -9,6 +9,7 @@ class Solver(SolverBase):
     def __init__(self, options):
         SolverBase.__init__(self, options)
         self.Re = options['Re']
+        self.vizRho = None
 
     # Define function spaces
     def function_space(self, mesh):
@@ -101,18 +102,20 @@ class Solver(SolverBase):
 
         return d1, d2, d3
 
-    def project(self,f1,f2,f3,W):
-        #This function will project an expressions into W
-        e1, e2, e3 = TestFunctions(W)
+    def Plot(self, problem, W, w):
+        u = w.split()[0]
+        rho = w.split()[1]
+        p = w.split()[2]
 
-        w = TestFunction(W)
-        u = Function(W)
-
-        A = inner(u,w)*dx - inner(f1,e1)*dx - f2*e2*dx - f3*e3*dx
-
-        solve(A == 0, u, annotate=False)
-
-        return u
+        if self.vizU is None:
+            # Plot velocity and pressure
+            self.vizU = plot(u, title='Velocity', rescale=True)
+            self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
+            self.vizRho = plot(rho, title='Density', rescale=True, elevate=0.0)
+        else :
+            self.vizU.plot(u)
+            self.vizP.plot(p)
+            self.vizRho.plot(rho)
 
     def __str__(self):
           return 'DensityNSE'

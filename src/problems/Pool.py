@@ -21,10 +21,10 @@ y0 = -25.
 y1 = 25.
 
 #start location of our object
-x2 = -3.
-x3 = 3.
-y2 = -3.
-y3 = 3.
+objectLeft = -4. #left bound
+objectRight = 4. #right bound
+objectBottom = -4. #lower bound
+objectTop = 4. #upper bound
 
 #Physical Parameters
 hd = 2. #Depth of the pool in the central lane [m]
@@ -40,10 +40,10 @@ x0 = x0/lambda0
 x1 = x1/lambda0
 y0 = y0/lambda0
 y1 = y1/lambda0
-x2 = x2/lambda0
-x3 = x3/lambda0
-y2 = y2/lambda0
-y3 = y3/lambda0
+objectLeft = objectLeft/lambda0
+objectRight = objectRight/lambda0
+objectBottom = objectBottom/lambda0
+objectTop = objectTop/lambda0
 
 #Scaled Parameters
 hd = hd/h0 #depth
@@ -84,7 +84,7 @@ class Object(Expression):
         http://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method
     '''
     def __init__(self, params, t):
-        global x0, x1, y0, y1, x2, x3, y2, y3, hd, hb, ad, a0, h0, c0, g, vmax
+        global x0, x1, y0, y1, objectLeft, objectRight, objectBottom, objectTop, hd, hb, ad, a0, h0, c0, g, vmax
 
         self.N1 = params[0]
         self.N2 = params[1]
@@ -101,7 +101,8 @@ class Object(Expression):
 
         u = vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))
 
-        X = ((x[0] - x2 - u*t)/(x3 - x2), (x[1] - y2)/(y3 - y2))
+        X = ((x[0] - objectLeft - u*t)/(objectRight - objectLeft), \
+                (x[1] - objectBottom)/(objectTop - objectBottom))
 
         if(X[0]>=0. and X[0]<=1. and x[1]>=-0.25 and x[1]<=0.25):
             # Class function; taking input of N1 and N2
@@ -115,12 +116,20 @@ class Object(Expression):
                 K = float(factorial(n)/(factorial(i)*factorial(n-i)));
                 S = S + w[i]*K*X[0]**i*(1. - X[0])**(n-i)
 
-            value[0] = C*S + X[0]*dz
+            value[0] = -(C*S + X[0]*dz)
         else:
             value[0] = 0.
 
     def value_shape(self):
         return ()
+
+class Depth(Expression):
+    def eval(self, values, x):
+        values[0] = -hd
+        if x[1] > objectTop:
+            values[0] -= (hd - hb)/(y1 - objectTop)*(x[1] - objectTop)
+        elif x[1] < objectBottom:
+            values[0] -= (hd - hb)/(y0 - objectBottom)*(x[1] - objectBottom)
 
 # Problem definition
 class Problem(ProblemBase):
@@ -129,7 +138,7 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
-        global x0, x1, y0, y1, x2, x3, y2, y3, hd, hb, ad, a0, h0, c0, g, vmax
+        global x0, x1, y0, y1, objectLeft, objectRight, objectBottom, objectTop, hd, hb, ad, a0, h0, c0, g, vmax
 
         #Scaling Parameters
         self.sigma = h0/lambda0
@@ -155,28 +164,7 @@ class Problem(ProblemBase):
         self.zeta0 = Object(params=self.params,t=self.t0)
 
         #Defintion of the shape of the seabed
-        self.D = str(hd) + ' - ' + str((hd-hb)/21.) + '*(x[1]>4./' \
-            + str(lambda0) + ' ? 1. : 0.)*(' + str(lambda0) + '*x[1]-4.)' \
-            + ' +  ' + str((hd-hb)/21.) + '*(x[1]<(-4./' + str(lambda0) \
-            + ') ? 1. : 0.)*(' + str(lambda0) + '*x[1]+4.)'
-
-        #Define the bounds
-        self.ub = '(-' + str(ad) + '*(x[1]<0. ? 1. : 0.)' \
-                        + '*(x[1]>' + str(-3./lambda0) \
-                        + '? 1. : 0.)*(x[0]>' + str(-1.5/lambda0) + '? 1. : 0.)' \
-                        + '*(x[0]<' + str(-1.5/lambda0) + '? 1. : 0.) < -0.5 ? -' \
-                        + str(ad) + '*(x[1]<0. ? 1. : 0.)' \
-                        + '*(x[1]>' + str(-3./lambda0) \
-                        + '? 1. : 0.)*(x[0]>' + str(-1.5/lambda0) + '? 1. : 0.)'\
-                        + '*(x[0]<' + str(2./lambda0) + '? 1. : 0.) : 0 )'
-        self.lb = '(-' + str(ad) + '*(x[1]<' + str(3./lambda0) + ' ? 1. : 0.)' \
-                        + '*(x[1]>' + str(-3./lambda0) \
-                        + '? 1. : 0.)*(x[0]>' + str(-3./lambda0) + '? 1. : 0.)'\
-                        + '*(x[0]<' + str(1.5/lambda0) + '? 1. : 0.) < -0.5 ? -' \
-                        + str(ad) + '*(x[1]<' + str(3./lambda0) + '? 1. : 0.)'\
-                        + '*(x[1]>' + str(-3./lambda0) \
-                        + '? 1. : 0.)*(x[0]>' + str(-3./lambda0) + ' ? 1. : 0.)'\
-                        + '*(x[0]<' + str(1.5/lambda0) + ' ? 1. : 0.) : 0 )'
+        self.D = Depth()
 
     def Refine(self, mesh):
         #Refine the mesh along the object's trajectory
@@ -185,14 +173,14 @@ class Problem(ProblemBase):
             cell_markers.set_all(False)
             for cell in cells(mesh):
                p = cell.midpoint()
-               if(p.y() > (y2 - 2./(2.**i*lambda0)) and p.y() < (y3 + 2./(2.**i*lambda0))):
+               if(p.y() > objectBottom*(1. - 1./(2.**(i+1)*lambda0)) and p.y() < objectTop*(1. + 1./(2.**(i+1)*lambda0))):
                     cell_markers[cell] = True
             mesh = refine(mesh, cell_markers)
 
         return mesh
 
     def initial_conditions(self, W):
-        w0 =  InitialConditions()
+        w0 = InitialConditions()
         w0 = project(w0,W)
 
         return w0

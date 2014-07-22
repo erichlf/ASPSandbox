@@ -133,7 +133,7 @@ def main(args):
 
     # Solve problem with solver
     wct = time.time()
-    u, p = solver.solve(problem)
+    w = solver.solve(problem)
 
     # Compute elapsed time
     wct = time.time() - wct
