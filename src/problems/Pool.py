@@ -55,13 +55,23 @@ c0 = (h0*g)**(0.5)
 vmax = ((hd*h0+ad*a0)*g)**(0.5)/100 #Max Speed of the moving object [m.s^(-1)]
 
 class InitialConditions(Expression):
+    def __init__(self, params, epsilon, t0):
+        self.object = Object(params=params, t=t0)
+        self.D = Depth()
+        self.epsilon = epsilon
+
     def eval(self,values,x):
+        D = self.D
+        object = self.object
+        epsilon = self.epsilon
+
         values[0] = 0.
         values[1] = 0.
         values[2] = 0.
+        values[3] = D(x) + epsilon*object(x)
 
     def value_shape(self):
-      return (3,)
+      return (4,)
 
 # Slip boundary
 class Y_SlipBoundary(SubDomain):
@@ -180,7 +190,7 @@ class Problem(ProblemBase):
         return mesh
 
     def initial_conditions(self, W):
-        w0 = InitialConditions()
+        w0 = InitialConditions(self.params, self.epsilon, self.t0)
         w0 = project(w0,W)
 
         return w0

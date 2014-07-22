@@ -19,7 +19,7 @@ class Solver(SolverBase):
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
         Q = FunctionSpace(mesh, 'CG', self.Pp)
         self.Q = Q #Bad hack for being able to project into Q space
-        W = MixedFunctionSpace([V, Q])
+        W = MixedFunctionSpace([V, Q, Q])
 
         self.Zeta = Function(Q, name='zeta')
         self.Zeta_ = Function(Q, name='zeta_')
@@ -49,9 +49,9 @@ class Solver(SolverBase):
         return R1, R2, z1, z2
 
     def weak_residual(self,problem, W, w, w_, wt, ei_mode=False):
-        (U, eta) = (as_vector((w[0], w[1])), w[2])
-        (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
-        (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
+        (U, eta, H) = (as_vector((w[0], w[1])), w[2], w[3])
+        (U_, eta_, H_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
+        (v, chi, nu) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
 
         h = CellSize(W.mesh()) #mesh size
         d = 0.1*h**(3./2.) #stabilization parameter
@@ -84,7 +84,7 @@ class Solver(SolverBase):
         U_alpha = (1. - alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
         zeta_alpha = (1. - alpha)*self.Zeta_ + alpha*self.Zeta
-        H_alpha = (1. - alpha)*self.H_ + alpha*self.H
+        H_alpha = (1. - alpha)*H_ + alpha*H
 
         t = t0 + k
         #forcing and mass source/sink
@@ -110,6 +110,9 @@ class Solver(SolverBase):
         r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
 
         r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
+
+        #hack for saving and updating bathymetry
+        r += z*d*(H - (self.D + epsilon*self.Zeta))*nu*dx
 
         return r
 
@@ -156,13 +159,13 @@ class Solver(SolverBase):
         problem.zeta0.t = max(t - 2*k, self.t0)
         zeta__ = project(problem.zeta0, Q)
 
-        H = project(D + epsilon*zeta, Q, name='Bathymetry')
-        H_ = project(D + epsilon*zeta_, Q, name='PreviousBathymetry')
+        #H = project(D + epsilon*zeta, Q, name='Bathymetry')
+        #H_ = project(D + epsilon*zeta_, Q, name='PreviousBathymetry')
 
-        return D, zeta, zeta_, zeta__, H, H_
+        return D, zeta, zeta_, zeta__#, H, H_
 
     def wave_object(self, problem, Q, t, k):
-        D, zeta, zeta_, zeta__, self.H, self.H_ \
+        self.D, zeta, zeta_, zeta__ \
             = self.seabed(problem, Q, t, k, problem.epsilon)
 
         self.Zeta.assign(zeta)
@@ -172,16 +175,17 @@ class Solver(SolverBase):
     def Plot(self, problem, W, w):
         u = w.split()[0]
         eta = w.split()[1]
+        H = w.split()[2]
 
         # Plot velocity and height and wave object
         if self.vizU is None:
             self.vizU = plot(u, title='Velocity', rescale=True)
             self.vizP = plot(eta, title='Height', rescale=True)
-            self.vizZ = plot(self.H_, title='Wave Object', rescale=True)
+            self.vizZ = plot(H, title='Wave Object', rescale=True)
         else :
             self.vizU.plot(u)
             self.vizP.plot(eta)
-            self.vizZ.plot(self.H_)
+            self.vizZ.plot(H)
 
     def __str__(self):
           return 'Peregrine'
