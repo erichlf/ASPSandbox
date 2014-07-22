@@ -71,15 +71,11 @@ class Solver(SolverBase):
         T = problem.T #Final time
         k = problem.k #time step
 
-        D, zeta, zeta_, zeta__, self.H, self.H_ \
-            = self.seabed(problem, self.Q, t0, k, epsilon)
+        #set up our wave object
+        self.wave_object(problem, self.Q, t0, k)
 
-        #We need to save the wave object for optimization
-        self.zeta0.assign(zeta)
-        self.Zeta.assign(zeta)
-        self.Zeta_.assign(zeta_)
-        self.Zeta__.assign(zeta__)
-        D = project(D, self.Q, name='Bottom')
+        #save the initial wave object
+        self.zeta0.assign(self.Zeta)
 
         zeta_tt = 1./k**2*(self.Zeta - 2*self.Zeta_ + self.Zeta__)
         zeta_t = 1./k*(self.Zeta - self.Zeta_)
@@ -106,7 +102,7 @@ class Solver(SolverBase):
 
         r += z*(sigma**2*1./k*div(H_alpha*(U-U_))*div(H_alpha*v/2.) \
               - sigma**2*1./k*div(U-U_)*div(H_alpha**2*v/6.))*dx
-        r += z*sigma**2*zeta_tt*div((D + epsilon*zeta_alpha)*v/2.)*dx
+        r += z*sigma**2*zeta_tt*div(H_alpha*v/2.)*dx
 
         r += z*(1./k*(eta-eta_)*chi + zeta_t*chi)*dx
         r -= z*inner(U_alpha,grad(chi))*(epsilon*eta_alpha + H_alpha)*dx
@@ -150,7 +146,7 @@ class Solver(SolverBase):
 
         return M
 
-    def seabed(self,problem, Q, t, k, epsilon):
+    def seabed(self, problem, Q, t, k, epsilon):
         D = problem.D
 
         problem.zeta0.t = t
