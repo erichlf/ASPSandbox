@@ -21,9 +21,12 @@ radius = 0.05
 
 class InitialConditions(Expression):
     def eval(self,values,x):
+        y0 = ycenter
+        x0 = xcenter
+
         values[0] = 0.
         values[1] = 0.
-        values[2] = 0.
+        values[2] = exp(-256*((x[1]-y0)**2.+(x[0]-x0)**2.))
         values[3] = 0.
 
     def value_shape(self):
