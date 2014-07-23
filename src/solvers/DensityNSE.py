@@ -74,7 +74,7 @@ class Solver(SolverBase):
         r = z*((1./k)*(rho - rho_) + inner(U_alpha,grad(rho_alpha)))*nu*dx #mass equation
         r += z*(rho_alpha*((1./k)*inner(U - U_,v) \
             + inner(grad(U_alpha)*U_alpha,v)) \
-            - p*div(v) \
+            + inner(grad(p),v) \
             + 1./Re*inner(grad(U_alpha),grad(v)) \
             + rho_alpha*dot(f,v))*dx #momentum equation
         r += z*div(U_alpha)*q*dx #continuity equation
@@ -89,9 +89,9 @@ class Solver(SolverBase):
 
     def functional(self,mesh,w):
 
-      (u, p) = (as_vector((w[0], w[1])), w[2])
+      (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
 
-      M = u[0]*dx # Mean of the x-velocity in the whole domain
+      M = rhp*dx # Mean of the x-velocity in the whole domain
 
       return M
 
