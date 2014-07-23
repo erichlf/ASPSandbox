@@ -38,9 +38,9 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        Nx = options["Nx"]
-        Ny = options["Ny"]
-        self.mesh = RectangleMesh(-1,-1,1,1,Nx, Ny)
+        self.Nx = options["Nx"]
+        self.Ny = options["Ny"]
+        self.mesh = RectangleMesh(-1,-1,1,1, self.Nx, self.Ny)
 
         self.t0 = 0.
         self.T = options['T']

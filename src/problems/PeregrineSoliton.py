@@ -64,12 +64,12 @@ class Y_SlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and \
                (x[1] < y0 + DOLFIN_EPS or x[1] > y1 - DOLFIN_EPS)
-           
+
 class X_SlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and \
                (x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
-           
+
 # Problem definition
 class Problem(ProblemBase):
 #   2D channel flow.
@@ -78,17 +78,15 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
-        global x0, x1, y0, y1
-
         # Create mesh
-        Nx = 2047
-        Ny = 1
+        self.Nx = 2047
+        self.Ny = 1
         lambda0 = 1.
         x0 = x0/lambda0
         x1 = x1/lambda0
         y0 = y0/lambda0
         y1 = y1/lambda0
-        mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
+        mesh = RectangleMesh(x0, y0, x1, y1, self.Nx, self.Ny)
         self.mesh = mesh
         self.N_iter = floor(float(options["T"])/float(options["dt"]))
 

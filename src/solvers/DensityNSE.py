@@ -8,8 +8,11 @@ class Solver(SolverBase):
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
+
         self.Re = options['Re']
+        self.Fr = options['Fr']
         self.vizRho = None
+        self.rhofile = None
 
     # Define function spaces
     def function_space(self, mesh):
@@ -34,7 +37,7 @@ class Solver(SolverBase):
         #rho = 1/rho' - 1
         (U, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
         (U_, rho_, p_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
-        (v, r, q) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
+        (v, nu, q) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
 
         h = CellSize(W.mesh()) #mesh size
         d1, d2, d3 = self.stabilization_parameters(U_, rho_, p_, h) #stabilization parameters
@@ -68,7 +71,7 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./k)*(rho - rho_) + inner(U_alpha,grad(rho_alpha)))*r*dx #mass equation
+        r = z*((1./k)*(rho - rho_) + inner(U_alpha,grad(rho_alpha)))*nu*dx #mass equation
         r += z*(rho_alpha*((1./k)*inner(U - U_,v) \
             + inner(grad(U_alpha)*U_alpha,v)) \
             - p*div(v) \
@@ -77,10 +80,10 @@ class Solver(SolverBase):
         r += z*div(U_alpha)*q*dx #continuity equation
 
         R1, R2, R3 = self.strong_residual(U_alpha,U_alpha,rho_alpha,rho_alpha,p)
-        Rv1, Rv2, Rv3 = self.strong_residual(U_alpha,v,rho_alpha,r,q)
+        Rv1, Rv2, Rv3 = self.strong_residual(U_alpha,v,rho_alpha,nu,q)
         r += z*(d1*inner(R1, Rv1) + d2*R2*Rv2 + d3*R3*Rv3)*dx
         r += z*d*(inner(grad(U_alpha),grad(v)))*dx
-        #r += z*d*(inner(grad(rho_alpha),grad(r)))*dx
+        r += z*d*(inner(grad(rho_alpha),grad(nu)))*dx
 
         return r
 
@@ -101,6 +104,37 @@ class Solver(SolverBase):
         d3 = K3*h**(-1)
 
         return d1, d2, d3
+
+    def Save(self, problem, w, dual=False):
+        u = w.split()[0]
+        rho = w.split()[1]
+        p = w.split()[2]
+
+        if (self._timestep - 1) % self.options['save_frequency'] == 0:
+            if not dual:
+                self._ufile << u
+                self._pfile << p
+                self._rhofile << rho
+            else:
+                self._uDualfile << u
+                self._pDualfile << p
+                self._rhoDualfile << rho
+
+    def file_naming(self, n=-1, dual=False):
+        if n==-1:
+            self._ufile = File(self.s + '_u.pvd', 'compressed')
+            self._rhofile = File(self.s + '_rho.pvd', 'compressed')
+            self._pfile = File(self.s + '_p.pvd', 'compressed')
+            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
+            self._rhoDualfile = File(self.s + '_rhoDual.pvd', 'compressed')
+            self._pDualfile = File(self.s + '_pDual.pvd', 'compressed')
+        else:
+            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
+            self._rhofile = File(self.s + '_rho%d.pvd' % n, 'compressed')
+            self._pfile = File(self.s + '_p%d.pvd' % n, 'compressed')
+            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
+            self._rhoDualfile = File(self.s + '_rhoDual%d.pvd' % n, 'compressed')
+            self._pDualfile = File(self.s + '_pDual%d.pvd' % n, 'compressed')
 
     def Plot(self, problem, W, w):
         u = w.split()[0]

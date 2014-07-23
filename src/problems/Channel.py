@@ -41,13 +41,13 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        Nx = options["Nx"]
-        Ny = options["Ny"]
+        self.Nx = options["Nx"]
+        self.Ny = options["Ny"]
         x0 = float(options["x0"])
         x1 = float(options["x1"])
         y0 = float(options["y0"])
         y1 = float(options["y1"])
-        self.mesh = RectangleMesh(x0,y0,x1,y1,Nx, Ny)
+        self.mesh = RectangleMesh(x0,y0,x1,y1,self.Nx, self.Ny)
 
         self.t0 = 0.
         self.T = options['T']

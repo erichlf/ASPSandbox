@@ -49,15 +49,15 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        Nx = options["Nx"]
-        Ny = options["Ny"]
+        self.Nx = options["Nx"]
+        self.Ny = options["Ny"]
         x0 = 0
         x1 = 1
         y0 = 0
         y1 = 1
         self.p1 = Point(x0 + 0.25*(x1-x0),y0 + 0.5*(y1-y0))
         self.p2 = Point(x1 - 0.25*(x1-x0),y0 + 0.5*(y1-y0))
-        self.mesh = RectangleMesh(x0,y0,x1,y1,Nx, Ny)
+        self.mesh = RectangleMesh(x0,y0,x1,y1, self.Nx, self.Ny)
 
         self.t0 = 0.
         self.T = options['T']

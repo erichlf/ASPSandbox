@@ -13,18 +13,22 @@ class Solver(SolverBase):
         #Parameters
         self.Re = None
         self.Ro = None
+        self.Hfile = None
+        self.vizH = None
 
     #define functions spaces
     def function_space(self, mesh):
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
         Q = FunctionSpace(mesh, 'CG', self.Pp)
         self.Q = Q #Bad hack for being able to project into Q space
-        W = MixedFunctionSpace([V, Q, Q])
+        W = MixedFunctionSpace([V, Q])
 
         self.Zeta = Function(Q, name='zeta')
         self.Zeta_ = Function(Q, name='zeta_')
         self.Zeta__ = Function(Q, name='zeta__')
         self.zeta0 = Function(Q, name='InitialShape')
+        self.H = Function(Q, name='Bathymetry')
+        self.H_ = Function(Q, name='PreviousBathymetry')
 
         return W
 
@@ -49,9 +53,9 @@ class Solver(SolverBase):
         return R1, R2, z1, z2
 
     def weak_residual(self,problem, W, w, w_, wt, ei_mode=False):
-        (U, eta, H) = (as_vector((w[0], w[1])), w[2], w[3])
-        (U_, eta_, H_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
-        (v, chi, nu) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
+        (U, eta) = (as_vector((w[0], w[1])), w[2])
+        (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
+        (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
         h = CellSize(W.mesh()) #mesh size
         d = 0.1*h**(3./2.) #stabilization parameter
@@ -84,7 +88,7 @@ class Solver(SolverBase):
         U_alpha = (1. - alpha)*U_ + alpha*U
         eta_alpha = (1. - alpha)*eta_ + alpha*eta
         zeta_alpha = (1. - alpha)*self.Zeta_ + alpha*self.Zeta
-        H_alpha = (1. - alpha)*H_ + alpha*H
+        H_alpha = (1. - alpha)*self.H_ + alpha*self.H
 
         t = t0 + k
         #forcing and mass source/sink
@@ -110,9 +114,6 @@ class Solver(SolverBase):
         r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
 
         r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
-
-        #hack for saving and updating bathymetry
-        r += z*d*(H - (self.D + epsilon*self.Zeta))*nu*dx
 
         return r
 
@@ -159,33 +160,66 @@ class Solver(SolverBase):
         problem.zeta0.t = max(t - 2*k, self.t0)
         zeta__ = project(problem.zeta0, Q)
 
-        #H = project(D + epsilon*zeta, Q, name='Bathymetry')
-        #H_ = project(D + epsilon*zeta_, Q, name='PreviousBathymetry')
-
-        return D, zeta, zeta_, zeta__#, H, H_
+        return D, zeta, zeta_, zeta__
 
     def wave_object(self, problem, Q, t, k):
-        self.D, zeta, zeta_, zeta__ \
+        D, zeta, zeta_, zeta__ \
             = self.seabed(problem, Q, t, k, problem.epsilon)
 
+        self.D = project(D, Q, name='Depth')
         self.Zeta.assign(zeta)
         self.Zeta_.assign(zeta_)
         self.Zeta__.assign(zeta__)
 
+        self.H = project(D + problem.epsilon*zeta, Q, name='Bathymetry')
+        self.H_ = project(D + problem.epsilon*zeta_, Q, name='PreviousBathymetry')
+
+    def Save(self, problem, w, dual=False):
+        u = w.split()[0]
+        eta = w.split()[1]
+
+        k = self.k
+        Nx = self.options['Nx']
+        Ny = self.options['Ny']
+        if (self._timestep - 1) % self.options['save_frequency'] == 0:
+            # Create files for saving
+            self.file_naming(problem, k, Nx, Ny, dual=False):
+
+            if not dual:
+                self._ufile << u
+                self._pfile << eta
+                self._Hfile << self.H
+            else:
+                self._uDualfile << u
+                self._pDualfile << eta
+
+    def file_naming(self, n=-1, dual=False):
+        if n==-1:
+            self._ufile = File(self.s + '_u.pvd', 'compressed')
+            self._pfile = File(self.s + '_eta.pvd', 'compressed')
+            self._Hfile = File(self.s + '_H.pvd', 'compressed')
+            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
+            self._pDualfile = File(self.s + '_etaDual.pvd', 'compressed')
+        else:
+            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
+            self._pfile = File(self.s + '_eta%d.pvd' % n, 'compressed')
+            self._Hfile = File(self.s + '_H%d.pvd' % n, 'compressed')
+            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
+            self._pDualfile = File(self.s + '_etaDual%d.pvd' % n, 'compressed')
+
     def Plot(self, problem, W, w):
         u = w.split()[0]
         eta = w.split()[1]
-        H = w.split()[2]
 
         # Plot velocity and height and wave object
         if self.vizU is None:
             self.vizU = plot(u, title='Velocity', rescale=True)
             self.vizP = plot(eta, title='Height', rescale=True)
-            self.vizZ = plot(H, title='Wave Object', rescale=True)
+            self.vizH = plot(self.H, title='Wave Object', rescale=True)
         else :
             self.vizU.plot(u)
             self.vizP.plot(eta)
-            self.vizZ.plot(H)
+            self.vizH.plot(self.H)
 
     def __str__(self):
           return 'Peregrine'

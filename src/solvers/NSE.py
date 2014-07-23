@@ -73,17 +73,6 @@ class Solver(SolverBase):
 
         return r
 
-    def functional(self,mesh,w):
-
-        if W.mesh().topology().dim() == 2:
-            (u, p) = (as_vector((w[0], w[1])), w[2])
-        else:
-            (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
-
-        M = u[0]*dx # Mean of the x-velocity in the whole domain
-
-        return M
-
     def stabilization_parameters(self,U,p,h):
         K1  = 1.
         K2  = 0.5
@@ -91,6 +80,17 @@ class Solver(SolverBase):
         d2 = K2*h**(-1)
 
         return d1, d2
+
+    #this is the functional used for adaptivity
+    def functional(self,mesh,w):
+        if mesh.topology().dim() == 2:
+            (u, p) = (as_vector((w[0], w[1])), w[2])
+        else:
+            (u, p) = (as_vector((w[0], w[1]), w[2]), w[3])
+
+        M = u[0]*dx # Mean of the x-velocity in the whole domain
+
+        return M
 
     def __str__(self):
           return 'NSE'

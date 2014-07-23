@@ -21,10 +21,12 @@ y0 = -25.
 y1 = 25.
 
 #start location of our object
-objectLeft = -4. #left bound
+objectLeft = 0. #left bound
 objectRight = 4. #right bound
 objectBottom = -4. #lower bound
-objectTop = 4. #upper bound
+objectTop = -objectBottom #upper bound
+channelBottom = objectBottom - 0.5
+channelTop = objectTop + 0.5
 
 #Physical Parameters
 hd = 2. #Depth of the pool in the central lane [m]
@@ -44,6 +46,8 @@ objectLeft = objectLeft/lambda0
 objectRight = objectRight/lambda0
 objectBottom = objectBottom/lambda0
 objectTop = objectTop/lambda0
+channelBottom = channelBottom/lambda0
+channelTop = channelTop/lambda0
 
 #Scaled Parameters
 hd = hd/h0 #depth
@@ -52,26 +56,16 @@ hb = hb/h0 #depth at the boundary
 c0 = (h0*g)**(0.5)
 
 #maximum velocity of wave object
-vmax = ((hd*h0+ad*a0)*g)**(0.5)/100 #Max Speed of the moving object [m.s^(-1)]
+vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
 
 class InitialConditions(Expression):
-    def __init__(self, params, epsilon, t0):
-        self.object = Object(params=params, t=t0)
-        self.D = Depth()
-        self.epsilon = epsilon
-
     def eval(self,values,x):
-        D = self.D
-        object = self.object
-        epsilon = self.epsilon
-
         values[0] = 0.
         values[1] = 0.
         values[2] = 0.
-        values[3] = D(x) + epsilon*object(x)
 
     def value_shape(self):
-      return (4,)
+      return (3,)
 
 # Slip boundary
 class Y_SlipBoundary(SubDomain):
@@ -94,7 +88,6 @@ class Object(Expression):
         http://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method
     '''
     def __init__(self, params, t):
-        global x0, x1, y0, y1, objectLeft, objectRight, objectBottom, objectTop, hd, hb, ad, a0, h0, c0, g, vmax
 
         self.N1 = params[0]
         self.N2 = params[1]
@@ -109,12 +102,12 @@ class Object(Expression):
         dz = self.dz
         t = self.t
 
-        u = vmax*lambda0/c0*t*exp(-4./(lambda0/c0*t+0.05))
+        u = 4.*vmax*t*t/(4.*t*t+1)#*exp(-4./(lambda0/c0*t+0.05))
 
         X = ((x[0] - objectLeft - u*t)/(objectRight - objectLeft), \
                 (x[1] - objectBottom)/(objectTop - objectBottom))
 
-        if(X[0]>=0. and X[0]<=1. and x[1]>=-0.25 and x[1]<=0.25):
+        if(X[0]>=0 and X[0]<=1 and X[1]>=0 and X[1]<=1):
             # Class function; taking input of N1 and N2
             C = X[0]**N1*(1. - X[0])**N2
 
@@ -126,7 +119,7 @@ class Object(Expression):
                 K = float(factorial(n)/(factorial(i)*factorial(n-i)));
                 S = S + w[i]*K*X[0]**i*(1. - X[0])**(n-i)
 
-            value[0] = -(C*S + X[0]*dz)
+            value[0] = -(C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)
         else:
             value[0] = 0.
 
@@ -136,10 +129,10 @@ class Object(Expression):
 class Depth(Expression):
     def eval(self, values, x):
         values[0] = -hd
-        if x[1] > objectTop:
-            values[0] -= (hd - hb)/(y1 - objectTop)*(x[1] - objectTop)
-        elif x[1] < objectBottom:
-            values[0] -= (hd - hb)/(y0 - objectBottom)*(x[1] - objectBottom)
+        if x[1] > channelTop:
+            values[0] -= (hd - hb)/(y1 - channelTop)*(x[1] - channelTop)
+        elif x[1] < channelBottom:
+            values[0] -= (hd - hb)/(y0 - channelBottom)*(x[1] - channelBottom)
 
 # Problem definition
 class Problem(ProblemBase):
@@ -159,9 +152,9 @@ class Problem(ProblemBase):
         self.params = (1, 1, 1., 1., 1., 1., 0.)
 
         # Create mesh
-        Nx = options["Nx"]
-        Ny = options["Ny"]
-        self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
+        self.Nx = options["Nx"]
+        self.Ny = options["Ny"]
+        self.mesh = RectangleMesh(x0, y0, x1, y1, self.Nx, self.Ny)
 
         self.mesh = self.Refine(self.mesh)
 
@@ -190,7 +183,7 @@ class Problem(ProblemBase):
         return mesh
 
     def initial_conditions(self, W):
-        w0 = InitialConditions(self.params, self.epsilon, self.t0)
+        w0 = InitialConditions()
         w0 = project(w0,W)
 
         return w0

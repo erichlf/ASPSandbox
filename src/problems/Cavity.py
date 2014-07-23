@@ -41,9 +41,9 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        Nx = options["Nx"]
-        Ny = options["Ny"]
-        self.mesh = UnitSquareMesh(Nx, Ny)
+        self.Nx = options["Nx"]
+        self.Ny = options["Ny"]
+        self.mesh = UnitSquareMesh(self.Nx, self.Ny)
 
         self.t0 = 0.
         self.T = options['T']

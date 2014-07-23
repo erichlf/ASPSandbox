@@ -43,10 +43,10 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        Nx = options["Nx"]
-        Ny = options["Ny"]
-        Nz = options["Nz"]
-        self.mesh = UnitCubeMesh(Nx, Ny, Nz)
+        self.Nx = options["Nx"]
+        self.Ny = options["Ny"]
+        self.Nz = options["Nz"]
+        self.mesh = UnitCubeMesh(self.Nx, self.Ny, self.Nz)
 
         self.t0 = 0.
         self.T = options['T']

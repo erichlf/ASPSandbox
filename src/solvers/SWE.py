@@ -113,6 +113,14 @@ class Solver(SolverBase):
 
         return r
 
+    def stabilization_parameters(self,U_,eta_,h):
+        K1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
+        K2  = self.Th/(2*self.H)
+        d1 = K1*(self.k**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
+        d2 = K2*(self.k**(-2) + eta_*eta_*h**(-1))**(-0.5)
+
+        return d1, d2
+
     def functional(self,mesh,w):
 
       (u, eta) = (as_vector((w[0], w[1])), w[2])
@@ -121,13 +129,34 @@ class Solver(SolverBase):
 
       return M
 
-    def stabilization_parameters(self,U_,eta_,h):
-        K1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
-        K2  = self.Th/(2*self.H)
-        d1 = K1*(self.k**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
-        d2 = K2*(self.k**(-2) + eta_*eta_*h**(-1))**(-0.5)
+    def file_naming(self, n=-1, dual=False):
+        if n==-1:
+            self._ufile = File(self.s + '_u.pvd', 'compressed')
+            self._pfile = File(self.s + '_eta.pvd', 'compressed')
+            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
+            self._pDualfile = File(self.s + '_etaDual.pvd', 'compressed')
+        else:
+            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
+            self._pfile = File(self.s + '_eta%d.pvd' % n, 'compressed')
+            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
+            self._pDualfile = File(self.s + '_etaDual%d.pvd' % n, 'compressed')
 
-        return d1, d2
+    #this is a separate function so that it can be overloaded
+    def Plot(self, problem, W, w):
+        u = w.split()[0]
+        p = w.split()[1]
+
+        if self.vizU is None:
+            regex = re.compile('NSE')
+            # Plot velocity and pressure
+            self.vizU = plot(u, title='Velocity', rescale=True)
+            if regex.search(self.prefix(problem)) is None:
+                self.vizP = plot(p, title='Height', rescale=True)
+            else :
+                self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
+        else :
+            self.vizU.plot(u)
+            self.vizP.plot(p)
 
     def __str__(self):
           return 'SWE'

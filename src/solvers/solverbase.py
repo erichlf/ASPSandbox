@@ -34,8 +34,7 @@ class SolverBase:
         self.H = None #Fluid depth
         self.Ro = None #Rossby number
         self.Fr = None #Froude number
-        self.Th = None 
-        self.zeta = None
+        self.Th = None
 
         #initialize the time stepping method parameters
         self.alpha = self.options['alpha'] #time stepping method
@@ -53,10 +52,14 @@ class SolverBase:
         self._timestep = 0
 
         # Reset files for storing solution
-        self._wfile = None
+        self.s = None
+        self._ufile = None
+        self._pfile = None
         self._uDualfile = None
         self._pDualfile = None
-        self._eifile = None
+        self.eifile = None
+        self.meshfile = None
+        self.optfile = None
 
         # Reset storage for functional values and errors
         self._t = []
@@ -68,57 +71,60 @@ class SolverBase:
     def solve(self, problem):
         mesh = problem.mesh
         k = problem.k #time step
-        self.k = k
+
+        #naming scheme
+        self.s = 'results/' + self.prefix(problem) \
+                + self.suffix(problem)
 
         maxadaps = 10 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
-        #file naming
-        s = 'results/' + self.prefix(problem) \
-                + self.suffix() \
-                + 'Nx' + str(self.options['Nx']) \
-                + 'Ny' + str(self.options['Ny']) \
-                + 'K' + str(int(1./k))
-        eifile = File(s + '_ei.pvd') #error indicators
-        meshfile = File(s + '_mesh.pvd')
-        optfile = File(s + '_Opt.pvd') #solution to optimization
 
         if self.options['adaptive']: #solve with adaptivity
+            #files specific to adaptivity
+            self.eifile = File(self.s + '_ei.pvd') #error indicators
+            self.meshfile = File(self.s + '_mesh.pvd')
+
             # Adaptive loop
             for i in range(0, maxadaps):
+                #setup file names
+                self.file_naming(n=i, dual=False)
                 if i==0:
                     print 'Solving on initial mesh.'
                 elif i < len(nth):
                     print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
                 else:
-                    print 'Solving on %d%s adapted mesh.' % (i, nth[len(nth)-1])
+                    print 'Solving on %d%s adapted mesh.' % (i, nth[-1])
                 # Solve primal and dual problems and compute error indicators
                 w, ei = self.adaptive_solve(problem, mesh, k)
-                if(i == 0 and self.options['plot_solution']):
-                    plot(ei, title="Error Indicators.")
-                    plot(mesh, title="Initial mesh", size=((600, 300)))
-                elif i == 0:
-                    meshfile << mesh
-                    eifile << ei
-                elif(i == maxadaps - 1 and self.options['plot_solution']):
-                    plot(ei, title="Error Indicators.")
-                    plot(mesh, title="Finest mesh", size=((600, 300)))
-                elif i == maxadaps - 1:
-                    meshfile << mesh
-                    eifile << ei
+                if i==0 and self.options['plot_solution']:
+                    plot(ei, title="Error Indicators.", elevate=0.0)
+                    plot(mesh, title='Initial mesh', size=((600, 300)))
+                elif i==maxadaps-1 and self.options['plot_solution']:
+                    plot(ei, title="Error Indicators.", elevate=0.0)
+                    plot(mesh, title='Final mesh', size=((600, 300)))
+                    interactive()
+                elif not self.options['plot_solution']:
+                    self.meshfile << mesh
+                    self.eifile << ei
 
                 # Refine the mesh
                 print 'Refining mesh.'
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
                 self._timestep = 0 #reset the time step to zero
                 adj_reset() #reset the dolfin-adjoint
+
         print 'Solving the primal problem.'
+        self.file_naming(n=-1, dual=False)
         #recording isn't needed if not optimizing
         parameters["adjoint"]["stop_annotating"] = self.options['optimize'] \
                 and ('Optimization' in dir(self))
         W, w = self.forward_solve(problem, mesh, k)
+
         #solve the optimization problem
         if(self.options['optimize'] and  'Optimize' in dir(self)):
+            self.optfile = File(self.s + '_Opt.pvd') #file for solution to optimization
+
             opt = self.Optimize(problem, w)
             if self.options['plot_solution']:
                 plot(opt, title='Optimization result.')
@@ -163,7 +169,7 @@ class SolverBase:
 
         print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
-            LR1 = k*self.weak_residual(W, wtape[i], wtape[i+1], phi[i], ei_mode=True)
+            LR1 = k*self.weak_residual(problem, W, wtape[i], wtape[i+1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1,annotate=False).array()
 
         return w, ei
@@ -173,6 +179,7 @@ class SolverBase:
 
         t = problem.t0
         T = problem.T #final time
+        self.k = k
 
         # Define function spaces
         #we do it this way so that it can be overloaded
@@ -270,50 +277,10 @@ class SolverBase:
         # Save solution
         if self.options['save_solution']:
             # Save velocity and pressure
-            frequency = self.options['save_frequency']
-            k = self.k
-            Nx = self.options['Nx']
-            Ny = self.options['Ny']
-            if (self._timestep - 1) % frequency == 0:
-                # Create files for saving
-                if self._wfile is None:
-                    s = 'results/' + self.prefix(problem) \
-                            + self.suffix() \
-                            + 'Nx' + str(Nx) \
-                            + 'Ny' + str(Ny) \
-                            + 'K' + str(int(1./k))
-                    self._wfile = File(s + '.pvd')
-                if self._Hfile is None:
-                    self._Hfile = File(s + '_b.pvd')
-                if self._Dualfile is None:
-                    self._Dualfile = File(s + '_Dual.pvd')
-                if not dual:
-                    self._wfile << w
-                    if self.zeta is not None:
-                        self._Hfile << self.H_
-                else:
-                    self._Dualfile << w
+            self.Save(problem, w, dual=dual)
         else: # Plot solution
             self.options['plot_solution'] = True
             self.Plot(problem, W, w)
-
-        # Plot solution
-#        if self.options['plot_solution']:
-#            if self.vizU is None:
-#                regex = re.compile('NSE')
-#                # Plot velocity and pressure
-#                self.vizU = plot(u, title='Velocity', rescale=True)
-#                if regex.search(self.prefix(problem)) is None:
-#                    self.vizP = plot(p, title='Height', rescale=True)
-#                else :
-#                    self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
-#                if('wave_object' in dir(self)):
-#                    self.vizZ = plot(self.H, title='Wave Object', rescale=True)
-#            else :
-#                self.vizU.plot(u)
-#                self.vizP.plot(p)
-#                if('wave_object' in dir(self)):
-#                    self.vizZ.plot(self.H_)
 
         # Check memory usage
         if self.options['check_mem_usage']:
@@ -340,26 +307,42 @@ class SolverBase:
             self._timestep += 1
             self._time = time()
 
+    def Save(self, problem, w, dual=False):
+        u = w.split()[0]
+        p = w.split()[1]
+
+        if (self._timestep - 1) % self.options['save_frequency'] == 0:
+            if not dual:
+                self._ufile << u
+                self._pfile << p
+            else:
+                self._uDualfile << u
+                self._pDualfile << p
+
+    def file_naming(self, n=-1, dual=False):
+        if n==-1:
+            self._ufile = File(self.s + '_u.pvd', 'compressed')
+            self._pfile = File(self.s + '_p.pvd', 'compressed')
+            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
+            self._pDualfile = File(self.s + '_pDual.pvd', 'compressed')
+        else:
+            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
+            self._pfile = File(self.s + '_p%d.pvd' % n, 'compressed')
+            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
+            self._pDualfile = File(self.s + '_pDual%d.pvd' % n, 'compressed')
+
     #this is a separate function so that it can be overloaded
     def Plot(self, problem, W, w):
         u = w.split()[0]
         p = w.split()[1]
 
         if self.vizU is None:
-            regex = re.compile('NSE')
             # Plot velocity and pressure
             self.vizU = plot(u, title='Velocity', rescale=True)
-            if regex.search(self.prefix(problem)) is None:
-                self.vizP = plot(p, title='Height', rescale=True)
-            else :
-                self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
-            if('wave_object' in dir(self)):
-                self.vizZ = plot(self.H, title='Wave Object', rescale=True)
+            self.vizP = plot(p, title='Height', rescale=True, elevate=0.0)
         else :
             self.vizU.plot(u)
             self.vizP.plot(p)
-            if('wave_object' in dir(self)):
-                self.vizZ.plot(self.H_)
 
     def prefix(self, problem):
         #Return file prefix for output files
@@ -374,7 +357,7 @@ class SolverBase:
 
         return problem.output_location + p + s
 
-    def suffix(self):
+    def suffix(self, problem):
         s = ''
 
         #Return file suffix for output files
@@ -386,8 +369,13 @@ class SolverBase:
             s += 'Fr' + str(self.Fr)
         if(self.Th is not None):
             s += 'Th' + str(self.Th)
-        if(self.H is not None):
-            s += 'H' + str(self.H)
+
+        s += 'Nx' + str(problem.Nx) \
+            + 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2:
+            s += 'Nz' + str(problem.Nz) \
+
+        s += 'K' + str(int(1./problem.k))
 
         return s
 

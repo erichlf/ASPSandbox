@@ -70,13 +70,13 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Load mesh
-        Nx = options["Nx"]
-        Ny = options["Ny"]
+        self.Nx = options["Nx"]
+        self.Ny = options["Ny"]
 
         rect = Rectangle(xmin, ymin, xmax, ymax)
         circ = Circle(xcenter, ycenter, radius)
         domain = rect - circ
-        self.mesh = Mesh(domain, Nx)
+        self.mesh = Mesh(domain, self.Nx)
 
         self.t0 = 0.
         self.T = options['T']
