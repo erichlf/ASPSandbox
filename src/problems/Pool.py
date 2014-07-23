@@ -87,12 +87,12 @@ class Object(Expression):
         written by Pramudita Satria Palar for matlab which can be found at
         http://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method
     '''
-    def __init__(self, params, t):
+    def __init__(self, N1, N2, W1, W2, W3, W4, dz, t):
 
-        self.N1 = params[0]
-        self.N2 = params[1]
-        self.w = params[2:5]
-        self.dz = params[6]
+        self.N1 = N1
+        self.N2 = N2
+        self.w = (W1, W2, W3, W4)
+        self.dz = dz
         self.t = t
 
     def eval(self, value, x):
@@ -141,15 +141,18 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
-        global x0, x1, y0, y1, objectLeft, objectRight, objectBottom, objectTop, hd, hb, ad, a0, h0, c0, g, vmax
-
         #Scaling Parameters
         self.sigma = h0/lambda0
         self.epsilon = a0/h0
 
         #set up the CST shape parameterization
-        #(N1, N2, W1, W2, W3, W4, dz)
-        self.params = (1, 1, 1., 1., 1., 1., 0.)
+        self.N1 = Constant(1., name='N1')
+        self.N2 = Constant(1., name='N2')
+        self.W1 = Constant(1., name='W1')
+        self.W2 = Constant(1., name='W2')
+        self.W3 = Constant(1., name='W3')
+        self.W4 = Constant(1., name='W4')
+        self.dz = Constant(1., name='dz')
 
         # Create mesh
         self.Nx = options["Nx"]
@@ -164,7 +167,8 @@ class Problem(ProblemBase):
         self.k = options['dt']*c0/lambda0 #time step
 
         Q = FunctionSpace(self.mesh, 'CG', 1)
-        self.zeta0 = Object(params=self.params,t=self.t0)
+        self.zeta0 = Object(N1=self.N1, N2=self.N2, W1=self.W1, W2=self.W2, \
+                W3=self.W3, W4=self.W4, dz=self.dz, t=self.t0)
 
         #Defintion of the shape of the seabed
         self.D = Depth()

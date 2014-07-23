@@ -136,9 +136,10 @@ class Solver(SolverBase):
         J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*self.Zeta*dx)
 
         #initial shape
-        m = ScalarParameters(problem.params)
+        m = ListParameter([problem.N1, problem.N2, problem.W1, problem.W2, \
+                    problem.W3, problem.W4, problem.dz])
         Jhat = ReducedFunctional(J, m) #Reduced Functional
-        shape_opt = minimize(Jhat, bounds=(lb, ub))
+        shape_opt = minimize(Jhat)
 
         return shape_opt
 
@@ -183,7 +184,7 @@ class Solver(SolverBase):
         Ny = self.options['Ny']
         if (self._timestep - 1) % self.options['save_frequency'] == 0:
             # Create files for saving
-            self.file_naming(problem, k, Nx, Ny, dual=False):
+            self.file_naming(problem, k, Nx, Ny, dual=False)
 
             if not dual:
                 self._ufile << u

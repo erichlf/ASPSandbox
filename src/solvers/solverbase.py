@@ -116,10 +116,14 @@ class SolverBase:
 
         print 'Solving the primal problem.'
         self.file_naming(n=-1, dual=False)
-        #recording isn't needed if not optimizing
-        parameters["adjoint"]["stop_annotating"] = self.options['optimize'] \
-                and ('Optimization' in dir(self))
+
+        #record so that we can evaluate our functional
+        parameters["adjoint"]["stop_annotating"] = False
         W, w = self.forward_solve(problem, mesh, k)
+        J = Functional(self.functional(mesh, w)*dt[0.9*(T-t0):T], name='DualArgument')
+        m = ScalarParameter('w_')
+        RJ = ReducedFunctional(J, m)
+        print 'The size of the functional is: %f' % RJ(w)
 
         #solve the optimization problem
         if(self.options['optimize'] and  'Optimize' in dir(self)):
@@ -141,22 +145,27 @@ class SolverBase:
         W, w = self.forward_solve(problem, mesh, k)
         parameters["adjoint"]["stop_annotating"] = True
 
+        T = problem.T
+        t0 = problem.t0
+
         phi = Function(W)
 
         # Generate error indicators
         Z = FunctionSpace(mesh, "DG", 0)
-        ei = Function(Z)
+        ei = Function(Z, name='Error Indicator')
         z = TestFunction(Z)
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(self.functional(mesh, w)*dt, name='DualArgument')
-        #print 'The size of the function is: %d' % norm(J,'L2')
+        J = Functional(self.functional(mesh, w)*dt[0.9*(T-t0):T], name='DualArgument')
+        m = ScalarParameter('w_')
+        RJ = ReducedFunctional(J, m)
+        print
+        print 'The size of the functional is: %f' % RJ(w)
         timestep = None
         wtape = []
         phi = []
 
-        print
         print 'Solving the dual problem.'
         for (adj, var) in compute_adjoint(J,forget=False):
             if var.name == 'w' and timestep != var.timestep:
@@ -188,13 +197,12 @@ class SolverBase:
         # Get boundary conditions
         bcs = problem.boundary_conditions(W, t)
 
+        ic = problem.initial_conditions(W)
+
         #define trial and test function
         wt = TestFunction(W)
         w = Function(W, name='w')
-        w_ = Function(W, name='w_previous')
-
-        #initial condition
-        w_.assign(problem.initial_conditions(W))
+        w_ = Function(ic, name='w_')
 
         #weak form of the primal problem
         F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
