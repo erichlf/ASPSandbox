@@ -91,7 +91,7 @@ class Solver(SolverBase):
 
       (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
 
-      M = rhp*dx # Mean of the x-velocity in the whole domain
+      M = rho*dx # Mean of the x-velocity in the whole domain
 
       return M
 
