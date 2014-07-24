@@ -81,7 +81,7 @@ class Solver(SolverBase):
 
         R1, R2, R3 = self.strong_residual(U_alpha,U_alpha,rho_alpha,rho_alpha,p)
         Rv1, Rv2, Rv3 = self.strong_residual(U_alpha,v,rho_alpha,nu,q)
-        r += z*(d1*inner(R1, Rv1) + d2*R2*Rv2 + d3*R3*Rv3)*dx
+        r += z*(d1*inner(R1 - rho_alpha*f, Rv1) + d2*R2*Rv2 + d3*R3*Rv3)*dx
         r += z*d*(inner(grad(U_alpha),grad(v)))*dx
         r += z*d*(inner(grad(rho_alpha),grad(nu)))*dx
 
