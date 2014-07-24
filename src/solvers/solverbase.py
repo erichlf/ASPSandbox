@@ -71,6 +71,8 @@ class SolverBase:
     def solve(self, problem):
         mesh = problem.mesh
         k = problem.k #time step
+        T = problem.T
+        t0 = problem.t0
 
         #naming scheme
         self.s = 'results/' + self.prefix(problem) \
