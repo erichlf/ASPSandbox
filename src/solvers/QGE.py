@@ -82,7 +82,7 @@ class Solver(SolverBase):
 
       (q, psi) = (w[0], w[1])
 
-      M = q*dx # Mean of the x-velocity in the whole domain
+      M = q*dx # Mean of the vorticity in the whole domain
 
       return M
 

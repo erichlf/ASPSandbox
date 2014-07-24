@@ -14,22 +14,30 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
-x0 = 0.
-x1 = 1.
-y0 = 0.
-y1 = 1.
+d = 1.
+eta = 0.1
+g = 9.8
+
+x0 = -d/2.
+x1 = d/2.
+y0 = -2*d
+y1 = 2*d
+
+At = 0.5 #Atwood number
+rhoMin = 1.
+rhoMax = rhoMin*(1. + At)/(1. - At)
 
 class InitialConditions(Expression):
     def eval(self,values,x):
         values[0] = 0.
         values[1] = 0.
-        if x[0] < 0.5:
-            values[2] = 1.
-        else:
-            values[2] = 0.
+        values[2] = 0.5*(rhoMin + rhoMax) \
+            + 0.5*(rhoMax - rhoMin)*tanh((x[1] + eta*cos(2*pi*x[0]/d))/(0.01*d))
         values[3] = 0.
     def value_shape(self):
         return (4,)
+
+# 
 
 # No-slip boundary
 class NoslipBoundary(SubDomain):
@@ -68,7 +76,7 @@ class Problem(ProblemBase):
 
     def F1(self, t):
         #forcing function for the momentum equation
-        return Expression(('0.','1./Fr'),Fr=self.Fr,t=t)
+        return Expression(('0.','-1./g'), g=g, t=t)
 
     def F2(self, t):
         #mass source for the continuity equation

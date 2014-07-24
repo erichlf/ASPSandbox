@@ -27,7 +27,7 @@ class Solver(SolverBase):
     #strong residual for cG(1)cG(1)
     def strong_residual(self,u,U,rho,Rho,p):
         R1 = rho*grad(U)*u + grad(p)
-        R2 = inner(U,grad(rho))
+        R2 = div(rho*U)
         R3 = div(U)
 
         return R1, R2, R3
@@ -71,7 +71,7 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./k)*(rho - rho_) + inner(U_alpha,grad(rho_alpha)))*nu*dx #mass equation
+        r = z*((1./k)*(rho - rho_) + div(rho_alpha*U_alpha))*nu*dx #mass equation
         r += z*(rho_alpha*((1./k)*inner(U - U_,v) \
             + inner(grad(U_alpha)*U_alpha,v)) \
             + inner(grad(p),v) \

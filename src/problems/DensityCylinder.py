@@ -19,9 +19,13 @@ xcenter = 0.2
 ycenter = 0.2
 radius = 0.05
 
+At = 0.5 #Atwood number
+rhoMin = 1.
+rhoMax = rhoMin*(1. + At)/(1. - At)
+
 class InitialConditions(Expression):
     def __init__(self):
-        self.A = 0.2 #amplitude
+        self.A = rhoMax #amplitude
         self.S = 1./16. #variance
 
     def eval(self,values,x):
@@ -32,7 +36,7 @@ class InitialConditions(Expression):
 
         values[0] = 0.
         values[1] = 0.
-        values[2] = A*exp(-((x[1]-y0)**2.+(x[0]-x0)**2.)/(2*S*S))
+        values[2] = rhoMin  + rhoMax*exp(-((x[1]-y0)**2.+(x[0]-x0)**2.)/(2*S*S))
         values[3] = 0.
 
     def value_shape(self):
@@ -91,8 +95,8 @@ class Problem(ProblemBase):
     def boundary_conditions(self, W, t):
         # Create inflow boundary condition
         g0 = Expression(('4*Um*(x[1]*(ymax-x[1]))/(ymax*ymax)*4*t*t/(4*t*t+1)', '0.0'), Um=1.5, ymax=ymax, t=t)
-        f0 = Expression('sin(p*pi*t)<0 ? -exp(-256*pow(x[1]-y0,2))*sin(p*pi*t) : 0',y0=ycenter,p=2.,t=t)
-        f1 = Expression('exp(-256*(pow(x[1]-y0,2)+pow(x[0]-x0,2)))',y0=ycenter,x0=xcenter,t=t)
+        f0 = Expression('sin(p*pi*t)<0 ? -exp(-256*pow(x[1]-y0,2))*sin(p*pi*t) : 0', y0=ycenter, p=2., t=t)
+        f1 = Expression('A*exp(-256*(pow(x[1]-y0,2)+pow(x[0]-x0,2)))', A=rhoMax, y0=ycenter, x0=xcenter, t=t)
 
         bc0 = DirichletBC(W.sub(0), g0, InflowBoundary())
 
@@ -103,11 +107,12 @@ class Problem(ProblemBase):
         bc2 = DirichletBC(W.sub(2), Constant(0), OutflowBoundary())
 
         # Density boundary conditions for cool effects
-        bc3 = DirichletBC(W.sub(1), Constant(0), InflowBoundary())
-        bc4 = DirichletBC(W.sub(1), f1, CylinderBoundary())
+        bc3 = DirichletBC(W.sub(1), Constant(1), InflowBoundary())
+        bc4 = DirichletBC(W.sub(1), Constant(1), NoSlipBoundary())
+        bc5 = DirichletBC(W.sub(1), rhoMax, CylinderBoundary())
 
         # Collect boundary conditions
-        bcs = [bc0, bc1, bc2, bc3, bc4]
+        bcs = [bc0, bc1, bc2, bc3, bc4, bc5]
 
         return bcs
 
