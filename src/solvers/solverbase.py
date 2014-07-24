@@ -307,15 +307,15 @@ class SolverBase:
             # Increase time step and record current time
             self._timestep += 1
             self._time = time()
-        else:
-            s = 'Calculating the dual finished in %g seconds.' % timestep_cputime
-            sys.stdout.flush()
-            sys.stdout.write('\033[K')
-            sys.stdout.write(s + '\r')
-
-            # Increase time step and record current time
-            self._timestep += 1
-            self._time = time()
+#        else:
+#            s = 'Calculating the dual finished in %g seconds.' % timestep_cputime
+#            sys.stdout.flush()
+#            sys.stdout.write('\033[K')
+#            sys.stdout.write(s + '\r')
+#
+#            # Increase time step and record current time
+#            self._timestep += 1
+#            self._time = time()
 
     def Save(self, problem, w, dual=False):
         u = w.split()[0]
