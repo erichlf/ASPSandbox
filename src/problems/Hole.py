@@ -14,15 +14,35 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
-x0 = 0.
-x1 = 1.
-y0 = 0.
-y1 = 1
-A = 100.
+bmarg = 1.e-3 + DOLFIN_EPS
+xmin = -1.
+xmax = 1.
+ymin = -1.
+ymax = 1
+xcenter = 0.
+ycenter = 0.
+radius = 0.3
+
+A = 10.
+kappa = 100;
+rho = 1500.; c = 1480
 
 class InitialConditions(Expression):
     def eval(self,values,x):
-        values[0] = A*sin(pi*x[1])*sin(pi*x[0])
+        values[0] = 0.
+
+class OuterBoundary(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and (near(x[0],xmin) or near(x[0],xmax) \
+                or near(x[1],ymin) or near(x[1],ymax))
+
+class InnerBoundary(SubDomain):
+    def inside(self, x, on_boundary):
+        dx = x[0] - xcenter
+        dy = x[1] - ycenter
+        r = sqrt(dx*dx + dy*dy)
+        return on_boundary and r < radius + bmarg
+
 
 # Problem definition
 class Problem(ProblemBase):
@@ -33,12 +53,19 @@ class Problem(ProblemBase):
 
         # Create mesh
         self.Nx = options["Nx"]
-        self.Ny = options["Ny"]
-        self.mesh = RectangleMesh(x0,y0,x1,y1,self.Nx, self.Ny)
+
+        rect = Rectangle(xmin, ymin, xmax, ymax)
+        circ = Circle(xcenter, ycenter, radius)
+        domain = rect - circ
+        self.mesh = Mesh(domain, self.Nx)
 
         self.t0 = 0.
         self.T = options['T']
         self.k = options['dt']
+
+        self.kappa = kappa
+        self.rho = rho
+        self.c = c
 
     def initial_conditions(self, W):
         w0 = InitialConditions()
@@ -48,9 +75,10 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
-        bcs = DirichletBC(W, Constant(0.0), 'on_boundary')
+        bc0 = DirichletBC(W, Constant(0.0), OuterBoundary())
+        bc1 = DirichletBC(W, A, InnerBoundary())
 
-        return bcs
+        return [bc0, bc1]
 
     def F1(self, t):
         #forcing function for the momentum equation

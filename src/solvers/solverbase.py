@@ -125,6 +125,7 @@ class SolverBase:
         J = Functional(self.functional(mesh, w)*dt[0.9*(T-t0):T], name='DualArgument')
         m = ScalarParameter('w_')
         RJ = ReducedFunctional(J, m)
+        print
         print 'The size of the functional is: %f' % RJ(w)
 
         #solve the optimization problem

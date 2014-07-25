@@ -14,15 +14,22 @@ This is basically a blank problem that we can adapt with optional inputs.
 from problembase import *
 from numpy import array
 
-x0 = 0.
-x1 = 1.
-y0 = 0.
-y1 = 1
-A = 100.
+D = 1.5
+W = D/2.
+
+n = 5.
+
+TR = 10.; TA = 10.; omega = 7.27E-5
+kappa_0 = 2.3; kappa_1 = 100
+rho = 1500.; c = 1480
 
 class InitialConditions(Expression):
     def eval(self,values,x):
-        values[0] = A*sin(pi*x[1])*sin(pi*x[0])
+        values[0] = TR
+
+class Surface(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and near(x[2], 0.)
 
 # Problem definition
 class Problem(ProblemBase):
@@ -34,11 +41,21 @@ class Problem(ProblemBase):
         # Create mesh
         self.Nx = options["Nx"]
         self.Ny = options["Ny"]
-        self.mesh = RectangleMesh(x0,y0,x1,y1,self.Nx, self.Ny)
+        self.Nz = options["Nz"]
+        self.mesh = BoxMesh(-W/2.,-W/2.,-D,W/2.,W/2.,0.,self.Nx,self.Ny,self.Nz)
 
         self.t0 = 0.
-        self.T = options['T']
-        self.k = options['dt']
+        period = 2.*pi/omega
+        self.T = 10.*period
+        self.k = period/n
+
+        kappa = 'x[0] > -W/4 && x[0] < W/4 '\
+                '&& x[1] > -W/4 && x[1] < W/4 ' \
+               '&& x[2] > -D/2 && x[2] < -D/2 + D/4 ? '\
+               'kappa_1 : kappa_0'
+        self.kappa = Expression(kappa, D=D, W=W, kappa_0=kappa_0, kappa_1=kappa_1)
+        self.rho = rho
+        self.c = c
 
     def initial_conditions(self, W):
         w0 = InitialConditions()
@@ -48,7 +65,8 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
-        bcs = DirichletBC(W, Constant(0.0), 'on_boundary')
+        T0 = Expression('TR + TA*sin(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
+        bcs = DirichletBC(W, T0, Surface())
 
         return bcs
 
@@ -61,4 +79,4 @@ class Problem(ProblemBase):
         return Expression(self.options['F2'],t=t)
 
     def __str__(self):
-        return 'Plate'
+        return 'Ground'

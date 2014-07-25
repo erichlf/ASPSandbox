@@ -20,7 +20,6 @@ class Solver(SolverBase):
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
-        self.a = options['Re']
 
     def function_space(self, mesh):
         # Define function spaces
@@ -36,11 +35,13 @@ class Solver(SolverBase):
         Z = FunctionSpace(W.mesh(), "DG", 0)
         z = TestFunction(Z)
 
-        a = self.a #Reynolds Number
-
         alpha = self.alpha #time stepping method
         k = problem.k
         t0 = problem.t0
+
+        kappa = problem.kappa
+        rho = problem.rho
+        c = problem.rho
 
         #u_(k+alpha)
         w_alpha = (1.0-alpha)*w_ + alpha*w
@@ -56,8 +57,8 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./k)*(w - w_)*wt \
-            + a*inner(grad(w_alpha),grad(wt)))*dx
+        r = z*(rho*c*(1./k)*(w - w_)*wt \
+            + kappa*inner(grad(w_alpha),grad(wt)))*dx
         #r -= z*f_alpha*wt*dx #forcing function
 
         return r
@@ -93,7 +94,7 @@ class Solver(SolverBase):
 
         # Plot velocity and height and wave object
         if self.vizU is None:
-            self.vizU = plot(w, title='Temperature', rescale=True)
+            self.vizU = plot(w, title='Temperature', rescale=True, elevate=0.0)
         else :
             self.vizU.plot(w)
 
