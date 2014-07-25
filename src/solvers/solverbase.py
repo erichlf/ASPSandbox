@@ -350,7 +350,7 @@ class SolverBase:
         if self.vizU is None:
             # Plot velocity and pressure
             self.vizU = plot(u, title='Velocity', rescale=True)
-            self.vizP = plot(p, title='Height', rescale=True, elevate=0.0)
+            self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
         else :
             self.vizU.plot(u)
             self.vizP.plot(p)
