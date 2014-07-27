@@ -11,9 +11,9 @@ class Solver(SolverBase):
         self.Re = options['Re']
 
     #strong residual for cG(1)cG(1)
-    def strong_residual(self,u,U,p):
-        R1 = grad(u)*U + grad(p)
-        R2 = div(U)
+    def strong_residual(self,U,v,p):
+        R1 = grad(v)*U + grad(p)
+        R2 = div(v)
 
         return R1, R2
 
