@@ -25,12 +25,20 @@ class Solver(SolverBase):
         return W
 
     #strong residual for cG(1)cG(1)
-    def strong_residual(self,u,U,rho,Rho,p):
-        R1 = rho*grad(U)*u + grad(p)
-        R2 = div(rho*U)
-        R3 = div(U)
+    def strong_residual(self,U,v,rho,r,p):
+        R1 = rho*grad(v)*U + grad(p)
+        R2 = div(rho*v)
+        R3 = div(v)
 
         return R1, R2, R3
+
+    #strong residual for cG(1)cG(1)
+#    def strong_residual(self,u,U,rho,Rho,p):
+#        R1 = rho*grad(U)*u + grad(p)
+#        R2 = div(rho*U)
+#        R3 = div(U)
+#
+#        return R1, R2, R3
 
     #weak residual for cG(1)cG(1)
     def weak_residual(self,problem,W,w,w_,wt,ei_mode=False):

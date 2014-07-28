@@ -32,7 +32,7 @@ class Solver(SolverBase):
 
         return W
 
-    def strong_residual(self,u,U,eta):
+    def strong_residual(self,U,v,eta):
         #Parameters
         sigma = problem.sigma
         epsilon = problem.epsilon
@@ -43,7 +43,7 @@ class Solver(SolverBase):
         zeta_t = 1./k*(self.zeta - self.zeta_)
 
         #strong form for stabilization
-        R1 = epsilon*grad(u)*U + grad(eta)
+        R1 = epsilon*grad(v)*U + grad(eta)
         z1 = -sigma**2/2.*epsilon*self.zeta*grad(zeta_tt)
 
         R2 = div(u)*(epsilon*eta) + inner(u,grad(epsilon*eta)) \

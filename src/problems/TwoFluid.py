@@ -76,7 +76,7 @@ class Problem(ProblemBase):
 
     def F1(self, t):
         #forcing function for the momentum equation
-        return Expression(('0.','-1./g'), g=g, t=t)
+        return Expression(('0.','1./g'), g=g, t=t)
 
     def F2(self, t):
         #mass source for the continuity equation

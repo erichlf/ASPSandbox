@@ -29,7 +29,7 @@ class Solver(SolverBase):
             self.inviscid = 1
 
     #strong residual for cG(1)cG(1)
-    def strong_residual(self,u,U,eta):
+    def strong_residual(self,U,v,eta):
         #get problem parameters
         Re = self.Re #Reynolds number
         H = self.H #Fluid depth
@@ -40,11 +40,11 @@ class Solver(SolverBase):
         NonLinear = self.NonLinear
 
         #momentum equation
-        R1 = NonLinear*grad(u)*U \
+        R1 = NonLinear*grad(v)*U \
             + 1/Ro*as_vector((-U[1],U[0])) \
             + Fr**(-2)*Th*grad(eta)
         #continuity equation
-        R2 = 1/Th*H*div(U)
+        R2 = 1/Th*H*div(v)
 
         return R1, R2
 

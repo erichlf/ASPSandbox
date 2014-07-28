@@ -121,12 +121,10 @@ class SolverBase:
 
         #record so that we can evaluate our functional
         parameters["adjoint"]["stop_annotating"] = False
-        W, w = self.forward_solve(problem, mesh, k)
-        J = Functional(self.functional(mesh, w)*dt[0.9*(T-t0):T], name='DualArgument')
-        m = ScalarParameter('w_')
-        RJ = ReducedFunctional(J, m)
-        print
-        print 'The size of the functional is: %f' % RJ(w)
+        W, w, m = self.forward_solve(problem, mesh, k, func=self.options['adaptive'])
+        if m is not None:
+            print
+            print 'The size of the functional is: %f' % m
 
         #solve the optimization problem
         if(self.options['optimize'] and  'Optimize' in dir(self)):
@@ -145,7 +143,7 @@ class SolverBase:
 
         print 'Solving the primal problem.'
         parameters["adjoint"]["stop_annotating"] = False
-        W, w = self.forward_solve(problem, mesh, k)
+        W, w, m = self.forward_solve(problem, mesh, k, func=True)
         parameters["adjoint"]["stop_annotating"] = True
 
         T = problem.T
@@ -161,10 +159,8 @@ class SolverBase:
 
         # Generate the dual problem
         J = Functional(self.functional(mesh, w)*dt[0.9*(T-t0):T], name='DualArgument')
-        m = ScalarParameter('w_')
-        RJ = ReducedFunctional(J, m)
         print
-        print 'The size of the functional is: %f' % RJ(w)
+        print 'The size of the functional is: %f' % m
         timestep = None
         wtape = []
         phi = []
@@ -186,7 +182,7 @@ class SolverBase:
 
         return w, ei
 
-    def forward_solve(self, problem, mesh, k):
+    def forward_solve(self, problem, mesh, k, func=False):
         h = CellSize(mesh) #mesh size
 
         t = problem.t0
@@ -210,9 +206,9 @@ class SolverBase:
         #weak form of the primal problem
         F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
 
-        w = self.timeStepper(problem, t, T, k, W, w, w_, F)
+        w, m = self.timeStepper(problem, t, T, k, W, w, w_, F, func=func)
 
-        return W, w
+        return W, w, m
 
     #define functions spaces
     def function_space(self, mesh):
@@ -244,7 +240,11 @@ class SolverBase:
 
         return mesh
 
-    def timeStepper(self, problem, t, T, k, W, w, w_, F):
+    def timeStepper(self, problem, t, T, k, W, w, w_, F, func=False):
+        if func:
+            m = 0
+        else:
+            m = None
         bcs = problem.boundary_conditions(W, t)
         # Time loop
         self.start_timing()
@@ -269,12 +269,14 @@ class SolverBase:
             #F2 = self.Q_project(self.problem.F2(t),W)
 
             w_.assign(w)
+            if func and t>0.9*T:
+                m += 1./k*assemble(self.functional(W.mesh(), w_))
             adj_inc_timestep(t,finished=t>=(T-k/2.))
 
             # Update
             self.update(problem, t, W, w_)
 
-        return w_
+        return w_, m
 
     def update(self, problem, t, W, w, dual=False):
         # Add to accumulated CPU time
