@@ -179,13 +179,7 @@ class Solver(SolverBase):
         u = w.split()[0]
         eta = w.split()[1]
 
-        k = self.k
-        Nx = self.options['Nx']
-        Ny = self.options['Ny']
         if (self._timestep - 1) % self.options['save_frequency'] == 0:
-            # Create files for saving
-            self.file_naming(problem, k, Nx, Ny, dual=False)
-
             if not dual:
                 self._ufile << u
                 self._pfile << eta
