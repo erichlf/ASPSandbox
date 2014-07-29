@@ -32,33 +32,33 @@ class Solver(SolverBase):
 
         return W
 
-    def strong_residual(self,U,v,eta):
+    def strong_residual(self, problem, H, U, v, eta, chi):
         #Parameters
         sigma = problem.sigma
         epsilon = problem.epsilon
 
         k = problem.k
 
-        zeta_tt = 1./k**2*(self.zeta - 2*self.zeta_ + self.zeta__)
-        zeta_t = 1./k*(self.zeta - self.zeta_)
+        zeta_tt = 1./k**2*(self.Zeta - 2*self.Zeta_ + self.Zeta__)
+        zeta_t = 1./k*(self.Zeta - self.Zeta_)
 
         #strong form for stabilization
-        R1 = epsilon*grad(v)*U + grad(eta)
-        z1 = -sigma**2/2.*epsilon*self.zeta*grad(zeta_tt)
+        R1 = epsilon*grad(v)*U + grad(chi)
+        z1 = -sigma**2*H/2.*grad(zeta_tt)
 
-        R2 = div(u)*(epsilon*eta) + inner(u,grad(epsilon*eta)) \
-            + div(U)*epsilon*self.zeta + inner(U,grad(epsilon*self.zeta))
+        R2 = div(v*(H + epsilon*eta))
         z2 = zeta_t
 
         return R1, R2, z1, z2
 
-    def weak_residual(self,problem, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
         h = CellSize(W.mesh()) #mesh size
         d = 0.1*h**(3./2.) #stabilization parameter
+        d1, d2 = self.stabilization_parameters(U_,eta_,h) #stabilization parameters
 
         #set up error indicators
         Z = FunctionSpace(W.mesh(), "DG", 0)
@@ -97,6 +97,8 @@ class Solver(SolverBase):
 
         if(not self.options["stabilize"] or ei_mode):
           d = 0
+          d1 = 0
+          d2 = 0
         if(not ei_mode):
           z = 1.
 
@@ -114,6 +116,12 @@ class Solver(SolverBase):
         r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
 
         r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
+
+        R1, R2, z1, z2 = self.strong_residual(problem, H_alpha, U_alpha, U_alpha, \
+                eta_alpha, eta_alpha)
+        Rv1, Rv2, z1, z2 = self.strong_residual(problem, H_alpha, U_alpha, v, \
+                eta_alpha, chi)
+        r += z*(d1*inner(R1 - F1_alpha + z1, Rv1) + d2*(R2 - F2_alpha + z2)*Rv2)*dx
 
         return r
 
@@ -152,7 +160,7 @@ class Solver(SolverBase):
         return M
 
     def seabed(self, problem, Q, t, k, epsilon):
-        D = problem.D
+        D = Expression(problem.D, element=Q.ufl_element())
 
         problem.zeta0.t = t
         zeta = project(problem.zeta0, Q)

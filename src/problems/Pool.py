@@ -56,7 +56,7 @@ hb = hb/h0 #depth at the boundary
 c0 = (h0*g)**(0.5)
 
 #maximum velocity of wave object
-vmax = ((hd*h0+ad*a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
+vmax = ((hd*h0+ad*a0)*g)**(0.5)/5. #Max Speed of the moving object [m.s^(-1)]
 
 class InitialConditions(Expression):
     def eval(self,values,x):
@@ -102,7 +102,7 @@ class Object(Expression):
         dz = self.dz
         t = self.t
 
-        u = 4.*vmax*t*t/(4.*t*t+1)#*exp(-4./(lambda0/c0*t+0.05))
+        u = vmax*tanh(t)
 
         X = ((x[0] - objectLeft - u*t)/(objectRight - objectLeft), \
                 (x[1] - objectBottom)/(objectTop - objectBottom))
@@ -119,7 +119,7 @@ class Object(Expression):
                 K = float(factorial(n)/(factorial(i)*factorial(n-i)));
                 S = S + w[i]*K*X[0]**i*(1. - X[0])**(n-i)
 
-            value[0] = -(C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)
+            value[0] = (C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)
         else:
             value[0] = 0.
 
@@ -128,11 +128,11 @@ class Object(Expression):
 
 class Depth(Expression):
     def eval(self, values, x):
-        values[0] = -hd
+        values[0] = hd
         if x[1] > channelTop:
-            values[0] -= (hd - hb)/(y1 - channelTop)*(x[1] - channelTop)
+            values[0] += (hd - hb)/(y1 - channelTop)*(x[1] - channelTop)
         elif x[1] < channelBottom:
-            values[0] -= (hd - hb)/(y0 - channelBottom)*(x[1] - channelBottom)
+            values[0] += (hd - hb)/(y0 - channelBottom)*(x[1] - channelBottom)
 
 # Problem definition
 class Problem(ProblemBase):
@@ -152,7 +152,7 @@ class Problem(ProblemBase):
         self.W2 = Constant(1., name='W2')
         self.W3 = Constant(1., name='W3')
         self.W4 = Constant(1., name='W4')
-        self.dz = Constant(1., name='dz')
+        self.dz = Constant(0., name='dz')
 
         # Create mesh
         self.Nx = options["Nx"]
@@ -171,7 +171,16 @@ class Problem(ProblemBase):
                 W3=self.W3, W4=self.W4, dz=self.dz, t=self.t0)
 
         #Defintion of the shape of the seabed
-        self.D = Depth()
+        #self.D = Depth()
+        M1 = (hd - hb)/(y1 - objectTop)
+        M2 = (hd - hb)/(y0 - objectBottom)
+        M = 'x[1] > ' + str(objectTop) + ' ? ' + str(M1) + \
+            ' : (x[1] < ' +  str(objectBottom) + ' ? ' + str(M2) + \
+            ' : 0) '
+        X = 'x[1] > ' + str(objectTop) + ' ? ' + str(objectTop) + \
+            ' : (x[1] < ' +  str(objectBottom) + ' ? ' + str(objectBottom) + \
+            ' : 0) '
+        self.D = str(hd) + '+ (' + M + ')*(x[1] - (' + X + '))'
 
     def Refine(self, mesh):
         #Refine the mesh along the object's trajectory
