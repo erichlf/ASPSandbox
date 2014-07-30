@@ -143,10 +143,16 @@ class Solver(SolverBase):
         #Functionnal to be minimized: L2 norme over a subdomain
         J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*self.Zeta*dx)
 
-        #initial shape
-        m = ListParameter([problem.N1, problem.N2, problem.W1, problem.W2, \
-                    problem.W3, problem.W4, problem.dz])
-        Jhat = ReducedFunctional(J, m) #Reduced Functional
+        #shape parameters
+        N1 = ScalarParameter('N1')
+        N2 = ScalarParameter('N2')
+        W1 = ScalarParameter('W1')
+        W2 = ScalarParameter('W2')
+        W3 = ScalarParameter('W3')
+        W4 = ScalarParameter('W4')
+        dz = ScalarParameter('dz')
+        M = ListParameter([N1, N2, W1, W2, W3, W4, dz])
+        Jhat = ReducedFunctional(J, M) #Reduced Functional
         shape_opt = minimize(Jhat)
 
         return shape_opt
