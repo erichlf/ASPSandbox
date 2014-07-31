@@ -144,6 +144,7 @@ class Solver(SolverBase):
         J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*self.Zeta*dx)
 
         #shape parameters
+        H = ScalarParameter('ObjHeight')
         N1 = ScalarParameter('N1')
         N2 = ScalarParameter('N2')
         W1 = ScalarParameter('W1')

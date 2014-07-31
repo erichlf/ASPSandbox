@@ -31,7 +31,7 @@ channelTop = objectTop + 0.5
 #Physical Parameters
 hd = 2. #Depth of the pool in the central lane [m]
 hb = 0.3 #Depth at the boundaries [m]
-ad = 0.8 #height of the moving object [m]
+ad = -0.3 #height of the moving object [m]
 g = 9.8 #Gravity
 lambda0 = 20. #typical wavelength
 a0 = 0.8 #Typical wave height
@@ -56,7 +56,7 @@ hb = hb/h0 #depth at the boundary
 c0 = (h0*g)**(0.5)
 
 #maximum velocity of wave object
-vmax = ((hd*h0+ad*a0)*g)**(0.5)/5. #Max Speed of the moving object [m.s^(-1)]
+vmax = ((hb+a0)*g)**(0.5) #Max Speed of the moving object [m.s^(-1)]
 
 class InitialConditions(Expression):
     def eval(self,values,x):
@@ -87,19 +87,20 @@ class Object(Expression):
         written by Pramudita Satria Palar for matlab which can be found at
         http://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method
     '''
-    def __init__(self, N1, N2, W1, W2, W3, W4, dz, t):
-
-        self.N1 = N1
-        self.N2 = N2
-        self.w = (W1, W2, W3, W4)
-        self.dz = dz
+    def __init__(self, H, N1, N2, W1, W2, W3, W4, dz, t):
+        self.H = H #Object height
+        self.N1 = N1 #shape parameter for 'back' of object
+        self.N2 = N2 #shape parameter for 'front' of object
+        self.w = (W1, W2, W3, W4) #weights for arc between 'front' and 'back'
+        self.dz = dz #'leading' edge thickness
         self.t = t
 
     def eval(self, value, x):
+        H = self.H
         N1 = self.N1
         N2 = self.N2
         w = self.w
-        dz = self.dz
+        dz = self.dz/H
         t = self.t
 
         u = vmax*tanh(t)
@@ -119,7 +120,7 @@ class Object(Expression):
                 K = float(factorial(n)/(factorial(i)*factorial(n-i)));
                 S = S + w[i]*K*X[0]**i*(1. - X[0])**(n-i)
 
-            value[0] = (C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)
+            value[0] = H*(C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)/0.25
         else:
             value[0] = 0.
 
@@ -130,9 +131,9 @@ class Depth(Expression):
     def eval(self, values, x):
         values[0] = hd
         if x[1] > channelTop:
-            values[0] += (hd - hb)/(y1 - channelTop)*(x[1] - channelTop)
+            values[0] += (hb - hd)/(y1 - channelTop)*(x[1] - channelTop)
         elif x[1] < channelBottom:
-            values[0] += (hd - hb)/(y0 - channelBottom)*(x[1] - channelBottom)
+            values[0] += (hb - hd)/(y0 - channelBottom)*(x[1] - channelBottom)
 
 # Problem definition
 class Problem(ProblemBase):
@@ -146,6 +147,7 @@ class Problem(ProblemBase):
         self.epsilon = a0/h0
 
         #set up the CST shape parameterization
+        self.ObjH = Constant(ad, name='ObjHeight')
         self.N1 = Constant(1., name='N1')
         self.N2 = Constant(1., name='N2')
         self.W1 = Constant(1., name='W1')
@@ -167,13 +169,13 @@ class Problem(ProblemBase):
         self.k = options['dt']*c0/lambda0 #time step
 
         Q = FunctionSpace(self.mesh, 'CG', 1)
-        self.zeta0 = Object(N1=self.N1, N2=self.N2, W1=self.W1, W2=self.W2, \
+        self.zeta0 = Object(H=ad, N1=self.N1, N2=self.N2, W1=self.W1, W2=self.W2, \
                 W3=self.W3, W4=self.W4, dz=self.dz, t=self.t0)
 
         #Defintion of the shape of the seabed
         #self.D = Depth()
-        M1 = (hd - hb)/(y1 - objectTop)
-        M2 = (hd - hb)/(y0 - objectBottom)
+        M1 = (hb - hd)/(y1 - objectTop)
+        M2 = (hb - hd)/(y0 - objectBottom)
         M = 'x[1] > ' + str(objectTop) + ' ? ' + str(M1) + \
             ' : (x[1] < ' +  str(objectBottom) + ' ? ' + str(M2) + \
             ' : 0) '
