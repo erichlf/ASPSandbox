@@ -11,43 +11,44 @@ import sys, commands, time
 import re
 
 from dolfin import set_log_active, parameters, list_timings, NewtonSolver
-from problems import Problem, problems 
+from problems import Problem, problems
 from solvers import Solver, solvers
 
 # Default options
-OPTIONS = { "Nx": 20, #number of elements along x axis
-	    "Ny" : 20, #number of elements along y axis
-	    "Nz" : 20, #number of elements along z axis
-            "dt": 0.01, #time-step
-            "T": 1.0, #final-time
-            "Re": 1000, #Reynolds number
-            "Ro": 0.0125, #Rossby number
-            "Fr": 1, #Froude number
-            "Theta": 6.25, #wave deflection number
-            "H": 1, #water depth
-            "F1": '(0,0)', #momentum forcing function
-            "F2": '0', #mass source/sink
-            "x0": '-5', #x-coordinate of the bottom-left corner
-            "x1": '10', #x-coordinate of the top-right corner
-            "y0": '-2', #y-coordinate of the bottom-left corner
-            "y1": '2', #y-coordinate of the top-right corner
-            "alpha": 0.5, #time-stepping method
-            "adaptive": False, #mesh adaptivity
-            "optimize": False, #optimize as defined in solver
-            "save_solution": True,
-            "save_frequency": 1,
-            "plot_solution": False,
-            "debug": False,
-            "check_mem_usage": False,
-            "absolute_tolerance": 1e-25,
-            "relative_tolerance": 1e-12,
-            "monitor_convergence": False,
-            "velocity_order": 1, #order of velocity element
-            "height_order": 1, #order of height/pressure element
-            "stabilize": True, #stabilize?
-            "linear": False, #use the linear version?
-            "inviscid": False #use the inviscid version?
-            }
+OPTIONS = { 'dim': 2, #number of dimensions
+            'Nx': 20, #number of elements along x axis
+            'Ny' : 20, #number of elements along y axis
+            'Nz' : 20, #number of elements along z axis
+            'dt': 0.01, #time-step
+            'T': 1.0, #final-time
+            'Re': 1000, #Reynolds number
+            'Ro': 0.0125, #Rossby number
+            'Fr': 1, #Froude number
+            'Theta': 6.25, #wave deflection number
+            'H': 1, #water depth
+            'F1': '(0,0)', #momentum forcing function
+            'F2': '0', #mass source/sink
+            'x0': '-5', #x-coordinate of the bottom-left corner
+            'x1': '10', #x-coordinate of the top-right corner
+            'y0': '-2', #y-coordinate of the bottom-left corner
+            'y1': '2', #y-coordinate of the top-right corner
+            'alpha': 0.5, #time-stepping method
+            'adaptive': False, #mesh adaptivity
+            'optimize': False, #optimize as defined in solver
+            'save_solution': True,
+            'save_frequency': 1,
+            'plot_solution': False,
+            'debug': False,
+            'check_mem_usage': False,
+            'absolute_tolerance': 1e-25,
+            'relative_tolerance': 1e-12,
+            'monitor_convergence': False,
+            'velocity_order': 1, #order of velocity element
+            'height_order': 1, #order of height/pressure element
+            'stabilize': True, #stabilize?
+            'linear': False, #use the linear version?
+            'inviscid': False #use the inviscid version?
+}
 
 def usage():
 #   Print usage

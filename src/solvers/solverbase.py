@@ -360,6 +360,10 @@ class SolverBase:
     def prefix(self, problem):
         #Return file prefix for output files
         p = problem.__module__.split('.')[-1]
+        if problem.mesh.topology().dim > 2:
+            p += '3D'
+        else:
+            p += '2D'
         s = self.__module__.split('.')[-1]
         if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
             s += 'Stabilized'
@@ -368,25 +372,26 @@ class SolverBase:
         if(self.options['linear']):
             s = 'Linear' + s
 
-        return problem.output_location + p + s
+        return problem.output_location + s + p
 
     def suffix(self, problem):
         s = ''
 
         #Return file suffix for output files
-        if(not self.options['inviscid'] and self.Re is not None):
+        if not self.options['inviscid'] and self.Re is not None:
             s = 'Re' + str(int(self.Re))
-        if(self.Ro is not None):
+        if self.Ro is not None:
             s += 'Ro' + str(self.Ro)
-        if(self.Fr is not None):
+        if self.Fr is not None:
             s += 'Fr' + str(self.Fr)
-        if(self.Th is not None):
+        if self.Th is not None:
             s += 'Th' + str(self.Th)
 
-        s += 'Nx' + str(problem.Nx) \
-            + 'Ny' + str(problem.Ny)
-        if problem.mesh.topology().dim() > 2:
-            s += 'Nz' + str(problem.Nz) \
+        s += 'Nx' + str(problem.Nx)
+        if problem.Ny is not None:
+            s += 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
+            s += 'Nz' + str(problem.Nz)
 
         s += 'K' + str(int(1./problem.k))
 

@@ -20,13 +20,13 @@ class Solver(SolverBase):
     #weak residual for cG(1)cG(1)
     def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
         if W.mesh().topology().dim() == 2:
-          (U, p) = (as_vector((w[0], w[1])), w[2])
-          (U_, p_) = (as_vector((w_[0], w_[1])), w_[2])
-          (v, q) = (as_vector((wt[0], wt[1])), wt[2])
+            (U, p) = (as_vector((w[0], w[1])), w[2])
+            (U_, p_) = (as_vector((w_[0], w_[1])), w_[2])
+            (v, q) = (as_vector((wt[0], wt[1])), wt[2])
         else:
-          (U, p) = (as_vector((w[0], w[1], w[2])), w[3])
-          (U_, p_) = (as_vector((w_[0], w_[1], w[2])), w_[3])
-          (v, q) = (as_vector((wt[0], wt[1], wt[2])), wt[3])
+            (U, p) = (as_vector((w[0], w[1], w[2])), w[3])
+            (U_, p_) = (as_vector((w_[0], w_[1], w[2])), w_[3])
+            (v, q) = (as_vector((wt[0], wt[1], wt[2])), wt[3])
 
         h = CellSize(W.mesh()) #mesh size
         d1, d2 = self.stabilization_parameters(U_,p_,h) #stabilization parameters

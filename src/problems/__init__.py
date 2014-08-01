@@ -3,7 +3,7 @@ __date__ = "2013-08-27"
 __license__  = "GNU GPL version 3 or any later version"
 
 # List of problems
-problems = ['Channel', 'Drop', 'Cavity', 'Cavity3D', 'Cylinder', 'Square', \
+problems = ['Channel', 'Drop', 'Cavity', 'Cylinder', 'Square', \
         'PeregrineSoliton', 'Point', 'Pool', 'DoubleGyre', 'DensityCylinder', \
         'TwoFluid', 'Ground', 'Plate', 'Hole', 'Cube']
 
