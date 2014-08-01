@@ -44,7 +44,7 @@ class InflowBoundary(SubDomain):
         return on_boundary and x[0] < xmin + bmarg
 
 # No-slip boundary
-class NoslipBoundary(SubDomain):
+class NoSlipBoundary(SubDomain):
     def __init__(self, dim):
         SubDomain.__init__(self)
         self.dim = dim
@@ -84,8 +84,8 @@ class Problem(ProblemBase):
                         xcenter + radius, ycenter + radius)
             else:
                 bluff = Circle(xcenter, ycenter, radius)
-            self.uNoSlip = Constant((0,0))
-            self.uInflow = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'), Um=Um, H=ymax)
+            self.noSlip = Constant((0,0))
+            self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'), Um=Um, H=ymax)
             Ubar = 2.*self.U((0,ymax/2.))[0]/3.
         else: #3D problem
             xmax = 2.5
@@ -97,8 +97,8 @@ class Problem(ProblemBase):
             else:
                 bluff = Cylinder(Point(xcenter, ycenter, zmax), \
                         Point(xcenter, ycenter, zmin), radius)
-            self.uNoSlip = Constant((0,0,0))
-            self.uInflow = Expression(('16*Um*x[1]*x[2]*(H - x[1])*(H - x[2])/pow(H,4)', \
+            self.noSlip = Constant((0,0,0))
+            self.U = Expression(('16*Um*x[1]*x[2]*(H - x[1])*(H - x[2])/pow(H,4)', \
                     '0.0', '0.0'), Um=Um**2, H=ymax)
             Ubar = 4.*self.U((0,ymax/2.,zmax/2.))[0]/9.
 
@@ -127,10 +127,10 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, W, t):
         # Create inflow boundary condition
-        bc0 = DirichletBC(W.sub(0), self.uInflow, InflowBoundary())
+        bc0 = DirichletBC(W.sub(0), self.U, InflowBoundary())
 
         # Create no-slip boundary condition
-        bc1 = DirichletBC(W.sub(0), self.uNoSlip, NoslipBoundary(self.dim))
+        bc1 = DirichletBC(W.sub(0), self.noSlip, NoSlipBoundary(self.dim))
 
         # Create outflow boundary condition for pressure
 #        bc2 = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())

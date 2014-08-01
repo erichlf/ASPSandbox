@@ -11,32 +11,33 @@ from numpy import array
 
 # Constants related to the geometry
 bmarg = 1.e-3 + DOLFIN_EPS
-xmin = 0.0
-xmax = 2.2
-ymin = 0.0
-ymax = 0.41
-xcenter = 0.2
-ycenter = 0.2
-radius = 0.05
+xmin = 0.0; xmax = 2.2
+ymin = 0.0; ymax = 0.41
+xcenter = 0.2; ycenter = 0.2
+radius = 0.05; Diameter = 2.*radius
+Um = 1.5 #max velocity
 
 At = 0.5 #Atwood number
 rhoMin = 1.
 rhoMax = rhoMin*(1. + At)/(1. - At)
+S = 1./16.
 
 class InitialConditions(Expression):
     def __init__(self):
-        self.A = rhoMax #amplitude
-        self.S = 1./16. #variance
+        self.A1 = rhoMin
+        self.A2 = rhoMax
+        self.S = S #variance
 
     def eval(self,values,x):
-        A = self.A
+        A1 = self.A1
+        A2 = self.A2
         S = self.S
         y0 = ycenter
         x0 = xcenter
 
         values[0] = 0.
         values[1] = 0.
-        values[2] = rhoMin  + rhoMax*exp(-((x[1]-y0)**2.+(x[0]-x0)**2.)/(2*S*S))
+        values[2] = self.A1  + self.A2*exp(-((x[1]-y0)**2.+(x[0]-x0)**2.)/(2*S*S))
         values[3] = 0.
 
     def value_shape(self):
@@ -48,7 +49,7 @@ class InflowBoundary(SubDomain):
         return on_boundary and x[0] < xmin + bmarg
 
 # No-slip boundary
-class NoslipBoundary(SubDomain):
+class NoSlipBoundary(SubDomain):
     def inside(self, x, on_boundary):
         dx = x[0] - xcenter
         dy = x[1] - ycenter
@@ -75,12 +76,16 @@ class Problem(ProblemBase):
 
         # Load mesh
         self.Nx = options["Nx"]
-        self.Ny = options["Ny"]
+        self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'), Um=Um, H=ymax)
 
         rect = Rectangle(xmin, ymin, xmax, ymax)
         circ = Circle(xcenter, ycenter, radius)
         domain = rect - circ
         self.mesh = Mesh(domain, self.Nx)
+
+        #rescale Reynolds number to the problem
+        Ubar = 2.*self.U((0,ymax/2.))[0]/3.
+        options['Re'] = Ubar*Diameter*options['Re']
 
         self.t0 = 0.
         self.T = options['T']
@@ -94,22 +99,22 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, W, t):
         # Create inflow boundary condition
-        g0 = Expression(('4*Um*(x[1]*(ymax-x[1]))/(ymax*ymax)*4*t*t/(4*t*t+1)', '0.0'), Um=1.5, ymax=ymax, t=t)
-        f0 = Expression('sin(p*pi*t)<0 ? -exp(-256*pow(x[1]-y0,2))*sin(p*pi*t) : 0', y0=ycenter, p=2., t=t)
-        f1 = Expression('A*exp(-256*(pow(x[1]-y0,2)+pow(x[0]-x0,2)))', A=rhoMax, y0=ycenter, x0=xcenter, t=t)
+        g0 = self.U
+        f0 = Expression('A1  + A2*exp(-(pow(x[1]-y0,2)+pow(x[0]-x0,2))/(2*S*S))', \
+                        A1=rhoMin, A2=rhoMax, S=S, y0=ycenter, x0=xcenter, t=t)
 
         bc0 = DirichletBC(W.sub(0), g0, InflowBoundary())
 
         # Create no-slip boundary condition
-        bc1 = DirichletBC(W.sub(0), Constant((0,0)), NoslipBoundary())
+        bc1 = DirichletBC(W.sub(0), Constant((0,0)), NoSlipBoundary())
 
         # Create outflow boundary condition for pressure
         bc2 = DirichletBC(W.sub(2), Constant(0), OutflowBoundary())
 
         # Density boundary conditions for cool effects
-        bc3 = DirichletBC(W.sub(1), Constant(1), InflowBoundary())
-        bc4 = DirichletBC(W.sub(1), Constant(1), NoSlipBoundary())
-        bc5 = DirichletBC(W.sub(1), rhoMax, CylinderBoundary())
+        bc3 = DirichletBC(W.sub(1), rhoMin, InflowBoundary())
+        bc4 = DirichletBC(W.sub(1), rhoMin, NoSlipBoundary())
+        bc5 = DirichletBC(W.sub(1), f0, CylinderBoundary())
 
         # Collect boundary conditions
         bcs = [bc0, bc1, bc2, bc3, bc4, bc5]
@@ -125,4 +130,4 @@ class Problem(ProblemBase):
         return Constant(0)
 
     def __str__(self):
-        return "Cylinder"
+        return "DensityCylinder"
