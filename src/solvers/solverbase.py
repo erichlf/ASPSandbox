@@ -12,6 +12,7 @@ from dolfin_adjoint import *
 from time import time
 from os import getpid
 from commands import getoutput
+from numpy import absolute
 import re
 import sys
 import math
@@ -74,6 +75,9 @@ class SolverBase:
         T = problem.T
         t0 = problem.t0
 
+        TOL = 1E-10
+        COND = 1
+
         #naming scheme
         self.s = 'results/' + self.prefix(problem) \
                 + self.suffix(problem)
@@ -88,7 +92,8 @@ class SolverBase:
             self.meshfile = File(self.s + '_mesh.pvd')
 
             # Adaptive loop
-            for i in range(0, maxadaps):
+            i = 0
+            while(i<=maxadaps and COND>TOL):
                 #setup file names
                 self.file_naming(n=i, dual=False)
                 if i==0:
@@ -98,11 +103,12 @@ class SolverBase:
                 else:
                     print 'Solving on %d%s adapted mesh.' % (i, nth[-1])
                 # Solve primal and dual problems and compute error indicators
-                w, ei = self.adaptive_solve(problem, mesh, k)
+                w, ei, COND = self.adaptive_solve(problem, mesh, k)
+                print 'sum(abs(EI))=%0.3G' % COND
                 if i==0 and self.options['plot_solution']:
                     plot(ei, title="Error Indicators.", elevate=0.0)
                     plot(mesh, title='Initial mesh', size=((600, 300)))
-                elif i==maxadaps-1 and self.options['plot_solution']:
+                elif (i==maxadaps or COND<=TOL) and self.options['plot_solution']:
                     plot(ei, title="Error Indicators.", elevate=0.0)
                     plot(mesh, title='Final mesh', size=((600, 300)))
                     interactive()
@@ -116,6 +122,11 @@ class SolverBase:
                 self._timestep = 0 #reset the time step to zero
                 adj_reset() #reset the dolfin-adjoint
 
+                i += 1
+
+        if i>maxadaps and COND>TOL:
+            s = 'Warning reached max adaptive iterations with sum(abs(EI))=%0.3G.  Solution may not be accurate.' % COND
+            print s
         print 'Solving the primal problem.'
         self.file_naming(n=-1, dual=False)
 
@@ -124,7 +135,7 @@ class SolverBase:
         W, w, m = self.forward_solve(problem, mesh, k, func=self.options['adaptive'])
         if m is not None:
             print
-            print 'The size of the functional is: %f' % m
+            print 'The size of the functional is: %0.3G' % m
 
         #solve the optimization problem
         if(self.options['optimize'] and  'Optimize' in dir(self)):
@@ -160,7 +171,7 @@ class SolverBase:
         # Generate the dual problem
         J = Functional(self.functional(mesh, w)*dt[0.9*(T-t0):T], name='DualArgument')
         print
-        print 'The size of the functional is: %f' % m
+        print 'The size of the functional is: %0.3G' % m
         timestep = None
         wtape = []
         phi = []
@@ -180,7 +191,9 @@ class SolverBase:
             LR1 = k*self.weak_residual(problem, W, wtape[i], wtape[i+1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1,annotate=False).array()
 
-        return w, ei
+        COND = sum(absolute(ei.vector()))
+
+        return w, ei, COND
 
     def forward_solve(self, problem, mesh, k, func=False):
         h = CellSize(mesh) #mesh size
