@@ -264,10 +264,6 @@ class SolverBase:
 
             solve(F==0, w, bcs=bcs)
 
-            #update forcing and mass source/sink
-            #F1 = self.V_project(self.problem.F1(t),W)
-            #F2 = self.Q_project(self.problem.F2(t),W)
-
             w_.assign(w)
             if func and t>0.9*T:
                 m += 1./k*assemble(self.functional(W.mesh(), w_), annotate=False)

@@ -1,0 +1,35 @@
+\documentclass[a4paper]{elsarticle}
+\usepackage[a4paper]{geometry}
+\PassOptionsToPackage{firstinits=true,isbn=false,url=false,doi=false,style=numeric,sorting=ydnt}{biblatex}
+\usepackage{elf}
+
+\defbibheading{section}{\section*{#1}\vspace{0.5em}}
+\renewbibmacro{in:}{}
+
+\makeatletter
+  \numdef\blx@maxbibnames{99}
+\makeatother
+
+\begin{document}
+  \begin{frontmatter}
+    \author[1]{Erich L Foster\corref{cor1}}
+    \ead{efoster@bcamath.org}
+    \ead[url]{http://www.bcamath.org/en/people/efoster}
+    \cortext[cor1]{corresponding author}
+
+    \author[1]{Johan Jansson}
+    \ead{jjansson@bcamath.org}
+    \ead[url]{http://www.bcamath.org/en/people/jjansson}
+
+    \address[1]{Basque Center for Applied Mathematics, Alameda Mazarredo, 14,
+      48009 Bilbao, Basque Country -- Spain}
+
+    \title{Automated Error Control in Time-Dependent Finite Elements}
+
+    \begin{abstract}
+
+    \end{abstract}
+  \end{frontmatter}
+
+  \printbibliography
+\end{document}
