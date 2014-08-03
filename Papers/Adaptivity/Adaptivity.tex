@@ -12,24 +12,55 @@
 
 \begin{document}
   \begin{frontmatter}
-    \author[1]{Erich L Foster\corref{cor1}}
+    \author[BCAM]{Erich L Foster\corref{cor1}}
     \ead{efoster@bcamath.org}
     \ead[url]{http://www.bcamath.org/en/people/efoster}
-    \cortext[cor1]{corresponding author}
+    \cortext[cor1]{Corresponding Author}
 
-    \author[1]{Johan Jansson}
+    \author[BCAM,KTH]{Johan Jansson}
     \ead{jjansson@bcamath.org}
     \ead[url]{http://www.bcamath.org/en/people/jjansson}
 
-    \address[1]{Basque Center for Applied Mathematics, Alameda Mazarredo, 14,
-      48009 Bilbao, Basque Country -- Spain}
+    \address[BCAM]{Basque Center for Applied Mathematics, Bilbao, Basque Country -- Spain}
+
+    \address[KTH]{CSC, KTH Royal Institute of Technology, Stockholm, Sweden}
 
     \title{Automated Error Control in Time-Dependent Finite Elements}
 
     \begin{abstract}
-
+      In this paper we present a new approach to \emph{automated goal-oriented
+      error control} to the solutions of \emph{linear and non-linear
+      time-dependent} partial differential equations. The approach is based
+      on using the \emph{a posteriori error estimate} directly, where both the
+      primal and dual solutions are approximated using the same finite element
+      space.  Traditionally, the a posteriori error estimate has been thought to
+      contain no information about the error, since it gives a global a
+      posteriori error estimate that is zero due to \emph{Galerkin
+      Orthogonality}. However, we show that locally, on each triangle, the that
+      the local orthogonal error representation behaves similar to the
+      non-orthogonal error representation and thus the orthogonal error
+      representation is rich in information.
     \end{abstract}
+    \begin{keyword}
+      FEM\sep a posteriori\sep error control\sep adaptivity\sep fluid dynamics
+    \end{keyword}
   \end{frontmatter}
+
+  \section{Introduction} \label{sec:Intro}
+  \input{Intro.tex}
+
+  \section{Results} \label{sec:Results}
+  \input{Results.tex}
+
+  \section{Conclusions} \label{sec:Conclusions}
+  \input{Conclusions.tex}
+
+  \section*{Acknowledgements}
+  This research has been supported by EU-FET grant EUNISON 308874, the European
+  Research Council, the Swedish Foundation for Strategic Research, the Swedish
+  Research Council, the Basque Excellence Research Center (BERC) program by
+  the Basque Government, and the Severo Ochoa excellence award by the Spanish
+  Government.
 
   \printbibliography
 \end{document}
