@@ -1,0 +1,6 @@
+<map id="solvers.solverbase.SolverBase.file_naming" name="solvers.solverbase.SolverBase.file_naming">
+<area shape="rect" id="node2" href="$classsolvers_1_1solverbase_1_1SolverBase.html#a1d954e35ae579beaa8cf6789aceefc20" title="This is the general solve class which will determine if adaptivity should be used or if a problem is ..." alt="" coords="227,63,399,105"/>
+<area shape="rect" id="node3" href="$classsolvers_1_1solverbase_1_1SolverBase.html#a66dd66e542cf6145d0e8c1738ec7123c" title="Time stepper for solver using theta&#45;method. " alt="" coords="449,5,621,46"/>
+<area shape="rect" id="node4" href="$classsolvers_1_1solverbase_1_1SolverBase.html#a0d2b6f25e72ba2ea2d5f994d27d1a0dc" title="Here we take the weak_residual and apply boundary conditions and then send it to time_stepper for sol..." alt="" coords="670,55,842,97"/>
+<area shape="rect" id="node5" href="$classsolvers_1_1solverbase_1_1SolverBase.html#ac933de00d1261b86ef591983b5caa5a6" title="Adaptive solve applies the error representation to goal&#45;oriented adaptivity. " alt="" coords="891,85,1063,126"/>
+</map>
