@@ -5,6 +5,10 @@ __license__  = "GNU GPL version 3 or any later version"
 from solverbase import *
 
 class Solver(SolverBase):
+    '''
+        Solver class for solving both 2D and 3D Incompressible Navier-Stokes
+        equation.
+    '''
 
     def __init__(self, options):
         SolverBase.__init__(self, options)

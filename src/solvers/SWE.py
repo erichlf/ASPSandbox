@@ -8,6 +8,9 @@ def f(f0,beta): #Coriolis parameter
     return Expression('f0 + beta*x[1]', f0=f0, beta=beta)
 
 class Solver(SolverBase):
+    '''
+        Solver class for solving the Rotational Shallow Water Equation.
+    '''
     def __init__(self, options):
         SolverBase.__init__(self, options)
         self.Re = options['Re']

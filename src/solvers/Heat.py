@@ -4,6 +4,9 @@ __date__ = "2013-08-27"
 from solverbase import *
 
 class Solver(SolverBase):
+    '''
+        Solver class for solving the Heat equation.
+    '''
 
     def __init__(self, options):
         SolverBase.__init__(self, options)

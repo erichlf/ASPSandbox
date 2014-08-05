@@ -5,6 +5,9 @@ __license__  = "GNU GPL version 3 or any later version"
 from solverbase import *
 
 class Solver(SolverBase):
+    '''
+        Solver class for solving the Advection-Diffusion-Reaction equation.
+    '''
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
