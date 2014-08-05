@@ -1,10 +1,3 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classsolvers_1_1solverbase_1_1SolverBase.html" title="SolverBase provides a general solver class for the various Solvers. " alt="" coords="5,157,208,184"/>
-<area shape="rect" id="node2" href="$classsolvers_1_1ADR_1_1Solver.html" title="solvers.ADR.Solver" alt="" coords="279,5,417,32"/>
-<area shape="rect" id="node3" href="$classsolvers_1_1DensityNSE_1_1Solver.html" title="solvers.DensityNSE.Solver" alt="" coords="257,56,439,83"/>
-<area shape="rect" id="node4" href="$classsolvers_1_1Heat_1_1Solver.html" title="solvers.Heat.Solver" alt="" coords="279,107,417,133"/>
-<area shape="rect" id="node5" href="$classsolvers_1_1NSE_1_1Solver.html" title="solvers.NSE.Solver" alt="" coords="279,157,417,184"/>
-<area shape="rect" id="node6" href="$classsolvers_1_1Peregrine_1_1Solver.html" title="Solver class for Peregrine system. " alt="" coords="266,208,430,235"/>
-<area shape="rect" id="node7" href="$classsolvers_1_1QGE_1_1Solver.html" title="solvers.QGE.Solver" alt="" coords="279,259,417,285"/>
-<area shape="rect" id="node8" href="$classsolvers_1_1SWE_1_1Solver.html" title="solvers.SWE.Solver" alt="" coords="278,309,418,336"/>
+<area shape="rect" id="node1" href="$classMinimalPool_1_1Solver.htm" title="Solver class for Peregrine system. " alt="" coords="6,5,141,32"/>
 </map>
