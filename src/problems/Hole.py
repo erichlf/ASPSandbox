@@ -6,11 +6,6 @@ __license__  = "GNU GPL version 3 or any later version"
 #   by Kent-Andre Mardal <kent-and@simula.no>
 #
 
-'''
-This is an extremely boring problem with no forcing and on a square.
-This is basically a blank problem that we can adapt with optional inputs.
-'''
-
 from problembase import *
 from numpy import array
 
@@ -24,7 +19,7 @@ ycenter = 0.
 radius = 0.3
 
 A = 10.
-kappa = 100;
+kappa = 100
 rho = 1500.; c = 1480
 
 class InitialConditions(Expression):

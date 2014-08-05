@@ -65,6 +65,12 @@ class OutflowBoundary(SubDomain):
 
 # Problem definition
 class Problem(ProblemBase):
+    '''
+        Provides the 2D/3D flow around a bluff body, where the bluff body is
+        either a cylinder or a rectangular box. These problems were described in
+        "Benchmark Computations of Laminar Flow Around a Cylinder" by M.
+        Schaefer and S. Turek.
+    '''
     def __init__(self, options, cube=False):
         ProblemBase.__init__(self, options)
 

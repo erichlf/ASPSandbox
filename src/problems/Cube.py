@@ -13,6 +13,10 @@ from numpy import array
 # this is basically the cylinder problem but the shape is a square/box
 # Problem definition
 class Problem(Cylinder):
+    '''
+        Purely a container to call Cylinder with the keyword argument cube. This
+        will tell Cylinder.py to use a cube instead of a cylinder.
+    '''
 
     def __init__(self, options):
         self = Cylinder.__init__(self, options, cube=True)

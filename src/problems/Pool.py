@@ -5,10 +5,9 @@ __license__  = "GNU GPL version 3 or any later version"
 #   adapted from Square.py originally developed
 #   by Erich L Foster <erichlf@gmail.com>
 #
-
 '''
-This is a simple problem with no forcing and on a rectangle.
-This is basically a blank problem that we can adapt with optional inputs.
+    Provides the Pool Problem for the Peregrine System, where a moving object
+    creates a disturbance producing a wave.
 '''
 
 from problembase import *
@@ -131,7 +130,10 @@ class Object(Expression):
 
 # Problem definition
 class Problem(ProblemBase):
-#   2D channel flow.
+    '''
+        Provides the Pool Problem for the Peregrine System, where a moving object
+        creates a disturbance producing a wave.
+    '''
 
     def __init__(self, options):
         ProblemBase.__init__(self, options)
@@ -179,6 +181,9 @@ class Problem(ProblemBase):
         self.D = str(hd) + '+ (' + M + ')*(x[1] - (' + X + '))'
 
     def update_bathymetry(self, Q, t):
+        '''
+            Tells the solver what the bathymetry looks like at time t.
+        '''
         D = Expression(self.D, element=Q.ufl_element(), annotate=False)
 
         self.zeta0.t = t
@@ -194,7 +199,9 @@ class Problem(ProblemBase):
         return H, H_, zeta, zeta_, zeta__
 
     def Refine(self, mesh):
-        #Refine the mesh along the object's trajectory
+        '''
+            Refine the mesh along the object's trajectory
+        '''
         for i in range(0,4):
             cell_markers = CellFunction("bool", mesh)
             cell_markers.set_all(False)

@@ -5,7 +5,9 @@ __license__  = "GNU GPL version 3 or any later version"
 from solverbase import *
 
 class Solver(SolverBase):
-#    Incremental pressure-correction scheme.
+    '''
+        Solver class for Peregrine system.
+    '''
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
@@ -18,6 +20,11 @@ class Solver(SolverBase):
 
     #define functions spaces
     def function_space(self, mesh):
+        '''
+            The Peregrine system doesn't quite fit into our normal scheme, so we
+            need to define the functions space for the Peregrine System. This is
+            mostly so that the wave object is represented.
+        '''
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
         Q = FunctionSpace(mesh, 'CG', self.Pp)
         self.Q = Q #Bad hack for being able to project into Q space
@@ -32,6 +39,9 @@ class Solver(SolverBase):
         return W
 
     def strong_residual(self, problem, H, U, v, eta, chi):
+        '''
+            Defines the strong residual for Peregrine System.
+        '''
         #Parameters
         sigma = problem.sigma
         epsilon = problem.epsilon
@@ -51,6 +61,10 @@ class Solver(SolverBase):
         return R1, R2, z1, z2
 
     def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
+        '''
+            Defines the weak residual for Peregrine System, including LS
+            Stabilization.
+        '''
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
@@ -126,6 +140,9 @@ class Solver(SolverBase):
 
     #Optimization Function
     def Optimize(self, problem, w):
+        '''
+            Shape optimization for Peregrine System.
+        '''
         eta = w.split()[1]
         #bounds on object
 #        lb = project(Expression('-0.5'), self.Q, name='LowerBound')
@@ -142,6 +159,9 @@ class Solver(SolverBase):
         return shape_opt
 
     def functional(self,mesh,w):
+        '''
+            Functional for mesh adaptivity
+        '''
 
         (u, eta) = (as_vector((w[0], w[1])), w[2])
 
@@ -150,6 +170,9 @@ class Solver(SolverBase):
         return M
 
     def wave_object(self, problem, Q, t, k):
+        '''
+            Update for wave object at each time step.
+        '''
         H, H_, zeta, zeta_, zeta__ = problem.update_bathymetry(Q, t)
 
         self.Zeta.assign(zeta)
@@ -160,6 +183,10 @@ class Solver(SolverBase):
         self.H_.assign(H_)
 
     def Save(self, problem, w, dual=False):
+        '''
+            The Peregrine system doesn't quite fit into our normal scheme, so we
+            need to save files differently.
+        '''
         u = w.split()[0]
         eta = w.split()[1]
 
@@ -173,6 +200,9 @@ class Solver(SolverBase):
                 self._pDualfile << eta
 
     def file_naming(self, n=-1, dual=False):
+        '''
+            File naming for Peregrine system.
+        '''
         if n==-1:
             self._ufile = File(self.s + '_u.pvd', 'compressed')
             self._pfile = File(self.s + '_eta.pvd', 'compressed')
@@ -187,6 +217,10 @@ class Solver(SolverBase):
             self._pDualfile = File(self.s + '_etaDual%d.pvd' % n, 'compressed')
 
     def Plot(self, problem, W, w):
+        '''
+            The Peregrine system doesn't quite fit into our normal scheme, so we
+            need to plot differently.
+        '''
         u = w.split()[0]
         eta = w.split()[1]
 

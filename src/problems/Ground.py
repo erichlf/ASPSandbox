@@ -6,11 +6,6 @@ __license__  = "GNU GPL version 3 or any later version"
 #   by Kent-Andre Mardal <kent-and@simula.no>
 #
 
-'''
-This is an extremely boring problem with no forcing and on a square.
-This is basically a blank problem that we can adapt with optional inputs.
-'''
-
 from problembase import *
 from numpy import array
 
@@ -33,8 +28,12 @@ class Surface(SubDomain):
 
 # Problem definition
 class Problem(ProblemBase):
-#   2D channel flow.
-
+    '''
+        This is an implementation of the problem described in the FEniCS
+        documentation
+http://fenicsproject.org/documentation/tutorial/timedep.html#tut-timedep-diffusion2-sin-fig1
+        where we simulate the effect of heating an inhomogeneous medium.
+    '''
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 

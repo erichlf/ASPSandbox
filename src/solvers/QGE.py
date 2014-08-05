@@ -3,19 +3,6 @@ __date__ = "2013-08-27"
 
 from solverbase import *
 
-class InitialConditions(Expression):
-    def __init__(self, problem, Q, Psi):
-        self.q0, self.psi0 = problem.initial_conditions(Q, Psi)
-        self.q0 = project(self.q0,Q)
-        self.psi0 = project(self.psi0,Psi)
-
-    def eval(self, value, x):
-        value[0] = self.q0(x)
-        value[1] = self.psi0(x)
-
-    def value_shape(self):
-        return (2,)
-
 class Solver(SolverBase):
 
     def __init__(self, options):

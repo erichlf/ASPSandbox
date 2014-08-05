@@ -24,7 +24,10 @@ maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
 class SolverBase:
-#   Base class for all solvers.
+    '''
+    SolverBase provides a general solver class for the various Solvers. Its
+    purpose is take a weak_residual and then solve it using the theta-method
+    '''
     def __init__(self, options):
 
         # Store options
@@ -70,6 +73,10 @@ class SolverBase:
         self.vizP = None
 
     def solve(self, problem):
+    '''
+        This is the general solve class which will determine if adaptivity
+        should be used or if a problem is an optimization problem.
+    '''
         mesh = problem.mesh
         k = problem.k #time step
         T = problem.T
@@ -152,7 +159,10 @@ class SolverBase:
         return w
 
     def adaptive_solve(self, problem, mesh, k):
-
+    '''
+        Adaptive solve applies the error representation to goal-oriented
+        adaptivity. This is all done automatically using the weak_residual.
+    '''
         print 'Solving the primal problem.'
         parameters["adjoint"]["stop_annotating"] = False
         W, w, m = self.forward_solve(problem, mesh, k, func=True)
@@ -197,6 +207,10 @@ class SolverBase:
         return w, ei, COND
 
     def forward_solve(self, problem, mesh, k, func=False):
+    '''
+        Here we take the weak_residual and apply boundary conditions and then
+        send it to time_stepper for solving.
+    '''
         h = CellSize(mesh) #mesh size
 
         t = problem.t0
@@ -226,21 +240,23 @@ class SolverBase:
 
     #define functions spaces
     def function_space(self, mesh):
+    '''
+        Sets up a general mixed function space. We assume there are only two
+        variables and the first variable is vector valued. To use something
+        different the user can overload this in their Solver.
+    '''
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
         Q = FunctionSpace(mesh, 'CG', self.Pp)
         W = MixedFunctionSpace([V, Q])
 
         return W
 
-    def InitialConditions(self,problem,W):
-        #project the given initial condition into W
-        U0, p0 = problem.initial_conditions(W.sub(0),W.sub(1))
-        W0 = self.W_project(U0,p0,W)
-
-        return W0
-
     # Refine the mesh based on error indicators
     def adaptive_refine(self, mesh, ei, adapt_ratio):
+    '''
+        Take a mesh and the associated error indicators and refine adapt_ration%
+        of cells.
+    '''
         gamma = abs(ei.vector().array())
 
         # Mark cells for refinement
@@ -255,6 +271,9 @@ class SolverBase:
         return mesh
 
     def timeStepper(self, problem, t, T, k, W, w, w_, F, func=False):
+    '''
+        Time stepper for solver using theta-method.
+    '''
         if func:
             m = 0
         else:
@@ -289,6 +308,9 @@ class SolverBase:
         return w_, m
 
     def update(self, problem, t, W, w, dual=False):
+    '''
+        Saves or plots the data at each time step.
+    '''
         # Add to accumulated CPU time
         timestep_cputime = time() - self._time
         self._cputime += timestep_cputime
@@ -322,6 +344,12 @@ class SolverBase:
             self._time = time()
 
     def Save(self, problem, w, dual=False):
+    '''
+        Save a variables associated with a time step. Here we assume there are
+        two variables where the first variable is vector-valued and the second
+        variable is a scalar. If this doesn't fit the particular solvers
+        variables the user will need to overload this function.
+    '''
         u = w.split()[0]
         p = w.split()[1]
 
@@ -334,6 +362,12 @@ class SolverBase:
                 self._pDualfile << p
 
     def file_naming(self, n=-1, dual=False):
+    '''
+        Names our files for saving variables. Here we assume there are
+        two variables where the first variable is vector-valued and the second
+        variable is a scalar. If this doesn't fit the particular solvers
+        variables the user will need to overload this function.
+    '''
         if n==-1:
             self._ufile = File(self.s + '_u.pvd', 'compressed')
             self._pfile = File(self.s + '_p.pvd', 'compressed')
@@ -347,6 +381,12 @@ class SolverBase:
 
     #this is a separate function so that it can be overloaded
     def Plot(self, problem, W, w):
+    '''
+        Plots our variables associated with a time step. Here we assume there are
+        two variables where the first variable is vector-valued and the second
+        variable is a scalar. If this doesn't fit the particular solvers
+        variables the user will need to overload this function.
+    '''
         u = w.split()[0]
         p = w.split()[1]
 
@@ -359,6 +399,10 @@ class SolverBase:
             self.vizP.plot(p)
 
     def prefix(self, problem):
+    '''
+        Obtains the beginning of file naming, e.g. Probem Name, Solver Name,
+        dimension, etc.
+    '''
         #Return file prefix for output files
         p = problem.__module__.split('.')[-1]
         if problem.mesh.topology().dim() > 2:
@@ -376,6 +420,9 @@ class SolverBase:
         return problem.output_location + s + p
 
     def suffix(self, problem):
+    '''
+        Obtains the run specific data for file naming, e.g. Nx, k, etc.
+    '''
         s = ''
 
         #Return file suffix for output files
@@ -399,11 +446,16 @@ class SolverBase:
         return s
 
     def getMyMemoryUsage(self):
+    '''
+        Determines how much memory we are using.
+    '''
         mypid = getpid()
         mymemory = getoutput('ps -o rss %s' % mypid).split()[1]
         return mymemory
 
     def start_timing(self):
-#       Start timing, will be paused automatically during update
-#       and stopped when the end-time is reached.
+    '''
+        Start timing, will be paused automatically during update
+        and stopped when the end-time is reached.
+    '''
         self._time = time()
