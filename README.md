@@ -1,4 +1,3 @@
-SWE
+Automated Finite Element Solver
 ===
-
-This is an implementation of a Mixed Finite Element solver for SWE using Dolfin.
+This is an automated Finite Element solver, including mesh adaptivity and optimization, for partial differential equations based in FEniCS/DOLFIN.
