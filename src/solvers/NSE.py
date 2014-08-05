@@ -81,16 +81,5 @@ class Solver(SolverBase):
 
         return d1, d2
 
-    #this is the functional used for adaptivity
-    def functional(self, mesh, w):
-        if mesh.topology().dim() == 2:
-            (u, p) = (as_vector((w[0], w[1])), w[2])
-        else:
-            (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
-
-        M = u[0]*dx # Mean of the x-velocity in the whole domain
-
-        return M
-
     def __str__(self):
           return 'NSE'

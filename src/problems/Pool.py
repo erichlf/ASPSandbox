@@ -187,14 +187,14 @@ class Problem(ProblemBase):
         D = Expression(self.D, element=Q.ufl_element(), annotate=False)
 
         self.zeta0.t = t
-        zeta = project(self.zeta0, Q, annotate=False)
+        zeta = project(self.zeta0, Q)
         self.zeta0.t = max(t - self.k, self.t0)
-        zeta_ = project(self.zeta0, Q, annotate=False)
+        zeta_ = project(self.zeta0, Q)
         self.zeta0.t = max(t - 2*self.k, self.t0)
-        zeta__ = project(self.zeta0, Q, annotate=False)
+        zeta__ = project(self.zeta0, Q)
 
-        H = project(D + self.epsilon*zeta, Q, annotate=False)
-        H_ = project(D + self.epsilon*zeta_, Q, annotate=False)
+        H = project(D + self.epsilon*zeta, Q)
+        H_ = project(D + self.epsilon*zeta_, Q)
 
         return H, H_, zeta, zeta_, zeta__
 
