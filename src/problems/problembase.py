@@ -6,6 +6,7 @@ __date__ = "2013-08-27"
 #
 
 from dolfin import *
+from dolfin_adjoint import *
 from numpy import linspace
 from math import *
 

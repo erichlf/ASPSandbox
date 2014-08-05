@@ -129,8 +129,8 @@ def main(args):
 
     print 'Solving %s for the %s problem.' % (solver_name,problem_name)
     # Create problem and solver
-    problem = Problem(problem_name, options)
     solver = Solver(solver_name, options)
+    problem = Problem(problem_name, options)
 
     # Solve problem with solver
     wct = time.time()

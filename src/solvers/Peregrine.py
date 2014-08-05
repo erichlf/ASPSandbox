@@ -26,7 +26,6 @@ class Solver(SolverBase):
         self.Zeta = Function(Q, name='zeta')
         self.Zeta_ = Function(Q, name='zeta_')
         self.Zeta__ = Function(Q, name='zeta__')
-        self.zeta0 = Function(Q, name='InitialShape')
         self.H = Function(Q, name='Bathymetry')
         self.H_ = Function(Q, name='PreviousBathymetry')
 
@@ -78,9 +77,6 @@ class Solver(SolverBase):
         #set up our wave object
         self.wave_object(problem, self.Q, t0, k)
 
-        #save the initial wave object
-        self.zeta0.assign(self.Zeta)
-
         zeta_tt = 1./k**2*(self.Zeta - 2*self.Zeta_ + self.Zeta__)
         zeta_t = 1./k*(self.Zeta - self.Zeta_)
 
@@ -91,9 +87,6 @@ class Solver(SolverBase):
         H_alpha = (1. - alpha)*self.H_ + alpha*self.H
 
         t = t0 + k
-        #forcing and mass source/sink
-        F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
-        F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
 
         if(not self.options["stabilize"] or ei_mode):
           d = 0
@@ -113,15 +106,13 @@ class Solver(SolverBase):
         r += z*(1./k*(eta-eta_)*chi + zeta_t*chi)*dx
         r -= z*inner(U_alpha,grad(chi))*(epsilon*eta_alpha + H_alpha)*dx
 
-        r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
-
         r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
 
         R1, R2, z1, z2 = self.strong_residual(problem, H_alpha, U_alpha, U_alpha, \
                 eta_alpha, eta_alpha)
         Rv1, Rv2, z1, z2 = self.strong_residual(problem, H_alpha, U_alpha, v, \
                 eta_alpha, chi)
-        r += z*(d1*inner(R1 - F1_alpha + z1, Rv1) + d2*(R2 - F2_alpha + z2)*Rv2)*dx
+        r += z*(d1*inner(R1 + z1, Rv1) + d2*(R2 + z2)*Rv2)*dx
 
         return r
 
@@ -137,23 +128,15 @@ class Solver(SolverBase):
     def Optimize(self, problem, w):
         eta = w.split()[1]
         #bounds on object
-        lb = project(Expression('-0.5'), self.Q, name='LowerBound')
-        ub = project(Expression('0.0'), self.Q, name='UpperBound')
+#        lb = project(Expression('-0.5'), self.Q, name='LowerBound')
+#        ub = project(Expression('0.0'), self.Q, name='UpperBound')
 
-        #Functionnal to be minimized: L2 norme over a subdomain
+        #Functionnal to be minimized: L2 norm over a subdomain
         J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*self.Zeta*dx)
 
         #shape parameters
-        H = ScalarParameter('ObjHeight')
-        N1 = ScalarParameter('N1')
-        N2 = ScalarParameter('N2')
-        W1 = ScalarParameter('W1')
-        W2 = ScalarParameter('W2')
-        W3 = ScalarParameter('W3')
-        W4 = ScalarParameter('W4')
-        dz = ScalarParameter('dz')
-        M = ListParameter([N1, N2, W1, W2, W3, W4, dz])
-        Jhat = ReducedFunctional(J, M) #Reduced Functional
+        m = [ScalarParameter(p) for p in problem.params]
+        Jhat = ReducedFunctional(J, m) #Reduced Functional
         shape_opt = minimize(Jhat)
 
         return shape_opt
@@ -166,29 +149,15 @@ class Solver(SolverBase):
 
         return M
 
-    def seabed(self, problem, Q, t, k, epsilon):
-        D = Expression(problem.D, element=Q.ufl_element())
-
-        problem.zeta0.t = t
-        zeta = project(problem.zeta0, Q)
-        problem.zeta0.t = max(t - k, self.t0)
-        zeta_ = project(problem.zeta0, Q)
-        problem.zeta0.t = max(t - 2*k, self.t0)
-        zeta__ = project(problem.zeta0, Q)
-
-        return D, zeta, zeta_, zeta__
-
     def wave_object(self, problem, Q, t, k):
-        D, zeta, zeta_, zeta__ \
-            = self.seabed(problem, Q, t, k, problem.epsilon)
+        H, H_, zeta, zeta_, zeta__ = problem.update_bathymetry(Q, t)
 
-        self.D = project(D, Q, name='Depth')
         self.Zeta.assign(zeta)
         self.Zeta_.assign(zeta_)
         self.Zeta__.assign(zeta__)
 
-        self.H = project(D + problem.epsilon*zeta, Q, name='Bathymetry')
-        self.H_ = project(D + problem.epsilon*zeta_, Q, name='PreviousBathymetry')
+        self.H.assign(H)
+        self.H_.assign(H_)
 
     def Save(self, problem, w, dual=False):
         u = w.split()[0]

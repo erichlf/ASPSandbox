@@ -87,13 +87,14 @@ class Object(Expression):
         written by Pramudita Satria Palar for matlab which can be found at
         http://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method
     '''
-    def __init__(self, H, N1, N2, W1, W2, W3, W4, dz, t):
+    def __init__(self, vmax, H, N1, N2, W1, W2, W3, W4, dz, t):
         self.H = H #Object height
         self.N1 = N1 #shape parameter for 'back' of object
         self.N2 = N2 #shape parameter for 'front' of object
         self.w = (W1, W2, W3, W4) #weights for arc between 'front' and 'back'
         self.dz = dz #'leading' edge thickness
         self.t = t
+        self.vmax = vmax
 
     def eval(self, value, x):
         H = self.H
@@ -102,6 +103,7 @@ class Object(Expression):
         w = self.w
         dz = self.dz/H
         t = self.t
+        vmax = self.vmax
 
         u = vmax*tanh(t)
 
@@ -127,14 +129,6 @@ class Object(Expression):
     def value_shape(self):
         return ()
 
-class Depth(Expression):
-    def eval(self, values, x):
-        values[0] = hd
-        if x[1] > channelTop:
-            values[0] += (hb - hd)/(y1 - channelTop)*(x[1] - channelTop)
-        elif x[1] < channelBottom:
-            values[0] += (hb - hd)/(y0 - channelBottom)*(x[1] - channelBottom)
-
 # Problem definition
 class Problem(ProblemBase):
 #   2D channel flow.
@@ -145,16 +139,6 @@ class Problem(ProblemBase):
         #Scaling Parameters
         self.sigma = h0/lambda0
         self.epsilon = a0/h0
-
-        #set up the CST shape parameterization
-        self.ObjH = Constant(ad, name='ObjHeight')
-        self.N1 = Constant(1., name='N1')
-        self.N2 = Constant(1., name='N2')
-        self.W1 = Constant(1., name='W1')
-        self.W2 = Constant(1., name='W2')
-        self.W3 = Constant(1., name='W3')
-        self.W4 = Constant(1., name='W4')
-        self.dz = Constant(0., name='dz')
 
         # Create mesh
         self.Nx = options["Nx"]
@@ -168,12 +152,22 @@ class Problem(ProblemBase):
         self.T = options['T']*c0/lambda0 #Final time
         self.k = options['dt']*c0/lambda0 #time step
 
-        Q = FunctionSpace(self.mesh, 'CG', 1)
-        self.zeta0 = Object(H=ad, N1=self.N1, N2=self.N2, W1=self.W1, W2=self.W2, \
-                W3=self.W3, W4=self.W4, dz=self.dz, t=self.t0)
+        #set up the CST shape parameterization
+        ObjH = Constant(ad, name='ObjHeight')
+        N1 = Constant(1., name='N1')
+        N2 = Constant(1., name='N2')
+        W1 = Constant(1., name='W1')
+        W2 = Constant(1., name='W2')
+        W3 = Constant(1., name='W3')
+        W4 = Constant(1., name='W4')
+        dz = Constant(0., name='dz')
+
+        self.params = ['ObjHeight', 'N1', 'N2', 'W1', 'W2', 'W3', 'W4', 'dz']
+
+        self.zeta0 = Object(vmax=vmax, H=ObjH, N1=N1, N2=N2, W1=W1, W2=W2, W3=W3, W4=W4, \
+                dz=dz, t=self.t0)
 
         #Defintion of the shape of the seabed
-        #self.D = Depth()
         M1 = (hb - hd)/(y1 - objectTop)
         M2 = (hb - hd)/(y0 - objectBottom)
         M = 'x[1] > ' + str(objectTop) + ' ? ' + str(M1) + \
@@ -183,6 +177,21 @@ class Problem(ProblemBase):
             ' : (x[1] < ' +  str(objectBottom) + ' ? ' + str(objectBottom) + \
             ' : 0) '
         self.D = str(hd) + '+ (' + M + ')*(x[1] - (' + X + '))'
+
+    def update_bathymetry(self, Q, t):
+        D = Expression(self.D, element=Q.ufl_element(), annotate=False)
+
+        self.zeta0.t = t
+        zeta = project(self.zeta0, Q, annotate=False)
+        self.zeta0.t = max(t - self.k, self.t0)
+        zeta_ = project(self.zeta0, Q, annotate=False)
+        self.zeta0.t = max(t - 2*self.k, self.t0)
+        zeta__ = project(self.zeta0, Q, annotate=False)
+
+        H = project(D + self.epsilon*zeta, Q, annotate=False)
+        H_ = project(D + self.epsilon*zeta_, Q, annotate=False)
+
+        return H, H_, zeta, zeta_, zeta__
 
     def Refine(self, mesh):
         #Refine the mesh along the object's trajectory
@@ -199,7 +208,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, W):
         w0 = InitialConditions()
-        w0 = project(w0,W)
+        w0 = project(w0,W,annotate=False)
 
         return w0
 

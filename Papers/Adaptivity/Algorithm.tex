@@ -1,0 +1,13 @@
+
+\begin{algorithm}
+  \caption{Adaptive mesh refinement} \label{alg:Adaptivity}
+  \KwData{Let $(\mathcal{T}_k, V_k,\mathcal{P})$ be a finite element
+    discretization of $r(U,v) = a(U,v) - L(v)$.} \vspace{0.5em}
+  \SetAlgoLined
+  \While{ $\sum_{j=1}^M \left|\mathcal{E}^{cG(1)}_{K_j}\right| > TOL$}{
+      \nl For the mesh $\mathcal{T}_k$: compute the primal problem and the dual problem. \\
+      \nl Mark some chosen percentage of the elements with highest
+        $\mathcal{E}^{cG(1)}_{K_j}$ for refinement.\\
+      \nl Generate the refined mesh $\mathcal{T}^{k+1}$, set $k = k + 1$
+  }
+\end{algorithm}

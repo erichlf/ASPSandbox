@@ -124,15 +124,16 @@ class SolverBase:
 
                 i += 1
 
-        if i>maxadaps and COND>TOL:
-            s = 'Warning reached max adaptive iterations with sum(abs(EI))=%0.3G.  Solution may not be accurate.' % COND
-            print s
+            if i>maxadaps and COND>TOL:
+                s = 'Warning reached max adaptive iterations with sum(abs(EI))=%0.3G.  Solution may not be accurate.' % COND
+                print s
         print 'Solving the primal problem.'
         self.file_naming(n=-1, dual=False)
 
         #record so that we can evaluate our functional
         parameters["adjoint"]["stop_annotating"] = False
         W, w, m = self.forward_solve(problem, mesh, k, func=self.options['adaptive'])
+        adj_html("forward.html", "forward")
         if m is not None:
             print
             print 'The size of the functional is: %0.3G' % m
