@@ -11,6 +11,31 @@ algorithm to the Variable Density Navier-Stokes equation discetized using the
 GLS-cG(1) finite element.
 
 \subsection{Heat Equation} \label{sse:Heat}
+  The heat equation is a purely parabolic linear partial differential equation
+  and therefore the global error representation is zero due to Galerkin
+  Orthogonality.  Thus it is an excellent choice to demonstrate the
+  effectiveness of the algorithm described in \autoref{sec:Algorithm}.
+
+  In this test problem we are concerned with the numerical solution of the heat
+  equation given by
+  \begin{equation}
+    u_t - \nabla \cdot (\kappa \nabla u) = f, \quad \text{in } \Omega
+    \label{eq:Heat}
+  \end{equation}
+  subject to the Dirichlet boundary condition
+  \begin{equation}
+    u = g, \quad \text{on } \partial \Omega
+    \label{eqn:HeatBC}
+  \end{equation}
+  where $\Omega = \Omega_1\slash~\Omega_2 = [0, 1]^2\slash~[\frac{4}{9},
+  \frac{5}{9}]^2$ is the physical domain, $f=0$ is the forcing function,
+  \begin{equation}
+    g = \begin{cases}
+        0 & \text{if } (x,y) \in \partial \Omega_1 \\
+        0.5 + 0.5 \sin(\theta\, t) & \text{if } (x,y) \in \partial \Omega_2
+    \end{cases}
+    \label{eqn:BCFunction}
+  \end{equation}
 
 \subsection{Navier-Stokes} \label{sse:NSE}
 

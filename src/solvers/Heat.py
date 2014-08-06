@@ -2,6 +2,7 @@ __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2013-08-27"
 
 from solverbase import *
+import numpy as np
 
 class Solver(SolverBase):
     '''
@@ -41,15 +42,15 @@ class Solver(SolverBase):
         self.f_ = problem.F1(t)
         self.f = problem.F1(t)
 
-        f_alpha = (1.0-alpha)*self.f_ + alpha*self.f
-
         if(not ei_mode):
           z = 1.
 
         #weak form of the equations
-        r = z*(rho*c*(1./k)*(w - w_)*wt \
-            + kappa*inner(grad(w_alpha),grad(wt)))*dx
-        #r -= z*f_alpha*wt*dx #forcing function
+        r = z*rho*c*(1./k)*(w - w_)*wt*dx
+        if kappa.rank() == 0:
+            r += z*kappa*inner(grad(w_alpha),grad(wt))*dx
+        else: #anisotropic case
+            r += z*inner(dot(kappa,grad(w_alpha)),grad(wt))*dx
 
         return r
 

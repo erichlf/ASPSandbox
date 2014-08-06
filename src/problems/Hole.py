@@ -1,26 +1,25 @@
 __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 __license__  = "GNU GPL version 3 or any later version"
-#
-#   adapted from channel.py in nsbench originally developed 
-#   by Kent-Andre Mardal <kent-and@simula.no>
-#
 
 from problembase import *
-from numpy import array
+import numpy as np
 
-bmarg = 1.e-3 + DOLFIN_EPS
-xmin = -1.
-xmax = 1.
-ymin = -1.
-ymax = 1
-xcenter = 0.
-ycenter = 0.
-radius = 0.3
+#outer square dimensions
+Xmin = 0.
+Xmax = 1.
+Ymin = 0.
+Ymax = 1.
+#inner square dimensions
+xmin = 4./9.
+xmax = 5./9.
+ymin = 4./9.
+ymax = 5./9.
 
-A = 10.
-kappa = 100
-rho = 1500.; c = 1480
+kappa1 = 1000.;  kappa2 = 1.
+theta = pi/4.
+rho = 1.; c = 1.
+TR = 0.5; TA = 0.5; omega = 10.
 
 class InitialConditions(Expression):
     def eval(self,values,x):
@@ -28,15 +27,13 @@ class InitialConditions(Expression):
 
 class OuterBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and (near(x[0],xmin) or near(x[0],xmax) \
-                or near(x[1],ymin) or near(x[1],ymax))
+        return on_boundary and (near(x[0],Xmin) or near(x[0],Xmax) \
+                or near(x[1],Ymin) or near(x[1],Ymax))
 
 class InnerBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        dx = x[0] - xcenter
-        dy = x[1] - ycenter
-        r = sqrt(dx*dx + dy*dy)
-        return on_boundary and r < radius + bmarg
+        return on_boundary and (near(x[0],xmin) or near(x[0],xmax) \
+                or near(x[1],ymin) or near(x[1],ymax))
 
 
 # Problem definition
@@ -49,16 +46,21 @@ class Problem(ProblemBase):
         # Create mesh
         self.Nx = options["Nx"]
 
-        rect = Rectangle(xmin, ymin, xmax, ymax)
-        circ = Circle(xcenter, ycenter, radius)
-        domain = rect - circ
+        outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
+        innerRect = Rectangle(xmin, ymin, xmax, ymax)
+        domain = outerRect - innerRect
         self.mesh = Mesh(domain, self.Nx)
 
         self.t0 = 0.
         self.T = options['T']
         self.k = options['dt']
 
-        self.kappa = kappa
+
+        K = np.array([[kappa1, 0],[0, kappa2]])
+        Theta = np.array([[cos(theta), -sin(theta)],[sin(theta), cos(theta)]])
+        kappa = np.dot(Theta,np.dot(K,np.transpose(Theta)))
+        self.kappa = Expression((('k1','k2'), ('k3','k4')), \
+                k1=kappa[0,0], k2=kappa[0,1], k3=kappa[1,0], k4=kappa[1,1])
         self.rho = rho
         self.c = c
 
@@ -70,8 +72,9 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
+        g = Expression('TR + TA*sin(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
         bc0 = DirichletBC(W, Constant(0.0), OuterBoundary())
-        bc1 = DirichletBC(W, A, InnerBoundary())
+        bc1 = DirichletBC(W, g, InnerBoundary())
 
         return [bc0, bc1]
 

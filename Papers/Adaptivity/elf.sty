@@ -1,5 +1,4 @@
 \ProvidesPackage{elf}
-\pdfoutput=1
 
 %below are my standard includes. I don't like ugly preambles so I made this
 %style file instead.
@@ -35,6 +34,13 @@
 \RequirePackage{hyperref}
 \RequirePackage[ruled,noline]{algorithm2e}
 \RequirePackage{multirow}
+% Start of 'ignore natbib' hack
+\let\bibhang\relax
+\let\citename\relax
+\let\bibfont\relax
+\let\Citeauthor\relax
+\expandafter\let\csname ver@natbib.sty\endcsname\relax
+% End of 'ignore natbib' hack
 \RequirePackage[backend=bibtex]{biblatex}
 \RequirePackage[utf8]{inputenc}
 

@@ -199,10 +199,11 @@ class SolverBase:
 
         print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
+            #the tape is backwards so i+1 is the previous time step
             LR1 = k*self.weak_residual(problem, W, wtape[i], wtape[i+1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1,annotate=False).array()
 
-        COND = sum(absolute(ei.vector()))
+        COND = abs(sum(ei.vector()))
 
         return w, ei, COND
 

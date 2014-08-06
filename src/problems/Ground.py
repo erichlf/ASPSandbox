@@ -22,7 +22,11 @@ class InitialConditions(Expression):
     def eval(self,values,x):
         values[0] = TR
 
-class Surface(SubDomain):
+class Surface2D(SubDomain):
+    def inside(self, x, on_boundary):
+        return on_boundary and near(x[1], 0.)
+
+class Surface3D(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and near(x[2], 0.)
 
@@ -37,21 +41,30 @@ http://fenicsproject.org/documentation/tutorial/timedep.html#tut-timedep-diffusi
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
+        self.dim = options['dim']
         # Create mesh
-        self.Nx = options["Nx"]
-        self.Ny = options["Ny"]
-        self.Nz = options["Nz"]
-        self.mesh = BoxMesh(-W/2.,-W/2.,-D,W/2.,W/2.,0.,self.Nx,self.Ny,self.Nz)
+        self.Nx = options['Nx']
+        self.Ny = options['Ny']
+        if self.dim == 2:
+            self.mesh = RectangleMesh(-W/2.,-D,W/2.,0.,self.Nx,self.Ny)
+        else:
+            self.Nz = options['Nz']
+            self.mesh = BoxMesh(-W/2.,-W/2.,-D,W/2.,W/2.,0.,self.Nx,self.Ny,self.Nz)
 
         self.t0 = 0.
         period = 2.*pi/omega
         self.T = 10.*period
         self.k = period/n
 
-        kappa = 'x[0] > -W/4 && x[0] < W/4 '\
-                '&& x[1] > -W/4 && x[1] < W/4 ' \
-               '&& x[2] > -D/2 && x[2] < -D/2 + D/4 ? '\
-               'kappa_1 : kappa_0'
+        if self.dim == 2:
+            kappa = 'x[0] > -W/4 && x[0] < W/4 '\
+                   '&& x[1] > -D/2 && x[1] < -D/2 + D/4 ? '\
+                   'kappa_1 : kappa_0'
+        else:
+            kappa = 'x[0] > -W/4 && x[0] < W/4 '\
+                    '&& x[1] > -W/4 && x[1] < W/4 ' \
+                   '&& x[2] > -D/2 && x[2] < -D/2 + D/4 ? '\
+                   'kappa_1 : kappa_0'
         self.kappa = Expression(kappa, D=D, W=W, kappa_0=kappa_0, kappa_1=kappa_1)
         self.rho = rho
         self.c = c
@@ -65,7 +78,10 @@ http://fenicsproject.org/documentation/tutorial/timedep.html#tut-timedep-diffusi
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
         T0 = Expression('TR + TA*sin(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
-        bcs = DirichletBC(W, T0, Surface())
+        if self.dim == 2:
+            bcs = DirichletBC(W, T0, Surface2D())
+        else:
+            bcs = DirichletBC(W, T0, Surface3D())
 
         return bcs
 
