@@ -72,7 +72,7 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
-        g = Expression('TR + TA*sin(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
+        g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
         bc0 = DirichletBC(W, Constant(0.0), OuterBoundary())
         bc1 = DirichletBC(W, g, InnerBoundary())
 

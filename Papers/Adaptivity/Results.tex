@@ -1,42 +1,58 @@
 In this section we present a detailed computational study of the automated
 goal-oriented adaptive algorithm presented in \autoref{sec:Algorithm} applied to
 some time-dependent test problems. To this end we first we apply our algorithm
-to a linear problem where the error representation is orthogonal due to Galerkin
-orthogonality. Namely, we demonstrate the effectiveness of
-\autoref{alg:Adaptivity} on the heat equation. Second, we demonstrate the
-effectiveness of the new algorithm on the 2D Navier-Stokes equations
-discretized using the a Galerkin/least-squares (GLS) stabilized finite element
-with continuous piecewise linear basis functions (cG(1)). Third, we apply our
-algorithm to the Variable Density Navier-Stokes equation discetized using the
-GLS-cG(1) finite element.
+to a linear problem, \autoref{tst:Heat}, where the error representation is
+orthogonal due to Galerkin orthogonality. Namely, we demonstrate the
+effectiveness of \autoref{alg:Adaptivity} on the heat equation. Then in
+\autoref{tst:NSE2D} and \autoref{tst:NSE3D}, we demonstrate the effectiveness of
+the new algorithm on the incompressible Navier-Stokes equations in 2D and 3D,
+respectively, discretized using the a Galerkin/least-squares (GLS) stabilized
+finite element with continuous piecewise linear basis functions (cG(1)). In
+\autoref{tst:rhoNSE}, we apply our algorithm to the Variable Density
+Navier-Stokes equation discetized using the GLS-cG(1) finite element.
 
-\subsection{Heat Equation} \label{sse:Heat}
+\begin{test}[Anisotropic Heat Equation] \label{tst:Heat}
   The heat equation is a purely parabolic linear partial differential equation
   and therefore the global error representation is zero due to Galerkin
   Orthogonality.  Thus it is an excellent choice to demonstrate the
   effectiveness of the algorithm described in \autoref{sec:Algorithm}.
 
-  In this test problem we are concerned with the numerical solution of the heat
-  equation given by
-  \begin{equation}
-    u_t - \nabla \cdot (\kappa \nabla u) = f, \quad \text{in } \Omega
-    \label{eq:Heat}
+  In this test problem we extend the test given by Li et al.
+  \cite[Example 5.1]{Li2010}, i.e. the anisotropic diffusion equation, to the
+  time dependent case. Thus we are concerned with the numerical solution of the
+  anisotropic heat equation on a domain with a hole given by
+  \begin{equation} \label{eq:Heat}
+    \begin{split}
+      u_t - \nabla \cdot (\kappa \nabla u) &= f, \quad \text{in } \Omega \\
+      u &= g, \quad \text{on } \partial \Omega \\
+      u(0;x,y) &= u_0(x,y)
+    \end{split}
   \end{equation}
-  subject to the Dirichlet boundary condition
-  \begin{equation}
-    u = g, \quad \text{on } \partial \Omega
-    \label{eqn:HeatBC}
-  \end{equation}
-  where $\Omega = \Omega_1\slash~\Omega_2 = [0, 1]^2\slash~[\frac{4}{9},
-  \frac{5}{9}]^2$ is the physical domain, $f=0$ is the forcing function,
+  where $\Omega = \Omega_1\setminus~\Omega_2$ is the physical domain, $f$ is the
+  forcing function, $g$ is the function describing the boundary condition, and
+  $\kappa$ is the diffusion tensor. For this test we take $\Omega_1 = [0,
+  1]^2$, $\Omega_2 = [\frac{4}{9}, \frac{5}{9}]^2$, $f = 0$
   \begin{equation}
     g = \begin{cases}
         0 & \text{if } (x,y) \in \partial \Omega_1 \\
-        0.5 + 0.5 \sin(\theta\, t) & \text{if } (x,y) \in \partial \Omega_2
+        0.5 - 0.5\, \cos(10\, t) & \text{if } (x,y) \in \partial \Omega_2,
     \end{cases}
     \label{eqn:BCFunction}
   \end{equation}
+  and the diffusion tensor to be
+  \begin{equation}
+    \kappa = \begin{bmatrix} 500.5 & 499.5 \\ 499.5 & 500.5 \end{bmatrix}.
+    \label{eqn:DiffusionTensor}
+  \end{equation}
+  The above diffusion tensor results in a diffusion process which is
+  preferential along the line $x = y$.
+\end{test}
 
-\subsection{Navier-Stokes} \label{sse:NSE}
+\begin{test}[2D Navier-Stokes] \label{tst:NSE2D}
+\end{test}
 
-\subsection{Variable Density Navier-Stokes} \label{sse:rhoNSE}
+\begin{test}[3D Navier-Stokes] \label{tst:NSE3D}
+\end{test}
+
+\begin{test}[Variable Density Navier-Stokes] \label{tst:rhoNSE}
+\end{test}

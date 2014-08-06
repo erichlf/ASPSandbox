@@ -15,6 +15,7 @@
 %\let\proof\relax
 %\let\endproof\relax
 \RequirePackage{amsthm}
+\RequirePackage{thmtools}
 \RequirePackage{float}
 \RequirePackage[normalem]{ulem}
 \RequirePackage{enumerate}
@@ -34,6 +35,9 @@
 \RequirePackage{hyperref}
 \RequirePackage[ruled,noline]{algorithm2e}
 \RequirePackage{multirow}
+\RequirePackage{authblk}
+\RequirePackage{geometry}
+
 % Start of 'ignore natbib' hack
 \let\bibhang\relax
 \let\citename\relax
@@ -42,7 +46,14 @@
 \expandafter\let\csname ver@natbib.sty\endcsname\relax
 % End of 'ignore natbib' hack
 \RequirePackage[backend=bibtex]{biblatex}
+
 \RequirePackage[utf8]{inputenc}
+
+\renewbibmacro{in:}{}
+
+\makeatletter
+  \numdef\blx@maxbibnames{99}
+\makeatother
 
 \lstset{% command to set programming language parameter(s)
     frame=single,
@@ -73,11 +84,44 @@
 \newtheorem{corollary}{Corollary}[section]
 \newtheorem{remark}{Remark}[section]
 \newtheorem{definition}{Definition}[section]
-\newtheorem{example}{Example}[section]
-\newcommand{\lemmaautorefname}{Lemma}
+\renewcommand{\lemmaautorefname}{Lemma}
 \newcommand{\propautorefname}{Proposition}
 \renewcommand{\theoremautorefname}{Theorem}
-\newcommand{\corollaryautorefname}{Corollary}
+\renewcommand{\corollaryautorefname}{Corollary}
+
+\declaretheoremstyle[
+  spaceabove=6pt, spacebelow=6pt,
+  headfont=\normalfont\bfseries,
+  notefont=\mdseries, notebraces={(}{)},
+  bodyfont=\normalfont,
+  postheadspace=1em,
+  numberwithin=section
+]{exstyle}
+\declaretheorem[style=exstyle]{example}
+\renewcommand{\exampleautorefname}{Example}
+\declaretheoremstyle[
+  spaceabove=6pt, spacebelow=6pt,
+  headfont=\normalfont\bfseries,
+  notefont=\mdseries, notebraces={(}{)},
+  bodyfont=\normalfont,
+  postheadspace=1em,
+  headpunct={},
+  qed=$\blacktriangleleft$,
+  numbered=no
+]{solstyle}
+\declaretheorem[style=solstyle]{solution}
+\renewcommand{\solutionautorefname}{Solution}
+
+\declaretheoremstyle[
+  spaceabove=6pt, spacebelow=6pt,
+  headfont=\normalfont\bfseries,
+  notefont=\mdseries, notebraces={(}{)},
+  bodyfont=\normalfont,
+  postheadspace=1em,
+  numberwithin=section
+]{teststyle}
+\declaretheorem[style=teststyle]{test}
+\renewcommand{\testautorefname}{Test}
 
 %redefine sections for autoref
 \def\chapterautorefname{Chapter}

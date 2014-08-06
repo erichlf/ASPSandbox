@@ -1,50 +1,50 @@
-\documentclass[a4paper]{elsarticle}
-\usepackage[a4paper]{geometry}
+\documentclass[a4paper]{article}
+\PassOptionsToPackage{a4paper}{geometry}
 \PassOptionsToPackage{firstinits=true,isbn=false,url=false,doi=false,style=numeric,sorting=ydnt}{biblatex}
 \usepackage{elf}
 
-\defbibheading{section}{\section*{#1}\vspace{0.5em}}
-\renewbibmacro{in:}{}
+%keywords environment
+\def\keywords{\vspace{.5em}
+{\textit{Keywords}:\,\relax%
+}}
+\def\endkeywords{\par}
 
-\makeatletter
-  \numdef\blx@maxbibnames{99}
-\makeatother
+\addbibresource{Complete.bib}
+
+\author[1]{Erich L Foster}
+%\ead{efoster@bcamath.org}
+%\ead[url]{http://www.bcamath.org/en/people/efoster}
+
+\author[1,2]{Johan Jansson}
+%\ead{jjansson@bcamath.org}
+%\ead[url]{http://www.bcamath.org/en/people/jjansson}
+
+\affil[1]{Basque Center for Applied Mathematics, Bilbao, Basque Country -- Spain}
+
+\affil[2]{CSC, KTH Royal Institute of Technology, Stockholm, Sweden}
+
+\title{Automated Error Control in Time-Dependent Finite Elements}
 
 \begin{document}
-  \begin{frontmatter}
-    \author[BCAM]{Erich L Foster\corref{cor1}}
-    \ead{efoster@bcamath.org}
-    \ead[url]{http://www.bcamath.org/en/people/efoster}
-    \cortext[cor1]{Corresponding Author}
-
-    \author[BCAM,KTH]{Johan Jansson}
-    \ead{jjansson@bcamath.org}
-    \ead[url]{http://www.bcamath.org/en/people/jjansson}
-
-    \address[BCAM]{Basque Center for Applied Mathematics, Bilbao, Basque Country -- Spain}
-
-    \address[KTH]{CSC, KTH Royal Institute of Technology, Stockholm, Sweden}
-
-    \title{Automated Error Control in Time-Dependent Finite Elements}
-
-    \begin{abstract}
-      In this paper we present a new approach to \emph{automated goal-oriented
-      error control} to the solutions of \emph{linear and non-linear
-      time-dependent} partial differential equations. The approach is based
-      on using the \emph{a posteriori error estimate} directly, where both the
-      primal and dual solutions are approximated using the same finite element
-      space.  Traditionally, the a posteriori error estimate has been thought to
-      contain no information about the error, since it gives a global a
-      posteriori error estimate that is zero due to \emph{Galerkin
-      Orthogonality}. However, we show that locally, on each triangle, the that
-      the local orthogonal error representation behaves similar to the
-      non-orthogonal error representation and thus the orthogonal error
-      representation is rich in information.
-    \end{abstract}
-    \begin{keyword}
-      FEM\sep a posteriori\sep error control\sep adaptivity\sep fluid dynamics
-    \end{keyword}
-  \end{frontmatter}
+  \maketitle
+  \tableofcontents
+  \begin{abstract}
+    In this paper we present a new approach to \emph{automated goal-oriented
+    error control} to the solutions of \emph{linear and non-linear
+    time-dependent} partial differential equations. The approach is based
+    on using the \emph{a posteriori error estimate} directly, where both the
+    primal and dual solutions are approximated using the same finite element
+    space.  Traditionally, the a posteriori error estimate has been thought to
+    contain no information about the error, since it gives a global a
+    posteriori error estimate that is zero due to \emph{Galerkin
+    Orthogonality}. However, we show that locally, on each triangle, the that
+    the local orthogonal error representation behaves similar to the
+    non-orthogonal error representation and thus the orthogonal error
+    representation is rich in information.
+  \end{abstract}
+  \begin{keywords}
+    FEM, a posteriori, error control, adaptivity, fluid dynamics
+  \end{keywords}
 
   \section{Introduction} \label{sec:Intro}
   \input{Intro.tex}
