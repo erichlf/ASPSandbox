@@ -14,14 +14,15 @@
 <area shape="rect" id="node14" href="$classproblems_1_1DensityCylinder_1_1OutflowBoundary.htm" title="{problems.DensityCylinder.\lOutflowBoundary\n||+ inside()\l}" alt="" coords="2483,138,2659,230"/>
 <area shape="rect" id="node15" href="$classproblems_1_1DoubleGyre_1_1NoslipBoundary.htm" title="{problems.DoubleGyre.Noslip\lBoundary\n||+ inside()\l}" alt="" coords="2683,138,2872,230"/>
 <area shape="rect" id="node16" href="$classproblems_1_1Drop_1_1NoslipBoundary.htm" title="{problems.Drop.NoslipBoundary\n||+ inside()\l}" alt="" coords="2896,145,3099,223"/>
-<area shape="rect" id="node17" href="$classproblems_1_1Ground_1_1Surface.htm" title="{problems.Ground.Surface\n||+ inside()\l}" alt="" coords="3123,145,3293,223"/>
-<area shape="rect" id="node18" href="$classproblems_1_1Hole_1_1InnerBoundary.htm" title="{problems.Hole.InnerBoundary\n||+ inside()\l}" alt="" coords="3317,145,3512,223"/>
-<area shape="rect" id="node19" href="$classproblems_1_1Hole_1_1OuterBoundary.htm" title="{problems.Hole.OuterBoundary\n||+ inside()\l}" alt="" coords="3536,145,3733,223"/>
-<area shape="rect" id="node20" href="$classproblems_1_1PeregrineSoliton_1_1X__SlipBoundary.htm" title="{problems.PeregrineSoliton.\lX_SlipBoundary\n||+ inside()\l}" alt="" coords="3757,138,3936,230"/>
-<area shape="rect" id="node21" href="$classproblems_1_1PeregrineSoliton_1_1Y__SlipBoundary.htm" title="{problems.PeregrineSoliton.\lY_SlipBoundary\n||+ inside()\l}" alt="" coords="3960,138,4139,230"/>
-<area shape="rect" id="node22" href="$classproblems_1_1Point_1_1NoslipBoundary.htm" title="{problems.Point.NoslipBoundary\n||+ inside()\l}" alt="" coords="4163,145,4368,223"/>
-<area shape="rect" id="node23" href="$classproblems_1_1Pool_1_1X__SlipBoundary.htm" title="{problems.Pool.X_SlipBoundary\n||+ inside()\l}" alt="" coords="4392,145,4595,223"/>
-<area shape="rect" id="node24" href="$classproblems_1_1Pool_1_1Y__SlipBoundary.htm" title="{problems.Pool.Y_SlipBoundary\n||+ inside()\l}" alt="" coords="4619,145,4821,223"/>
-<area shape="rect" id="node25" href="$classproblems_1_1Square_1_1NoslipBoundary.htm" title="{problems.Square.NoslipBoundary\n||+ inside()\l}" alt="" coords="4845,145,5061,223"/>
-<area shape="rect" id="node26" href="$classproblems_1_1TwoFluid_1_1NoslipBoundary.htm" title="{problems.TwoFluid.Noslip\lBoundary\n||+ inside()\l}" alt="" coords="5085,138,5259,230"/>
+<area shape="rect" id="node17" href="$classproblems_1_1Ground_1_1Surface2D.htm" title="{problems.Ground.Surface2D\n||+ inside()\l}" alt="" coords="3123,145,3309,223"/>
+<area shape="rect" id="node18" href="$classproblems_1_1Ground_1_1Surface3D.htm" title="{problems.Ground.Surface3D\n||+ inside()\l}" alt="" coords="3333,145,3520,223"/>
+<area shape="rect" id="node19" href="$classproblems_1_1Hole_1_1InnerBoundary.htm" title="{problems.Hole.InnerBoundary\n||+ inside()\l}" alt="" coords="3544,145,3739,223"/>
+<area shape="rect" id="node20" href="$classproblems_1_1Hole_1_1OuterBoundary.htm" title="{problems.Hole.OuterBoundary\n||+ inside()\l}" alt="" coords="3763,145,3960,223"/>
+<area shape="rect" id="node21" href="$classproblems_1_1PeregrineSoliton_1_1X__SlipBoundary.htm" title="{problems.PeregrineSoliton.\lX_SlipBoundary\n||+ inside()\l}" alt="" coords="3984,138,4163,230"/>
+<area shape="rect" id="node22" href="$classproblems_1_1PeregrineSoliton_1_1Y__SlipBoundary.htm" title="{problems.PeregrineSoliton.\lY_SlipBoundary\n||+ inside()\l}" alt="" coords="4187,138,4365,230"/>
+<area shape="rect" id="node23" href="$classproblems_1_1Point_1_1NoslipBoundary.htm" title="{problems.Point.NoslipBoundary\n||+ inside()\l}" alt="" coords="4389,145,4595,223"/>
+<area shape="rect" id="node24" href="$classproblems_1_1Pool_1_1X__SlipBoundary.htm" title="{problems.Pool.X_SlipBoundary\n||+ inside()\l}" alt="" coords="4619,145,4821,223"/>
+<area shape="rect" id="node25" href="$classproblems_1_1Pool_1_1Y__SlipBoundary.htm" title="{problems.Pool.Y_SlipBoundary\n||+ inside()\l}" alt="" coords="4845,145,5048,223"/>
+<area shape="rect" id="node26" href="$classproblems_1_1Square_1_1NoslipBoundary.htm" title="{problems.Square.NoslipBoundary\n||+ inside()\l}" alt="" coords="5072,145,5288,223"/>
+<area shape="rect" id="node27" href="$classproblems_1_1TwoFluid_1_1NoslipBoundary.htm" title="{problems.TwoFluid.Noslip\lBoundary\n||+ inside()\l}" alt="" coords="5312,138,5485,230"/>
 </map>
