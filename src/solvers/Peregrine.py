@@ -152,11 +152,19 @@ class Solver(SolverBase):
         J = Functional(-inner(eta, eta)*dx*dt[FINISH_TIME] + self.Zeta*self.Zeta*dx)
 
         #shape parameters
-        m = [ScalarParameter(p) for p in problem.params]
+        m = [Control(p) for p in problem.params]
         Jhat = ReducedFunctional(J, m) #Reduced Functional
-        shape_opt = minimize(Jhat)
+        opt_params = minimize(Jhat)
+        opt_object = project(problem.object_init(opt_params), self.Q)
+        if self.options['plot_solution']:
+            plot(opt_object, title='Optimization result.')
+            interactive()
+        else:
+            optfile << opt_object
 
-        return shape_opt
+        print 'H=%f, N1=%f, N2=%f, W=[%f, %f, %f, %f], dz=%f]' % \
+                (opt_params[0], opt_params[1], opt_params[2], opt_params[3], \
+                opt_params[4], opt_params[5], opt_params[6], opt_params[7])
 
     def functional(self,mesh,w):
         '''

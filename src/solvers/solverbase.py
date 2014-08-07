@@ -149,12 +149,7 @@ class SolverBase:
         if(self.options['optimize'] and  'Optimize' in dir(self)):
             self.optfile = File(self.s + '_Opt.pvd') #file for solution to optimization
 
-            opt = self.Optimize(problem, w)
-            if self.options['plot_solution']:
-                plot(opt, title='Optimization result.')
-                interactive()
-            else:
-                optfile << opt
+            self.Optimize(problem, w)
 
         return w
 

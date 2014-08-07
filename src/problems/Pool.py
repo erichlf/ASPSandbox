@@ -125,6 +125,51 @@ class Object(Expression):
         else:
             value[0] = 0.
 
+    def deval(self, value, x, derivative_coefficient):
+        # FIXME: Here you need to implement the derivative of eval
+        # with respect to derivative_coefficient.
+        # derivative_coefficient will be one of the dependency variables
+        # specified in the dependencies() function below.
+
+        H = self.H
+        N1 = self.N1
+        N2 = self.N2
+        w = self.w
+        dz = self.dz/H
+        t = self.t
+        vmax = self.vmax
+
+        u = vmax*tanh(t)
+
+        X = ((x[0] - objectLeft - u*t)/(objectRight - objectLeft), \
+                (x[1] - objectBottom)/(objectTop - objectBottom))
+
+        if(X[0]>=0 and X[0]<=1 and X[1]>=0 and X[1]<=1):
+            # Class function; taking input of N1 and N2
+            C = X[0]**N1*(1. - X[0])**N2
+
+            # Shape function; using Bernstein Polynomials
+            n = len(w) - 1 # Order of Bernstein polynomials
+
+            S = 0;
+            for i in range(0,n):
+                K = float(factorial(n)/(factorial(i)*factorial(n-i)));
+                S = S + w[i]*K*X[0]**i*(1. - X[0])**(n-i)
+
+            value[0] = H*(C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)/0.25
+        else:
+            value[0] = 0.
+
+    def dependencies(self):
+        return [self.H, self.N1, self.N2,
+                self.w[0], self.w[1], self.w[2], self.w[3],
+                self.dz]
+
+    def copy(self):
+        return self.__class__(vmax=self.vmax, H=self.H, N1=self.N1, N2=self.N2, 
+                      W1=self.w[0], W2=self.w[1], W3=self.w[2], W4=self.w[3], 
+                      dz=self.dz, t=self.t)
+
     def value_shape(self):
         return ()
 
@@ -164,10 +209,8 @@ class Problem(ProblemBase):
         W4 = Constant(1., name='W4')
         dz = Constant(0., name='dz')
 
-        self.params = ['ObjHeight', 'N1', 'N2', 'W1', 'W2', 'W3', 'W4', 'dz']
-
-        self.zeta0 = Object(vmax=vmax, H=ObjH, N1=N1, N2=N2, W1=W1, W2=W2, W3=W3, W4=W4, \
-                dz=dz, t=self.t0)
+        self.params = [ObjH, N1, N2, W1, W2, W3, W4, dz]
+        self.zeta0 = object_init(self.params)
 
         #Defintion of the shape of the seabed
         M1 = (hb - hd)/(y1 - objectTop)
@@ -180,6 +223,14 @@ class Problem(ProblemBase):
             ' : 0) '
         self.D = str(hd) + '+ (' + M + ')*(x[1] - (' + X + '))'
 
+    def object_init(self, params)
+        '''
+            Returns a DOLFIN function representing the wave object given params.
+        '''
+        return Object(vmax=vmax, H=parms[0], N1=params[1], N2=params[2], \
+                W1=params[3], W2=params[4], W3=params[5], W4=params[6], \
+                dz=params[7], t=self.t0)
+
     def update_bathymetry(self, Q, t):
         '''
             Tells the solver what the bathymetry looks like at time t.
@@ -187,11 +238,11 @@ class Problem(ProblemBase):
         D = Expression(self.D, element=Q.ufl_element(), annotate=False)
 
         self.zeta0.t = t
-        zeta = project(self.zeta0, Q)
+        zeta = project(self.zeta0, Q, annotate=True)
         self.zeta0.t = max(t - self.k, self.t0)
-        zeta_ = project(self.zeta0, Q)
+        zeta_ = project(self.zeta0, Q, annotate=True)
         self.zeta0.t = max(t - 2*self.k, self.t0)
-        zeta__ = project(self.zeta0, Q)
+        zeta__ = project(self.zeta0, Q, annotate=True)
 
         H = project(D + self.epsilon*zeta, Q)
         H_ = project(D + self.epsilon*zeta_, Q)
@@ -229,14 +280,6 @@ class Problem(ProblemBase):
         bcs = [bc_X, bc_Y]
 
         return bcs
-
-    def F1(self, t):
-        #forcing function for the momentum equation
-        return Expression(self.options['F1'],t=t)
-
-    def F2(self, t):
-        #mass source for the continuity equation
-        return Expression(self.options['F2'],t=t)
 
     def __str__(self):
         return 'Pool'
