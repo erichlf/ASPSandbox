@@ -19,7 +19,7 @@ ymax = 5./9.
 kappa1 = 1000.;  kappa2 = 1.
 theta = pi/4.
 rho = 1.; c = 1.
-TR = 0.5; TA = 0.5; omega = 3.*pi
+TR = 0.5; TA = 0.5; omega = 2.*pi
 
 class InitialConditions(Expression):
     def eval(self,values,x):
