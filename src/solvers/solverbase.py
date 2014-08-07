@@ -100,6 +100,7 @@ class SolverBase:
 
             # Adaptive loop
             i = 0
+            m = 0 #initialize
             while(i<=maxadaps and COND>TOL):
                 #setup file names
                 self.file_naming(n=i, dual=False)
@@ -109,9 +110,13 @@ class SolverBase:
                     print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
                 else:
                     print 'Solving on %d%s adapted mesh.' % (i, nth[-1])
+
                 # Solve primal and dual problems and compute error indicators
-                w, ei, COND = self.adaptive_solve(problem, mesh, k)
-                print 'sum(abs(EI))=%0.3G' % COND
+                m_ = m #save the previous functional value
+                W, w, m, ei = self.adaptive_solve(problem, mesh, k)
+                COND = self.condition(ei, m, m_)
+                print 'Stopping Criterion=%0.3G' % COND
+
                 if i==0 and self.options['plot_solution']:
                     plot(ei, title="Error Indicators.", elevate=0.0)
                     plot(mesh, title='Initial mesh', size=((600, 300)))
@@ -198,9 +203,14 @@ class SolverBase:
             LR1 = k*self.weak_residual(problem, W, wtape[i], wtape[i+1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1,annotate=False).array()
 
-        COND = abs(sum(ei.vector()))
+        return W, w, m, ei
 
-        return w, ei, COND
+    def condition(self, ei, m, m_):
+        '''
+            Adaptive stopping criterion for non-Galerkin-orthogonal problems.
+            Overload this for Galerkin-orthogonal problems.
+        '''
+        return abs(sum(ei.vector()))
 
     def forward_solve(self, problem, mesh, k, func=False):
         '''

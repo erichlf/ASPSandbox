@@ -60,6 +60,12 @@ class Solver(SolverBase):
 
       return M
 
+    def condition(self, ei, m, m_):
+        '''
+            Adaptive stopping criterion for Galerking-orthogonal problem (Heat).
+        '''
+        return abs(m - m_)
+
     def Save(self, problem, w, dual=False):
         k = self.k
         Nx = self.options['Nx']
