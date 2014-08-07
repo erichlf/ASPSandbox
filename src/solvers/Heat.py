@@ -62,7 +62,10 @@ class Solver(SolverBase):
 
     def condition(self, ei, m, m_):
         '''
-            Adaptive stopping criterion for Galerking-orthogonal problem (Heat).
+            Adaptive stopping criterion for Galerkin-orthogonal problem (Heat).
+            ei - error indicators (non-Galerkin-orthogonal problems)
+            m - current functional size (Galerkin-orthogonal problems)
+            m_ - previous functional size (Galerkin-orthogonal problems)
         '''
         return abs(m - m_)
 

@@ -3,13 +3,25 @@ goal-oriented adaptive algorithm presented in \autoref{sec:Algorithm} applied to
 some time-dependent test problems. To this end we first we apply our algorithm
 to a linear problem, \autoref{tst:Heat}, where the error representation is
 orthogonal due to Galerkin orthogonality. Namely, we demonstrate the
-effectiveness of \autoref{alg:Adaptivity} on the heat equation. Then in
-\autoref{tst:NSE2D} and \autoref{tst:NSE3D}, we demonstrate the effectiveness of
-the new algorithm on the incompressible Navier-Stokes equations in 2D and 3D,
-respectively, discretized using the a Galerkin/least-squares (GLS) stabilized
-finite element with continuous piecewise linear basis functions (cG(1)). In
-\autoref{tst:rhoNSE}, we apply our algorithm to the Variable Density
-Navier-Stokes equation discetized using the GLS-cG(1) finite element.
+effectiveness of \autoref{alg:Adaptivity} on the heat equation. Next we
+demonstrate the effectiveness of \autoref{alg:Adaptivity} on non-linear
+problems, where the error representation is no longer orthogonal. To this end,
+we apply the algorithm to the benchmark problems presented in Sch\"afer et
+al.\cite{Schaefer1996}, \autoref{tst:Cylinder2D}, \autoref{tst:Rectangle2D}, and
+\autoref{tst:Rectangle3D}, where the equation of interest is the Icompressible
+Navier-Stokes equation and our particular focus is on flow around bluff bodies.
+Finally, in \autoref{tst:rhoNSE}, we apply our algorithm to the ever more
+complex problem of Variable Density Incompressible Navier-Stokes equation, where
+we focus on the solution to Rayleigh-Taylor instability.
+
+\subsection{Orthogonal Error Representation}
+In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
+for problems where the global error representation is orthogonal. In these types
+of problems the traditional thought is that the error representation doesn't
+provide information about the error. However, in \autoref{tst:Heat}, we show
+that the local error representation does, indeed, contain significant
+information about the error and thus is an effective way of controlling the
+error.
 
 \begin{test}[Anisotropic Heat Equation] \label{tst:Heat}
   The heat equation is a purely parabolic linear partial differential equation
@@ -46,13 +58,89 @@ Navier-Stokes equation discetized using the GLS-cG(1) finite element.
   \end{equation}
   The above diffusion tensor results in a diffusion process which is
   preferential along the line $x = y$.
+  \textcolor{red}{Need info on discretization.}
 \end{test}
 
-\begin{test}[2D Navier-Stokes] \label{tst:NSE2D}
+\subsection{Non-Orthogonal Error Representation}
+In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
+applied to problems where the global error representation is no longer
+orthogonal. In particular, we look at applying \autoref{alg:Adaptivity} to the
+Incompressible Navier-Stokes and the Variable Density Incompressible Navier
+Stokes. In both cases, we solve each test case using a
+Galerkin\slash~Least-Squares (GLS) stabilized cG(1)cG(1) finite element, where
+the first cG(1) indicates that the test and trial functions are both piecewise
+linear, while the second cG(1) indicates that the test piecewise constants and
+the trial functions are continuous piecewise linear.
+
+\subsubsection{Incompressible Navier-Stokes}
+For test problems \ref{tst:Cylinder2D}, \ref{tst:Rectangle2D}, and
+\ref{tst:Rectangle3D} we are concerned with the Incompressible Navier-Stokes
+with constant kinematic viscosity, $\nu>0$, in a domain $\Omega\subset \R^d$,
+with boundary $\partial \Omega$, i.e.
+where the strong residual is given by
+\begin{equation}
+    \begin{split}
+      \mathbf{u}_t + \left( \mathbf{u} \cdot \nabla \right) \mathbf{u} - \nu\,
+          \Delta \mathbf{u} + \nabla p = \mathbf{f}, \quad \mathbf{x} \in \Omega \\
+          \nabla \cdot \mathbf{u} = 0, \quad \mathbf{x} \in \Omega
+    \end{split}
+  \label{eqn:NSE}
+\end{equation}
+Given a step size $k$ and applying the cG(1)cG(1) finite element discretization
+to \eqref{eqn:NSE} with $V = (v, q) \in X \subset [H^1_0(\Omega)]^d \times
+H^1(\Omega)$ gives the following weak residual
+\begin{equation}
+  \begin{split}
+    r(\bar{U}^n; V) &= \left(\mathbf{u}^n - \mathbf{u}^{n-1}\right)\,k^{-1}
+        + (\left( \bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n, v) \\
+        &\quad- \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
+        - (p^n, \nabla \cdot v) - (\mathbf{f}, v)
+        + (\nabla \cdot \bar{\mathbf{u}}^n, v) = 0
+  \end{split}
+  \label{eqn:WeakNSE}
+\end{equation}
+where $\bar{U}^n = (\bar{\mathbf{u}}^n,p)$, and $\bar{\mathbf{u}}^n =
+\frac{1}{2}\left(\mathbf{u}^n + \mathbf{u}^{n-1}\right)$. Given the solution
+$U=(\mathbf{u},p)$, since the elements we are concerned with (cG(1)cG(1)) have
+test functions which are linear in space and constant in time the strong
+residual is given by
+\begin{equation}
+    R(\bar{U}^n,U) = \begin{cases}
+      \left(\mathbf{u} \cdot \nabla \right) \bar{\mathbf{u}}^n
+        + \nabla p^n - \mathbf{f} = 0 \\
+      \nabla \cdot \bar{\mathbf{u}}^n = 0.
+    \end{cases}
+  \label{eqn:StrongNSE}
+\end{equation}
+\textcolor{red}{Should $\mathbf{f}$ be an average between time steps?}
+Finally, the GLS-cG(1)cG(1) discretization of \eqref{eqn:NSE} is given by
+\begin{equation}
+  r(\bar{U}^n,V) + SD_{\delta}^n(\bar{U}^n,V) = 0, \quad \forall V=(v,q) \in X.
+  \label{eqn:G2}
+\end{equation}
+Here $SD_{\delta}^n$ is the GLS and is given by
+\begin{equation}
+  SD_{\delta}^n \equiv
+    \delta_1 (\left(\bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n
+        + \nabla p^n - \mathbf{f},
+      \left(\bar{\mathbf{u}}^n \cdot \nabla \right) v + \nabla q)
+      + \delta_2 (\nabla \cdot \bar{\mathbf{U}}^n, \nabla \cdot v),
+  \label{eqn:NSEStabilization}
+\end{equation}
+where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}|^2\, h^{-2})^{-1/2}$, and
+$\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem independent
+constants of unit size.
+
+
+\begin{test}[Flow Around a Cylinder] \label{tst:Cylinder2D}
 \end{test}
 
-\begin{test}[3D Navier-Stokes] \label{tst:NSE3D}
+\begin{test}[2D Flow Around a Square] \label{tst:Rectangle2D}
 \end{test}
 
+\begin{test}[3D Flow Around a Rectangular-Cylinder] \label{tst:Rectangle3D}
+\end{test}
+
+\subsubsection{Variable Density Incompressible Navier-Stokes}
 \begin{test}[Variable Density Navier-Stokes] \label{tst:rhoNSE}
 \end{test}

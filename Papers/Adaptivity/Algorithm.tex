@@ -1,13 +1,18 @@
 
 \begin{algorithm}[!htp]
+\begin{minipage}[t]{\columnwidth} %this minipage is a hack to use footenotes
   \caption{Adaptive mesh refinement} \label{alg:Adaptivity}
   \KwData{Let $(\mathcal{T}_k, V_k,\mathcal{P})$ be a finite element
     discretization of $r(U,v) = a(U,v) - L(v)$.} \vspace{0.5em}
   \SetAlgoLined
-  \While{ $\left|\sum_{j=1}^M \mathcal{E}^{cG(1)}_{K_j}\right| > TOL$}{
-      \nl For the mesh $\mathcal{T}_k$: compute the primal problem and the dual problem. \\
+  \While{ $\left|\sum_{j=1}^M \mathcal{E}^{cG(1)}_{K_j}\right| > TOL$
+    \footnote{Use $\left|M(U^k) - M(U^{k-1}\right| > \gamma TOL$ for orthogonal
+    error representation.}}{
+      \nl For the mesh $\mathcal{T}_k$: compute the primal problem and the dual 
+            problem. \\
       \nl Mark some chosen percentage of the elements with highest
         $\mathcal{E}^{cG(1)}_{K_j}$ for refinement.\\
-      \nl Generate the refined mesh $\mathcal{T}^{k+1}$, set $k = k + 1$
+      \nl Generate the refined mesh $\mathcal{T}_{k+1}$, set $k = k + 1$
   }
+\end{minipage}
 \end{algorithm}

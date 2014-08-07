@@ -209,6 +209,9 @@ class SolverBase:
         '''
             Adaptive stopping criterion for non-Galerkin-orthogonal problems.
             Overload this for Galerkin-orthogonal problems.
+            ei - error indicators (non-Galerkin-orthogonal problems)
+            m - current functional size (Galerkin-orthogonal problems)
+            m_ - previous functional size (Galerkin-orthogonal problems)
         '''
         return abs(sum(ei.vector()))
 
