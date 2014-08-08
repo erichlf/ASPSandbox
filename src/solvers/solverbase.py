@@ -34,7 +34,7 @@ class SolverBase:
         self.options = options
 
         #initialize parameters
-        self.Re = self.options['Re'] #Reynolds number
+        self.Re = None #Reynolds number
         self.H = None #Fluid depth
         self.Ro = None #Rossby number
         self.Fr = None #Froude number

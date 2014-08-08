@@ -14,6 +14,11 @@ Finally, in \autoref{tst:rhoNSE}, we apply our algorithm to the ever more
 complex problem of Variable Density Incompressible Navier-Stokes equation, where
 we focus on the solution to Rayleigh-Taylor instability.
 
+For each test below we set the max iteration to $20$ and set the $TOL=0$. In
+this way we will treat the solution obtained from the final adaptive mesh as the
+so-called 'true solution' and use this solution to determine the effectivity of
+the adaptive algorithm.
+
 \subsection{Orthogonal Error Representation}
 In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
 for problems where the global error representation is orthogonal. In these types
