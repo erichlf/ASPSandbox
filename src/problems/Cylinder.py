@@ -45,18 +45,24 @@ class InflowBoundary(SubDomain):
 
 # No-slip boundary
 class NoSlipBoundary(SubDomain):
-    def __init__(self, dim):
+    def __init__(self, dim, cube):
         SubDomain.__init__(self)
         self.dim = dim
+        self.cube = cube
 
     def inside(self, x, on_boundary):
         dx = x[0] - xcenter
         dy = x[1] - ycenter
         r = sqrt(dx*dx + dy*dy)
-        return on_boundary and \
-                (near(x[1], ymin) or near(x[1], ymax) or \
-                (self.dim == 3 and (near(x[2], zmin) or near(x[2], zmax))) or \
-                r < radius + bmarg)
+        return on_boundary \
+                and (near(x[1], ymin) or near(x[1], ymax) \
+                or (self.dim == 3 and (near(x[2], zmin) \
+                or near(x[2], zmax))) \
+                or (not self.cube and r < radius + bmarg) \
+                or (self.cube and (near(x[0], xcenter - radius) \
+                or near(x[0], xcenter + radius) \
+                or (self.dim == 3 and (near(x[1], ycenter - radius) \
+                or near(x[1], ycenter + radius))))))
 
 # Outflow boundary
 class OutflowBoundary(SubDomain):
@@ -81,6 +87,7 @@ class Problem(ProblemBase):
         self.Nx = options['Nx']
         options['Ny'] = None
         options['Nz'] = None
+        self.cube = cube
 
         #setup our domain and conditions
         if self.dim == 2: #2D problem
@@ -136,7 +143,7 @@ class Problem(ProblemBase):
         bc0 = DirichletBC(W.sub(0), self.U, InflowBoundary())
 
         # Create no-slip boundary condition
-        bc1 = DirichletBC(W.sub(0), self.noSlip, NoSlipBoundary(self.dim))
+        bc1 = DirichletBC(W.sub(0), self.noSlip, NoSlipBoundary(self.dim, self.cube))
 
         # Create outflow boundary condition for pressure
         bc2 = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
