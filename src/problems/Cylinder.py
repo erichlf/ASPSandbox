@@ -95,7 +95,7 @@ class Problem(ProblemBase):
             Ubar = 2.*self.U((0,ymax/2.))[0]/3.
         else: #3D problem
             xmax = 2.5
-            xcenter = 0.5; ycenter = 0.5
+            xcenter = 0.5;
             channel = Box(xmin, ymin, zmin, xmax, ymax, zmax)
             if cube:
                 bluff = Box(xcenter - radius, ycenter - radius, zmin, \
@@ -110,6 +110,8 @@ class Problem(ProblemBase):
 
         domain = channel - bluff
         self.mesh = Mesh(domain, self.Nx)
+        plot(self.mesh)
+        interactive()
 
         #rescale Reynolds number to the problem
         options['Re'] = Ubar*Diameter*options['Re']
