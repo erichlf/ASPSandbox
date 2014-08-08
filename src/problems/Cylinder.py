@@ -110,8 +110,6 @@ class Problem(ProblemBase):
 
         domain = channel - bluff
         self.mesh = Mesh(domain, self.Nx)
-        plot(self.mesh)
-        interactive()
 
         #rescale Reynolds number to the problem
         options['Re'] = Ubar*Diameter*options['Re']
