@@ -141,10 +141,10 @@ class Problem(ProblemBase):
         bc1 = DirichletBC(W.sub(0), self.noSlip, NoSlipBoundary(self.dim))
 
         # Create outflow boundary condition for pressure
-#        bc2 = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
+        bc2 = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
 
         # Collect boundary conditions
-        bcs = [bc0, bc1]#, bc2]
+        bcs = [bc0, bc1, bc2]
 
         return bcs
 
