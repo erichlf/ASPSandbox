@@ -82,14 +82,14 @@ class SolverBase:
         T = problem.T
         t0 = problem.t0
 
-        TOL = 1E-10
+        TOL = 0*1E-10
         COND = 1
 
         #naming scheme
         self.s = 'results/' + self.prefix(problem) \
                 + self.suffix(problem)
 
-        maxadaps = 10 #max number of adaptive steps
+        maxadaps = 2*10 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
 
