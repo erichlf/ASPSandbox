@@ -81,7 +81,7 @@ class Solver(SolverBase):
         K1  = 1.
         K2  = 0.5
         d1 = K1*(self.k**(-2) + inner(U,U)*h**(-2))**(-0.5)
-        d2 = K2*h**(-1)
+        d2 = K2*h
 
         return d1, d2
 

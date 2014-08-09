@@ -105,7 +105,7 @@ class Solver(SolverBase):
         K3  = 0.5
         d1 = K1*(self.k**(-2) + inner(U,U)*h**(-2))**(-0.5)
         d2 = K2*(self.k**(-2) + rho*rho*h**(-2))**(-0.5)
-        d3 = K3*h**(-1)
+        d3 = K3*h
 
         return d1, d2, d3
 
