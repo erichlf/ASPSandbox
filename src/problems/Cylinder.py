@@ -41,7 +41,7 @@ class InitialConditions3D(Expression):
 # Inflow boundary
 class InflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and x[0] < xmin + bmarg
+        return on_boundary and near(x[0], xmin)
 
 # No-slip boundary
 class NoSlipBoundary(SubDomain):
@@ -54,20 +54,20 @@ class NoSlipBoundary(SubDomain):
         dx = x[0] - xcenter
         dy = x[1] - ycenter
         r = sqrt(dx*dx + dy*dy)
+
+        Cube = near(x[0], xcenter - radius) or near(x[0], xcenter + radius) \
+                or near(x[1], ycenter - radius) or near(x[1], ycenter + radius)
+
         return on_boundary \
                 and (near(x[1], ymin) or near(x[1], ymax) \
-                or (self.dim == 3 and (near(x[2], zmin) \
-                or near(x[2], zmax))) \
+                or (self.dim == 3 and (near(x[2], zmin) or near(x[2], zmax))) \
                 or (not self.cube and r < radius + bmarg) \
-                or (self.cube and (near(x[0], xcenter - radius) \
-                or near(x[0], xcenter + radius) \
-                or (self.dim == 3 and (near(x[1], ycenter - radius) \
-                or near(x[1], ycenter + radius))))))
+                or (self.cube and Cube))
 
 # Outflow boundary
 class OutflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and x[0] > xmax - bmarg
+        return on_boundary and near(x[0], xmax)
 
 # Problem definition
 class Problem(ProblemBase):
