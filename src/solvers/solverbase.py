@@ -134,6 +134,10 @@ class SolverBase:
                 self._timestep = 0 #reset the time step to zero
                 adj_reset() #reset the dolfin-adjoint
 
+                #get time step for the new mesh size
+                if 'time_step' in dir(self):
+                    k = self.time_step(problem.Ubar, mesh)
+
                 i += 1
 
             if i>maxadaps and COND>TOL:

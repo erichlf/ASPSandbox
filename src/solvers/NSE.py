@@ -85,5 +85,10 @@ class Solver(SolverBase):
 
         return d1, d2
 
+    def time_step(self, U, mesh):
+        C_CFL = 10.
+        return mesh.hmin()/U
+    #min(CellSize(mesh))/U
+
     def __str__(self):
           return 'NSE'
