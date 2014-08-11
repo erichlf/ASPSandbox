@@ -198,8 +198,7 @@ class SolverBase:
                 # Compute error indicators ei
                 wtape.append(DolfinAdjointVariable(w).tape_value(timestep=timestep))
                 phi.append(adj)
-                if self.options['save_solution']:
-                    self.update(problem, None, W, adj, dual=True)
+                self.update(problem, None, W, adj, dual=True)
 
         print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
