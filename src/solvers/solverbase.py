@@ -131,7 +131,6 @@ class SolverBase:
                 # Refine the mesh
                 print 'Refining mesh.'
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
-                self._timestep = 0 #reset the time step to zero
                 adj_reset() #reset the dolfin-adjoint
 
                 #get time step for the new mesh size
@@ -171,6 +170,7 @@ class SolverBase:
         parameters["adjoint"]["stop_annotating"] = False
         W, w, m = self.forward_solve(problem, mesh, k, func=True)
         parameters["adjoint"]["stop_annotating"] = True
+        self._timestep = 0 #reset the time step to zero
 
         T = problem.T
         t0 = problem.t0
@@ -199,6 +199,8 @@ class SolverBase:
                 wtape.append(DolfinAdjointVariable(w).tape_value(timestep=timestep))
                 phi.append(adj)
                 self.update(problem, None, W, adj, dual=True)
+
+        self._timestep = 0 #reset the time step to zero
 
         print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
@@ -366,9 +368,11 @@ class SolverBase:
             sys.stdout.write('\033[K')
             sys.stdout.write(s + '\r')
 
-            # Increase time step and record current time
-            self._timestep += 1
+            #record current time
             self._time = time()
+
+        # Increase time step 
+        self._timestep += 1
 
     def Save(self, problem, w, dual=False):
         '''
