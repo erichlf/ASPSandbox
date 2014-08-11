@@ -38,11 +38,11 @@ error.
   \cite[Example 5.1]{Li2010}, i.e. the anisotropic diffusion equation, to the
   time dependent case. Thus we are concerned with the numerical solution of the
   anisotropic heat equation on a domain with a hole given by
-  \begin{equation} \label{eq:Heat}
+  \begin{equation} \label{eqn:Heat}
     \begin{split}
       u_t - \nabla \cdot (\kappa \nabla u) &= f, \quad \text{in } \Omega \\
       u &= g, \quad \text{on } \partial \Omega \\
-      u(0;x,y) &= u_0(x,y)
+      u(x,y,0) &= u_0(x,y)
     \end{split}
   \end{equation}
   where $\Omega = \Omega_1\setminus~\Omega_2$ is the physical domain, $f$ is the
@@ -63,7 +63,16 @@ error.
   \end{equation}
   The above diffusion tensor results in a diffusion process which is
   preferential along the line $x = y$.
-  \textcolor{red}{Need info on discretization.}
+
+  Taking $u^n \in H^1_g(\Omega)$ and applying a cG(1) finite element
+  discretization, i.e. piecewise linear test and trial functions, with implicit
+  Euler time-stepping to \eqref{eqn:Heat} results in the following weak residual
+  \begin{equation}
+    r(u^n, v) = (u^n - u^{n-1})\, k^{-1} + (\kappa \nabla u^n, \nabla v) 
+      - (f, v) = 0, \quad \forall v \in H^1_0(\Omega)
+    \label{eqn:HeatWeak}
+  \end{equation}
+  \textcolor{red}{There should be a boundary integral on the RHS.}
 \end{test}
 
 \subsection{Non-Orthogonal Error Representation}
@@ -134,13 +143,85 @@ Here $SD_{\delta}^n$ is the GLS and is given by
 \end{equation}
 where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}|^2\, h^{-2})^{-1/2}$, and
 $\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem independent
-constants of unit size.
-
+constants of unit size. For each test case below we take the time-step to be 
+\begin{equation*}
+  k = C_{CFL}\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
+\end{equation*}
+where $C_{CFL}=10$.
 
 \begin{test}[Flow Around a Cylinder] \label{tst:Cylinder2D}
+  This test case is based on a benchmark problem from Sch\"afer and Turek
+  \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
+  rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For
+  the inlet boundary condition we take 
+  \begin{equation}
+    u(0,y,t) = (4\, U_m\,y\, (H - y)/H^2, 0),
+    \label{eqn:2DInlet}
+  \end{equation}
+  where $U_m = 1.5\, \text{m/s}$, $H = 0.41\, \text{m}$. For the kinematic
+  viscosity we take $\nu = 10^{-3}\, \text{m}^2\text{/s}$, resulting in a
+  Reynolds number of $Re=100$.
+
+  \begin{figure}[h]
+    \centering
+    \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
+    \begin{tikzpicture}[scale=6]
+        \draw (0,0) -- (2.2,0) -- (2.2,0.41) -- (0,0.41) -- cycle;
+        \draw (0.2,0.2) circle (0.05);
+        \draw[<->] (0,-0.05) -- (2.2,-0.05);
+        \draw (1.1,-0.1) node {2.2 m};
+        \draw[<->] (0,0.2) -- (0.15,0.2);
+        \draw (0.075,0.25) node {\footnotesize 0.15 m};
+        \draw[<->] (0.2,0) -- (0.2,0.15);
+        \draw (0.3,0.075) node {\footnotesize 0.15 m};
+        \draw[<->] (0.2,0.25) -- (0.2,0.41);
+        \draw (0.3,0.31) node {\footnotesize 0.16 m};
+        \draw[<->] (0.3,0.15) -- (0.3,0.25);
+        \draw (0.4,0.2) node {\footnotesize 0.1 m};
+        \node[rotate=90] (outflow) at (2.25, 0.2) {Outlet};
+        \node[rotate=90] (inflow) at (-0.05, 0.2) {Inlet};
+        \node (NoFlow) at (1.1,0.5) {$u=v=0$};
+        \draw[next] (NoFlow) to (1.1,0.41);
+        \draw[next] (NoFlow) to [out=-45,in=45] (1.1,0);
+        \draw[next] (NoFlow) to [out=-135,in=-35] (0.25,0.15);
+    \end{tikzpicture}
+    \caption{Geometry of \autoref{tst:Cylinder2D}}
+    \label{fig:2DCylinder}
+  \end{figure}
 \end{test}
 
 \begin{test}[2D Flow Around a Square] \label{tst:Rectangle2D}
+  For this test case we repeat \autoref{tst:Cylinder2D}, but we replace the
+  circle with a square (see \autoref{fig:2DRectangle}. All other problem
+  definitions remain the same.
+
+  \begin{figure}[h]
+    \centering
+    \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
+    \begin{tikzpicture}[scale=6]
+        \draw (0,0) node[below left] {$(0,0)$} -- (2.2,0) -- (2.2,0.41) --
+            (0,0.41) node[above left] {$(0,H)$} -- cycle;
+        \draw (0.15,0.15) -- (0.25,0.15) -- (0.25,0.25) -- (0.15,0.25) -- cycle;
+        \draw[<->] (0,-0.05) -- (2.2,-0.05);
+        \draw (1.1,-0.1) node {2.2 m};
+        \draw[<->] (0,0.2) -- (0.15,0.2);
+        \draw (0.075,0.25) node {\footnotesize 0.15 m};
+        \draw[<->] (0.2,0) -- (0.2,0.15);
+        \draw (0.3,0.075) node {\footnotesize 0.15 m};
+        \draw[<->] (0.2,0.25) -- (0.2,0.41);
+        \draw (0.3,0.31) node {\footnotesize 0.16 m};
+        \draw[<->] (0.3,0.15) -- (0.3,0.25);
+        \draw (0.4,0.2) node {\footnotesize 0.1 m};
+        \node[rotate=90] (outflow) at (2.25, 0.2) {Outlet};
+        \node[rotate=90] (inflow) at (-0.05, 0.2) {Inlet};
+        \node (NoFlow) at (1.1,0.5) {$u=v=0$};
+        \draw[next] (NoFlow) to (1.1,0.41);
+        \draw[next] (NoFlow) to [out=-45,in=45] (1.1,0);
+        \draw[next] (NoFlow) to [out=-135,in=-35] (0.25,0.15);
+    \end{tikzpicture}
+    \caption{Geometry of \autoref{tst:Rectangle2D}}
+    \label{fig:2DRectangle}
+  \end{figure}
 \end{test}
 
 \begin{test}[3D Flow Around a Rectangular-Cylinder] \label{tst:Rectangle3D}
