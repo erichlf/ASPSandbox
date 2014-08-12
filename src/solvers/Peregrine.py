@@ -144,6 +144,8 @@ class Solver(SolverBase):
             Shape optimization for Peregrine System.
         '''
         eta = w.split()[1]
+        self.optfile = File(self.s + '_Opt.pvd') #file for solution to optimization
+
         #bounds on object
 #        lb = project(Expression('-0.5'), self.Q, name='LowerBound')
 #        ub = project(Expression('0.0'), self.Q, name='UpperBound')

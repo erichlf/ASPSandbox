@@ -155,8 +155,6 @@ class SolverBase:
 
         #solve the optimization problem
         if(self.options['optimize'] and  'Optimize' in dir(self)):
-            self.optfile = File(self.s + '_Opt.pvd') #file for solution to optimization
-
             self.Optimize(problem, w)
 
         return w

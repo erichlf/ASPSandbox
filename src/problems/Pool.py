@@ -119,17 +119,16 @@ class Object(Expression):
             S = 0;
             for i in range(0,n):
                 K = float(factorial(n)/(factorial(i)*factorial(n-i)));
-                S = S + w[i]*K*X[0]**i*(1. - X[0])**(n-i)
+                S += w[i]*K*X[0]**i*(1. - X[0])**(n-i)
 
             value[0] = H*(C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)/0.25
         else:
             value[0] = 0.
 
     def deval(self, value, x, derivative_coefficient):
-        # FIXME: Here you need to implement the derivative of eval
-        # with respect to derivative_coefficient.
-        # derivative_coefficient will be one of the dependency variables
-        # specified in the dependencies() function below.
+        '''
+            Takes the derivative of the Object wrt to derivative_coefficient
+        '''
 
         H = self.H
         N1 = self.N1
@@ -152,13 +151,65 @@ class Object(Expression):
             n = len(w) - 1 # Order of Bernstein polynomials
 
             S = 0;
-            for i in range(0,n):
+            for i in range(0,n): #part of derivative wrt N1, N2, or H
                 K = float(factorial(n)/(factorial(i)*factorial(n-i)));
-                S = S + w[i]*K*X[0]**i*(1. - X[0])**(n-i)
+                S += w[i]*K*X[0]**i*(1. - X[0])**(n-i)
 
-            value[0] = H*(C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)/0.25
+            #derivative of C wrt derivative_coefficient
+            dC = self.DC(X, derivative_coefficient)
+            #derivative of S wrt derivative_coefficient
+            dS = self.DS(X, derivative_coefficient)
+            #derivative of H wrt derivative_coefficient
+            dH = self.DH(X, derivative_coefficient)
+            #derivative of dz wrt derivative_coefficient
+            ddz = self.Ddz(X, derivative_coefficient)
+
+            #derivative wrt derivative_coefficient
+            value[0] = 4.*(dH*(C*S + X[0]*dz) + H*(dC*S + C*dS + X[1]*ddz)) \
+                    *(1 - X[0]**2/objectTop**2)
         else:
             value[0] = 0.
+
+    #derivative of H wrt derivative_coefficient
+    def DH(self, X, derivative_coefficient):
+        dH = 0 #derivative wrt to anything but H
+        if self.H == derivative_coefficient:
+            dH = 1.
+
+        return dH
+
+    #derivative of dz wrt derivative_coefficient
+    def Ddz(self, X, derivative_coefficient):
+        ddz = 0 #derivative wrt to anything but H
+        if self.dz == derivative_coefficient:
+            ddz = 1.
+
+        return ddz
+
+    #derivative of C wrt derivative_coefficient
+    def DC(self, X, derivative_coefficient):
+        dC = X[0]**self.N1*(1. - X[0])**self.N2
+        if self.N1 == derivative_coefficient:
+            dC *= ln(abs(X[0])) #part of derivative wrt N1
+        elif self.N2 == derivative_coefficient:
+            dC *= ln(abs(1. - X[0])) #part of derivative wrt N2
+        else:
+            dC *= 0 #derivative wrt to anything else
+
+        return dC
+
+    #derivative of S wrt derivative_coefficient
+    def DS(self, X, derivative_coefficient):
+        # Shape function; using Bernstein Polynomials
+        n = len(self.w) - 1 # Order of Bernstein polynomials
+        dS = 0 #derivative wrt to anything but w[i]
+        if derivative_coefficient in self.w:
+            for i in range(0,n):
+                if self.w[i] == derivative_coefficient:
+                    K = float(factorial(n)/(factorial(i)*factorial(n-i)));
+                    dS = K*X[0]**i*(1. - X[0])**(n-i)
+
+        return dS
 
     def dependencies(self):
         return [self.H, self.N1, self.N2,
@@ -210,7 +261,7 @@ class Problem(ProblemBase):
         dz = Constant(0., name='dz')
 
         self.params = [ObjH, N1, N2, W1, W2, W3, W4, dz]
-        self.zeta0 = object_init(self.params)
+        self.zeta0 = self.object_init(self.params)
 
         #Defintion of the shape of the seabed
         M1 = (hb - hd)/(y1 - objectTop)
@@ -223,13 +274,15 @@ class Problem(ProblemBase):
             ' : 0) '
         self.D = str(hd) + '+ (' + M + ')*(x[1] - (' + X + '))'
 
-    def object_init(self, params)
+    def object_init(self, params):
         '''
             Returns a DOLFIN function representing the wave object given params.
         '''
-        return Object(vmax=vmax, H=parms[0], N1=params[1], N2=params[2], \
+        obj = Object(vmax=vmax, H=params[0], N1=params[1], N2=params[2], \
                 W1=params[3], W2=params[4], W3=params[5], W4=params[6], \
                 dz=params[7], t=self.t0)
+
+        return obj
 
     def update_bathymetry(self, Q, t):
         '''
@@ -237,6 +290,7 @@ class Problem(ProblemBase):
         '''
         D = Expression(self.D, element=Q.ufl_element(), annotate=False)
 
+        print taylor_test_expression(self.zeta0, Q)
         self.zeta0.t = t
         zeta = project(self.zeta0, Q, annotate=True)
         self.zeta0.t = max(t - self.k, self.t0)

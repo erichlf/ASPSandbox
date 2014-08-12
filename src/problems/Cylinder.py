@@ -1,10 +1,11 @@
-__author__ = "Kristian Valen-Sendstad <kvs@simula.no>"
-__date__ = "2009-10-01"
-__copyright__ = "Copyright (C) 2009-2010 " + __author__
+__author__ = "Erich L Foster <erichlf@gmail.com>"
+__date__ = "2014-08-12"
+__copyright__ = "Copyright (C) 2013-2014 " + __author__
 __license__  = "GNU GPL version 3 or any later version"
-
-# Modified by Anders Logg, 2010.
-# Modified by Erich L Foster, 2013
+#
+#   adapted from ns in nsbench originally developed by
+#   Anders Logg <logg@simula.no>
+#
 
 from problembase import *
 from numpy import array
