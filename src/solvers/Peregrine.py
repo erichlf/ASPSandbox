@@ -219,12 +219,14 @@ class Solver(SolverBase):
             self._Hfile = File(self.s + '_H.pvd', 'compressed')
             self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
             self._pDualfile = File(self.s + '_etaDual.pvd', 'compressed')
+            self.meshfile = File(self.s + '_mesh.xml')
         else:
             self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
             self._pfile = File(self.s + '_eta%d.pvd' % n, 'compressed')
             self._Hfile = File(self.s + '_H%d.pvd' % n, 'compressed')
             self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
             self._pDualfile = File(self.s + '_etaDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(self.s + '_mesh%d.xml' % n)
 
     def Plot(self, problem, W, w):
         '''

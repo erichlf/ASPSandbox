@@ -83,9 +83,11 @@ class Solver(SolverBase):
         if n==-1:
             self._ufile = File(self.s + '_u.pvd', 'compressed')
             self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
+            self.meshfile = File(self.s + '_mesh.xml')
         else:
             self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
             self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(self.s + '_mesh%d.xml' % n)
 
     def Plot(self, problem, W, w):
 
