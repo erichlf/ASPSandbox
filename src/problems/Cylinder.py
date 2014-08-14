@@ -125,7 +125,7 @@ class Problem(ProblemBase):
         self.t0 = 0.
         self.T = options['T']
         C_CFL = 10.
-        self.k = self.mesh.hmin()/self.Ubar
+        self.k = options['dt']#self.mesh.hmin()/self.Ubar
 
         #since Cube relies on this code we need a lot of selfs
         self.channel = channel

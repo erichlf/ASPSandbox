@@ -133,8 +133,8 @@ class SolverBase:
                 adj_reset() #reset the dolfin-adjoint
 
                 #get time step for the new mesh size
-                if 'time_step' in dir(self):
-                    k = self.time_step(problem.Ubar, mesh)
+                #if 'time_step' in dir(self):
+                #    k = self.time_step(problem.Ubar, mesh)
 
                 i += 1
 
