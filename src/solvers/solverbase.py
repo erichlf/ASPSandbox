@@ -103,6 +103,10 @@ class SolverBase:
             while(i<=maxadaps and COND>TOL):
                 #setup file names
                 self.file_naming(n=i, dual=False)
+                #save our current mesh
+                if not self.options['plot_solution']:
+                    self.meshfile << mesh
+
                 if i==0:
                     print 'Solving on initial mesh.'
                 elif i < len(nth):
@@ -124,7 +128,6 @@ class SolverBase:
                     plot(mesh, title='Final mesh', size=((600, 300)))
                     interactive()
                 elif not self.options['plot_solution']:
-                    self.meshfile << mesh
                     self.eifile << ei
 
                 # Refine the mesh
