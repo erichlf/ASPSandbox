@@ -118,17 +118,16 @@ class Problem(ProblemBase):
 
         domain = channel - bluff
         if options['initialMesh']==None:
-	        self.mesh = Mesh(domain, self.Nx)
-	else: 
-		self.mesh = Mesh(options['initialMesh'])
+            self.mesh = Mesh(domain, self.Nx)
+        else:
+            self.mesh = Mesh(options['initialMesh'])
 
         #rescale Reynolds number to the problem
         options['Re'] = self.Ubar*Diameter*options['Re']
 
         self.t0 = 0.
         self.T = options['T']
-        C_CFL = 10.
-        self.k = self.mesh.hmin()/self.Ubar
+        self.k = options['dt']
 
         #since Cube relies on this code we need a lot of selfs
         self.channel = channel
