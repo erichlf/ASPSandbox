@@ -316,16 +316,38 @@ class SolverBase:
 
         adj_start_timestep(t)
         while t<(T-k/2.):
-            t += k
+        
+	    solved = False  
+	    while (not solved):
+		try:
+		    t += k
 
-            if('wave_object' in dir(self)):
-                self.wave_object(problem, self.Q, t, k)
+        	    if('wave_object' in dir(self)):
+                	self.wave_object(problem, self.Q, t, k)
 
-            #evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(W, t)
+	            #evaluate bcs again (in case they are time-dependent)
+        	    bcs = problem.boundary_conditions(W, t)
 
-            solve(F==0, w, bcs=bcs)
-
+	            solve(F==0, w, bcs=bcs)
+		    solved = True
+		except:
+		    e0 = sys.exc_info()[0]
+		    e1 = sys.exc_info()[1]
+		    print e0,e1
+		    print 'decreasing timestep to ', k/2.0 
+             	    #define trial and test function
+	            t -=k 
+		    k = k/2.0
+		    self.k = k
+		    problem.k = k 
+		    wt = TestFunction(W)
+		    w = Function(W, name='w')
+        	    ic = problem.initial_conditions(W)
+		    w_ = Function(ic, name='w_')
+		    #weak form of the primal problem
+	 	    F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
+		
+			
             w_.assign(w)
             if func and t>0.9*T:
                 m += 1./k*assemble(self.functional(W.mesh(), w_), annotate=False)
