@@ -129,46 +129,9 @@ class Object(Expression):
         '''
             Takes the derivative of the Object wrt to derivative_coefficient
         '''
+        k = 1E-3
 
-        H = self.H
-        N1 = self.N1
-        N2 = self.N2
-        w = self.w
-        dz = self.dz/H
-        t = self.t
-        vmax = self.vmax
-
-        u = vmax*tanh(t)
-
-        X = ((x[0] - objectLeft - u*t)/(objectRight - objectLeft), \
-                (x[1] - objectBottom)/(objectTop - objectBottom))
-
-        if(X[0]>=0 and X[0]<=1 and X[1]>=0 and X[1]<=1):
-            # Class function; taking input of N1 and N2
-            C = X[0]**N1*(1. - X[0])**N2
-
-            # Shape function; using Bernstein Polynomials
-            n = len(w) - 1 # Order of Bernstein polynomials
-
-            S = 0;
-            for i in range(0,n): #part of derivative wrt N1, N2, or H
-                K = float(factorial(n)/(factorial(i)*factorial(n-i)));
-                S += w[i]*K*X[0]**i*(1. - X[0])**(n-i)
-
-            #derivative of C wrt derivative_coefficient
-            dC = self.DC(X, derivative_coefficient)
-            #derivative of S wrt derivative_coefficient
-            dS = self.DS(X, derivative_coefficient)
-            #derivative of H wrt derivative_coefficient
-            dH = self.DH(X, derivative_coefficient)
-            #derivative of dz wrt derivative_coefficient
-            ddz = self.Ddz(X, derivative_coefficient)
-
-            #derivative wrt derivative_coefficient
-            value[0] = 4.*(dH*(C*S + X[0]*dz) + H*(dC*S + C*dS + X[1]*ddz)) \
-                    *(1 - X[0]**2/objectTop**2)
-        else:
-            value[0] = 0.
+        return k**(-1)*(self.eval(value, x + dx) - self.eval(value, x))
 
     #derivative of H wrt derivative_coefficient
     def DH(self, X, derivative_coefficient):
