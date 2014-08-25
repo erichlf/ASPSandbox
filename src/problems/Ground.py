@@ -62,7 +62,7 @@ http://fenicsproject.org/documentation/tutorial/timedep.html#tut-timedep-diffusi
                    'kappa_1 : kappa_0'
         else:
             kappa = 'x[0] > -W/4 && x[0] < W/4 '\
-                    '&& x[1] > -W/4 && x[1] < W/4 ' \
+                   '&& x[1] > -W/4 && x[1] < W/4 ' \
                    '&& x[2] > -D/2 && x[2] < -D/2 + D/4 ? '\
                    'kappa_1 : kappa_0'
         self.kappa = Expression(kappa, D=D, W=W, kappa_0=kappa_0, kappa_1=kappa_1)
