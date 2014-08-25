@@ -248,7 +248,7 @@ class SolverBase:
         #weak form of the primal problem
         F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
 
-        w, m = self.timeStepper(problem, t, T, k, W, w, w_, F, func=func)
+        w, m = self.timeStepper(problem, t, T, k, W, w, w_, wt, F, func=func)
 
         return W, w, m
 
@@ -299,7 +299,7 @@ class SolverBase:
 
         return mesh
 
-    def timeStepper(self, problem, t, T, k, W, w, w_, F, func=False):
+    def timeStepper(self, problem, t, T, k, W, w, w_, wt, F, func=False):
         '''
             Time stepper for solver using theta-method.
         '''
@@ -316,38 +316,35 @@ class SolverBase:
 
         adj_start_timestep(t)
         while t<(T-k/2.):
-        
-	    solved = False  
-	    while (not solved):
-		try:
-		    t += k
 
-        	    if('wave_object' in dir(self)):
-                	self.wave_object(problem, self.Q, t, k)
+            solved = False
+            while (not solved):
+                try:
+                    t += k
 
-	            #evaluate bcs again (in case they are time-dependent)
-        	    bcs = problem.boundary_conditions(W, t)
+                    if('wave_object' in dir(self)):
+                        self.wave_object(problem, self.Q, t, k)
 
-	            solve(F==0, w, bcs=bcs)
-		    solved = True
-		except:
-		    e0 = sys.exc_info()[0]
-		    e1 = sys.exc_info()[1]
-		    print e0,e1
-		    print 'decreasing timestep to ', k/2.0 
-             	    #define trial and test function
-	            t -=k 
-		    k = k/2.0
-		    self.k = k
-		    problem.k = k 
-		    wt = TestFunction(W)
-		    w = Function(W, name='w')
-        	    ic = problem.initial_conditions(W)
-		    w_ = Function(ic, name='w_')
-		    #weak form of the primal problem
-	 	    F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
-		
-			
+                    #evaluate bcs again (in case they are time-dependent)
+                    bcs = problem.boundary_conditions(W, t)
+
+                    solve(F==0, w, bcs=bcs)
+                    solved = True
+                except:
+                    e0 = sys.exc_info()[0]
+                    e1 = sys.exc_info()[1]
+                    print e0, e1
+                    print 'decreasing timestep to ', k/2.0
+                         #define trial and test function
+                    t -= k
+                    k = k/2.0
+                    self.k = k
+                    problem.k = k
+
+                    #weak form of the primal problem
+                    F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
+
+
             w_.assign(w)
             if func and t>0.9*T:
                 m += 1./k*assemble(self.functional(W.mesh(), w_), annotate=False)
@@ -393,7 +390,7 @@ class SolverBase:
             #record current time
             self._time = time()
 
-        # Increase time step 
+        # Increase time step
         self._timestep += 1
 
     def Save(self, problem, w, dual=False):
@@ -406,7 +403,7 @@ class SolverBase:
         u = w.split()[0]
         p = w.split()[1]
 
-        if (self._timestep - 1) % self.options['save_frequency'] == 0:
+        if self.options['save_frequency'] != 0 and (self._timestep - 1) % self.options['save_frequency'] == 0:
             if not dual:
                 self._ufile << u
                 self._pfile << p
