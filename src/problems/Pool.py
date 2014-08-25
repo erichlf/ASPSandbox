@@ -100,7 +100,7 @@ class Object(Expression):
         N1 = self.N1
         N2 = self.N2
         w = self.w
-        dz = self.dz/H
+        dz = self.dz
         t = self.t
         vmax = self.vmax
 
@@ -121,7 +121,7 @@ class Object(Expression):
                 K = float(factorial(n)/(factorial(i)*factorial(n-i)));
                 S += w[i]*K*X[0]**i*(1. - X[0])**(n-i)
 
-            value[0] = H*(C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)/0.25
+            value[0] = 4.*(H*C*S + X[0]*dz)*(1 - x[1]**2/objectTop**2)
         else:
             value[0] = 0.
 
@@ -134,7 +134,7 @@ class Object(Expression):
         N1 = self.N1
         N2 = self.N2
         w = self.w
-        dz = self.dz/H
+        dz = self.dz
         t = self.t
         vmax = self.vmax
 
@@ -165,8 +165,8 @@ class Object(Expression):
             ddz = self.Ddz(X, derivative_coefficient)
 
             #derivative wrt derivative_coefficient
-            value[0] = 4.*(dH*(C*S + X[0]*dz) + H*(dC*S + C*dS + X[1]*ddz)) \
-                    *(1 - X[0]**2/objectTop**2)
+            value[0] = 4*(dH*C*S + H*dC*S + H*C*dS + X[0]*ddz) \
+                    *(1 - x[1]**2/objectTop**2)
         else:
             value[0] = 0.
 
