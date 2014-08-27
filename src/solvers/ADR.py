@@ -39,13 +39,13 @@ class Solver(SolverBase):
         beta = self.beta #velocity
 
         alpha = self.alpha #time stepping method
-        k = problem.k
+        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
 
-        t = t0 + k
+        t = t0 + self.k
         #forcing and mass source/sink
         F = problem.F1(t)
 
@@ -56,7 +56,7 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./k)*inner(U - U_,v) \
+        r = z*((1./self.k)*inner(U - U_,v) \
             + alpha*inner(u,v)
             + epsilon*inner(grad(U_alpha),grad(v)) \
             + inner(dot(beta,grad(U_alpha)),v)*dx
@@ -86,4 +86,4 @@ class Solver(SolverBase):
         return M
 
     def __str__(self):
-          return 'NSE'
+          return 'ADR'

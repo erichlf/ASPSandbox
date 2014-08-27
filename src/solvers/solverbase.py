@@ -133,11 +133,10 @@ class SolverBase:
                 # Refine the mesh
                 print 'Refining mesh.'
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
-                adj_reset() #reset the dolfin-adjoint
+                if 'time_step' in dir(self):
+                    self.time_step(problem.Ubar, mesh)
 
-                #get time step for the new mesh size
-                #if 'time_step' in dir(self):
-                #    k = self.time_step(problem.Ubar, mesh)
+                adj_reset() #reset the dolfin-adjoint
 
                 i += 1
 
@@ -229,7 +228,6 @@ class SolverBase:
 
         t = problem.t0
         T = problem.T #final time
-        self.k = k
 
         # Define function spaces
         #we do it this way so that it can be overloaded
@@ -246,9 +244,9 @@ class SolverBase:
         w_ = Function(ic, name='w_')
 
         #weak form of the primal problem
-        F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
+        F = self.weak_residual(problem, k, W, w, w_, wt, ei_mode=False)
 
-        w, m = self.timeStepper(problem, t, T, k, W, w, w_, wt, F, func=func)
+        w, m = self.timeStepper(problem, t, T, k, W, w, w_, F, func=func)
 
         return W, w, m
 
@@ -299,7 +297,7 @@ class SolverBase:
 
         return mesh
 
-    def timeStepper(self, problem, t, T, k, W, w, w_, wt, F, func=False):
+    def timeStepper(self, problem, t, T, k, W, w, w_, F, func=False):
         '''
             Time stepper for solver using theta-method.
         '''
@@ -316,34 +314,15 @@ class SolverBase:
 
         adj_start_timestep(t)
         while t<(T-k/2.):
+            t += k
 
-            solved = False
-            while (not solved):
-                try:
-                    t += k
+            if('wave_object' in dir(self)):
+                self.wave_object(problem, self.Q, t, k)
 
-                    if('wave_object' in dir(self)):
-                        self.wave_object(problem, self.Q, t, k)
+            #evaluate bcs again (in case they are time-dependent)
+            bcs = problem.boundary_conditions(W, t)
 
-                    #evaluate bcs again (in case they are time-dependent)
-                    bcs = problem.boundary_conditions(W, t)
-
-                    solve(F==0, w, bcs=bcs)
-                    solved = True
-                except:
-                    e0 = sys.exc_info()[0]
-                    e1 = sys.exc_info()[1]
-                    print e0, e1
-                    print 'decreasing timestep to ', k/2.0
-                         #define trial and test function
-                    t -= k
-                    k = k/2.0
-                    self.k = k
-                    problem.k = k
-
-                    #weak form of the primal problem
-                    F = self.weak_residual(problem, W, w, w_, wt, ei_mode=False)
-
+            solve(F==0, w, bcs=bcs)
 
             w_.assign(w)
             if func and t>0.9*T:

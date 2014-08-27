@@ -22,7 +22,7 @@ class Solver(SolverBase):
         return R1, R2
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False):
         if W.mesh().topology().dim() == 2:
             (U, p) = (as_vector((w[0], w[1])), w[2])
             (U_, p_) = (as_vector((w_[0], w_[1])), w_[2])
@@ -33,7 +33,7 @@ class Solver(SolverBase):
             (v, q) = (as_vector((wt[0], wt[1], wt[2])), wt[3])
 
         h = CellSize(W.mesh()) #mesh size
-        d1, d2 = self.stabilization_parameters(U_,p_,h) #stabilization parameters
+        d1, d2 = self.stabilization_parameters(U_, p_, k, h) #stabilization parameters
 
         #set up error indicators
         Z = FunctionSpace(W.mesh(), "DG", 0)
@@ -42,7 +42,6 @@ class Solver(SolverBase):
         Re = self.Re #Reynolds Number
 
         alpha = self.alpha #time stepping method
-        k = problem.k
         t0 = problem.t0
 
         inviscid = self.options['inviscid']
@@ -77,18 +76,17 @@ class Solver(SolverBase):
 
         return r
 
-    def stabilization_parameters(self,U,p,h):
+    def stabilization_parameters(self, U, p, k, h):
         K1  = 1.
         K2  = 0.5
-        d1 = K1*(self.k**(-2) + inner(U,U)*h**(-2))**(-0.5)
+        d1 = K1*(k**(-2) + inner(U,U)*h**(-2))**(-0.5)
         d2 = K2*h
 
         return d1, d2
 
     def time_step(self, U, mesh):
-        C_CFL = 10.
-        return mesh.hmin()/U
-    #min(CellSize(mesh))/U
+        C_CFL = 5.
+        return C_CFL*mesh.hmin()/U
 
     def __str__(self):
           return 'NSE'

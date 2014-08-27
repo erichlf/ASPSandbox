@@ -127,7 +127,9 @@ class Problem(ProblemBase):
 
         self.t0 = 0.
         self.T = options['T']
-        self.k = options['dt']
+        C_CFL = 5.
+        k = C_CFL*self.mesh.hmin()/self.Ubar #mesh size
+        self.k = Expression('dt', dt=k)
 
         #since Cube relies on this code we need a lot of selfs
         self.channel = channel

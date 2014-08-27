@@ -54,14 +54,14 @@ class Solver(SolverBase):
         Re = self.Re #Reynolds Number
 
         alpha = self.alpha #time stepping method
-        k = problem.k
+        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
         rho_alpha = (1.0-alpha)*rho_ + alpha*rho
 
-        t = t0 + k
+        t = t0 + self.k
         #forcing and mass source/sink
         f = problem.F1(t)
 
@@ -75,8 +75,8 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./k)*(rho - rho_) + div(rho_alpha*U_alpha))*nu*dx #mass equation
-        r += z*(rho_alpha*((1./k)*inner(U - U_,v) \
+        r = z*((1./self.k)*(rho - rho_) + div(rho_alpha*U_alpha))*nu*dx #mass equation
+        r += z*(rho_alpha*((1./self.k)*inner(U - U_,v) \
             + inner(grad(U_alpha)*U_alpha,v)) \
             + inner(grad(p),v) \
             + 1./Re*inner(grad(U_alpha),grad(v)) \
@@ -114,7 +114,7 @@ class Solver(SolverBase):
         rho = w.split()[1]
         p = w.split()[2]
 
-        if (self._timestep - 1) % self.options['save_frequency'] == 0:
+        if self.options['save_frequency'] !=0 and (self._timestep - 1) % self.options['save_frequency'] == 0:
             if not dual:
                 self._ufile << u
                 self._pfile << p

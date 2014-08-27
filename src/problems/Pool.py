@@ -290,7 +290,6 @@ class Problem(ProblemBase):
         '''
         D = Expression(self.D, element=Q.ufl_element(), annotate=False)
 
-        print taylor_test_expression(self.zeta0, Q)
         self.zeta0.t = t
         zeta = project(self.zeta0, Q, annotate=True)
         self.zeta0.t = max(t - self.k, self.t0)

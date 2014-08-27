@@ -27,7 +27,7 @@ class Solver(SolverBase):
         z = TestFunction(Z)
 
         alpha = self.alpha #time stepping method
-        k = problem.k
+        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         kappa = problem.kappa
@@ -37,7 +37,7 @@ class Solver(SolverBase):
         #u_(k+alpha)
         w_alpha = (1.0-alpha)*w_ + alpha*w
 
-        t = t0 + k
+        t = t0 + self.k
         #forcing and mass source/sink
         self.f_ = problem.F1(t)
         self.f = problem.F1(t)
@@ -73,7 +73,7 @@ class Solver(SolverBase):
         k = self.k
         Nx = self.options['Nx']
         Ny = self.options['Ny']
-        if (self._timestep - 1) % self.options['save_frequency'] == 0:
+        if self.options['save_frequency'] !=0 and (self._timestep - 1) % self.options['save_frequency'] == 0:
             if not dual:
                 self._ufile << w
             else:
@@ -98,4 +98,4 @@ class Solver(SolverBase):
             self.vizU.plot(w)
 
     def __str__(self):
-          return 'QGE'
+          return 'Heat'

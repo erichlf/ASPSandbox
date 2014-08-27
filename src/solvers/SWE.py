@@ -75,7 +75,7 @@ class Solver(SolverBase):
         inviscid = self.inviscid
 
         alpha = self.alpha #time stepping method
-        k = problem.k
+        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         #U_(k+alpha)
@@ -84,7 +84,7 @@ class Solver(SolverBase):
         #p_(k+alpha)
         eta_alpha = (1.0-alpha)*eta_ + alpha*eta
 
-        t = t0 + k
+        t = t0 + self.k
         #forcing and mass source/sink
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
@@ -98,14 +98,14 @@ class Solver(SolverBase):
 
         #weak form of the equations
         #momentum equation
-        r = z*((1./k)*inner(U - U_,v) \
+        r = z*((1./self.k)*inner(U - U_,v) \
             + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0]) \
             - Fr**(-2)*Th*eta_alpha*div(v))*dx
         r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         #add the terms for the non-linear SWE
         r += z*NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
         #continuity equation
-        r += z*((1./k)*(eta - eta_)*chi \
+        r += z*((1./self.k)*(eta - eta_)*chi \
             + H/Th*div(U_alpha)*chi)*dx
 
         r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx

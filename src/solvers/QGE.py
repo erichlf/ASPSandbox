@@ -37,7 +37,7 @@ class Solver(SolverBase):
         Ro = self.Ro #Rossby Number
 
         alpha = self.alpha #time stepping method
-        k = problem.k
+        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         #psi_(k+alpha)
@@ -45,7 +45,7 @@ class Solver(SolverBase):
         #q_(k+alpha)
         q_alpha = (1.0-alpha)*q_ + alpha*q
 
-        t = t0 + k
+        t = t0 + self.k
         #forcing and mass source/sink
         f = problem.F(t)
 
@@ -57,7 +57,7 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./k)*(q - q_)*p \
+        r = z*((1./self.k)*(q - q_)*p \
             + (1./Re)*inner(grad(q_alpha),grad(p)) \
             + self.Jac(psi,q_alpha)*p \
             - psi.dx(0)*p)*dx
