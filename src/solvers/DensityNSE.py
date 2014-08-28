@@ -37,14 +37,14 @@ class Solver(SolverBase):
         return R1, R2, R3
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,problem,W,w,w_,wt,ei_mode=False):
+    def weak_residual(self,problem, k, W, w, w_, wt, ei_mode=False):
         #rho = 1/rho' - 1
         (U, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
         (U_, rho_, p_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
         (v, nu, q) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
 
         h = CellSize(W.mesh()) #mesh size
-        d1, d2, d3 = self.stabilization_parameters(U_, rho_, p_, h) #stabilization parameters
+        d1, d2, d3 = self.stabilization_parameters(U_, rho_, p_, k, h) #stabilization parameters
         d = 0.1*h**(3./2.) #stabilization parameter
 
         #set up error indicators
@@ -54,14 +54,13 @@ class Solver(SolverBase):
         Re = self.Re #Reynolds Number
 
         alpha = self.alpha #time stepping method
-        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
         rho_alpha = (1.0-alpha)*rho_ + alpha*rho
 
-        t = t0 + self.k
+        t = t0 + k
         #forcing and mass source/sink
         f = problem.F1(t)
 
@@ -75,8 +74,8 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./self.k)*(rho - rho_) + div(rho_alpha*U_alpha))*nu*dx #mass equation
-        r += z*(rho_alpha*((1./self.k)*inner(U - U_,v) \
+        r = z*((1./k)*(rho - rho_) + div(rho_alpha*U_alpha))*nu*dx #mass equation
+        r += z*(rho_alpha*((1./k)*inner(U - U_,v) \
             + inner(grad(U_alpha)*U_alpha,v)) \
             + inner(grad(p),v) \
             + 1./Re*inner(grad(U_alpha),grad(v)) \
@@ -99,12 +98,12 @@ class Solver(SolverBase):
 
       return M
 
-    def stabilization_parameters(self,U,rho,p,h):
+    def stabilization_parameters(self, U, rho, p, k, h):
         K1  = 1.
         K2  = 1.
         K3  = 0.5
-        d1 = K1*(self.k**(-2) + inner(U,U)*h**(-2))**(-0.5)
-        d2 = K2*(self.k**(-2) + rho*rho*h**(-2))**(-0.5)
+        d1 = K1*(k**(-2) + inner(U,U)*h**(-2))**(-0.5)
+        d2 = K2*(k**(-2) + rho*rho*h**(-2))**(-0.5)
         d3 = K3*h
 
         return d1, d2, d3

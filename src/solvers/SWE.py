@@ -52,13 +52,13 @@ class Solver(SolverBase):
         return R1, R2
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,problem,W,w,w_,wt,ei_mode=False):
+    def weak_residual(self,problem, k, W, w, w_, wt, ei_mode=False):
         (U, eta) = (as_vector((w[0], w[1])), w[2])
         (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
         h = CellSize(W.mesh()) #mesh size
-        d1, d2 = self.stabilization_parameters(U_,eta_,h) #stabilization parameters
+        d1, d2 = self.stabilization_parameters(U_, eta_, k, h) #stabilization parameters
 
         #set up error indicators
         Z = FunctionSpace(W.mesh(), "DG", 0)
@@ -75,7 +75,6 @@ class Solver(SolverBase):
         inviscid = self.inviscid
 
         alpha = self.alpha #time stepping method
-        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         #U_(k+alpha)
@@ -84,7 +83,7 @@ class Solver(SolverBase):
         #p_(k+alpha)
         eta_alpha = (1.0-alpha)*eta_ + alpha*eta
 
-        t = t0 + self.k
+        t = t0 + k
         #forcing and mass source/sink
         F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
         F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
@@ -98,14 +97,14 @@ class Solver(SolverBase):
 
         #weak form of the equations
         #momentum equation
-        r = z*((1./self.k)*inner(U - U_,v) \
+        r = z*((1./k)*inner(U - U_,v) \
             + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0]) \
             - Fr**(-2)*Th*eta_alpha*div(v))*dx
         r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         #add the terms for the non-linear SWE
         r += z*NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
         #continuity equation
-        r += z*((1./self.k)*(eta - eta_)*chi \
+        r += z*((1./k)*(eta - eta_)*chi \
             + H/Th*div(U_alpha)*chi)*dx
 
         r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
@@ -116,11 +115,11 @@ class Solver(SolverBase):
 
         return r
 
-    def stabilization_parameters(self,U_,eta_,h):
+    def stabilization_parameters(self, U_, eta_, k, h):
         K1  = (self.Ro*self.Fr**2*self.Th**(-1))/2
         K2  = self.Th/(2*self.H)
-        d1 = K1*(self.k**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
-        d2 = K2*(self.k**(-2) + eta_*eta_*h**(-1))**(-0.5)
+        d1 = K1*(k**(-2) + inner(U_,U_)*h**(-1))**(-0.5)
+        d2 = K2*(k**(-2) + eta_*eta_*h**(-1))**(-0.5)
 
         return d1, d2
 

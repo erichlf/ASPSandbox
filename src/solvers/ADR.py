@@ -26,9 +26,9 @@ class Solver(SolverBase):
         return R
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False):
         h = CellSize(W.mesh()) #mesh size
-        d = self.stabilization_parameters(U_,h) #stabilization parameters
+        d = self.stabilization_parameters(U_, k, h) #stabilization parameters
 
         #set up error indicators
         Z = FunctionSpace(W.mesh(), "DG", 0)
@@ -39,13 +39,12 @@ class Solver(SolverBase):
         beta = self.beta #velocity
 
         alpha = self.alpha #time stepping method
-        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
 
-        t = t0 + self.k
+        t = t0 + k
         #forcing and mass source/sink
         F = problem.F1(t)
 
@@ -56,7 +55,7 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./self.k)*inner(U - U_,v) \
+        r = z*((1./k)*inner(U - U_,v) \
             + alpha*inner(u,v)
             + epsilon*inner(grad(U_alpha),grad(v)) \
             + inner(dot(beta,grad(U_alpha)),v)*dx
@@ -70,12 +69,12 @@ class Solver(SolverBase):
 
         return r
 
-    def stabilization_parameters(self,U,h):
+    def stabilization_parameters(self, U, k, h):
         K  = 1.
         if(h > self.epsilon):
-            d = K*(self.k**(-2) + inner(U,U)*h**(-4))**(-0.5)
+            d = K*(k**(-2) + inner(U,U)*h**(-4))**(-0.5)
         else:
-            d = K*(self.k**(-2) + inner(U,U)*h**(-2))**(-0.5)
+            d = K*(k**(-2) + inner(U,U)*h**(-2))**(-0.5)
 
         return d
 

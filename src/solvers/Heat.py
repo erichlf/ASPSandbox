@@ -18,7 +18,7 @@ class Solver(SolverBase):
 
         return Q
 
-    def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False):
 
         h = CellSize(W.mesh()) #mesh size
 
@@ -27,7 +27,6 @@ class Solver(SolverBase):
         z = TestFunction(Z)
 
         alpha = self.alpha #time stepping method
-        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
         kappa = problem.kappa
@@ -70,9 +69,6 @@ class Solver(SolverBase):
         return abs(m - m_)
 
     def Save(self, problem, w, dual=False):
-        k = self.k
-        Nx = self.options['Nx']
-        Ny = self.options['Ny']
         if self.options['save_frequency'] !=0 and (self._timestep - 1) % self.options['save_frequency'] == 0:
             if not dual:
                 self._ufile << w

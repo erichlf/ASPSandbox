@@ -60,7 +60,7 @@ class Solver(SolverBase):
 
         return R1, R2, z1, z2
 
-    def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False):
         '''
             Defines the weak residual for Peregrine System, including LS
             Stabilization.
@@ -71,7 +71,7 @@ class Solver(SolverBase):
 
         h = CellSize(W.mesh()) #mesh size
         d = 0.1*h**(3./2.) #stabilization parameter
-        d1, d2 = self.stabilization_parameters(U_,eta_,h) #stabilization parameters
+        d1, d2 = self.stabilization_parameters(U_, eta_, k, h) #stabilization parameters
 
         #set up error indicators
         Z = FunctionSpace(W.mesh(), "DG", 0)
@@ -86,13 +86,12 @@ class Solver(SolverBase):
         t0 = problem.t0 #initial time
         self.t0 = t0
         T = problem.T #Final time
-        self.k = Expression('dt', dt=problem.k) #time step
 
         #set up our wave object
         self.wave_object(problem, self.Q, t0, k)
 
-        zeta_tt = 1./self.k**2*(self.Zeta - 2*self.Zeta_ + self.Zeta__)
-        zeta_t = 1./self.k*(self.Zeta - self.Zeta_)
+        zeta_tt = 1./k**2*(self.Zeta - 2*self.Zeta_ + self.Zeta__)
+        zeta_t = 1./k*(self.Zeta - self.Zeta_)
 
         #Time stepping method
         U_alpha = (1. - alpha)*U_ + alpha*U
@@ -100,7 +99,7 @@ class Solver(SolverBase):
         zeta_alpha = (1. - alpha)*self.Zeta_ + alpha*self.Zeta
         H_alpha = (1. - alpha)*self.H_ + alpha*self.H
 
-        t = t0 + self.k
+        t = t0 + k
 
         if(not self.options["stabilize"] or ei_mode):
           d = 0
@@ -110,14 +109,14 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*(1./self.k*inner(U-U_,v) + epsilon*inner(grad(U_alpha)*U_alpha,v) \
+        r = z*(1./k*inner(U-U_,v) + epsilon*inner(grad(U_alpha)*U_alpha,v) \
             - div(v)*eta_alpha)*dx
 
-        r += z*(sigma**2*1./self.k*div(H_alpha*(U-U_))*div(H_alpha*v/2.) \
-              - sigma**2*1./self.k*div(U-U_)*div(H_alpha**2*v/6.))*dx
+        r += z*(sigma**2*1./k*div(H_alpha*(U-U_))*div(H_alpha*v/2.) \
+              - sigma**2*1./k*div(U-U_)*div(H_alpha**2*v/6.))*dx
         r += z*sigma**2*zeta_tt*div(H_alpha*v/2.)*dx
 
-        r += z*(1./self.k*(eta-eta_)*chi + zeta_t*chi)*dx
+        r += z*(1./k*(eta-eta_)*chi + zeta_t*chi)*dx
         r -= z*inner(U_alpha,grad(chi))*(epsilon*eta_alpha + H_alpha)*dx
 
         r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
@@ -130,11 +129,11 @@ class Solver(SolverBase):
 
         return r
 
-    def stabilization_parameters(self,U_,eta_,h):
+    def stabilization_parameters(self, U_, eta_, k, h):
         K1  = 2.
         K2  = 2.
-        d1 = K1*(self.k**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
-        d2 = K2*(self.k**(-2) + eta_*eta_*h**(-2))**(-0.5)
+        d1 = K1*(k**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
+        d2 = K2*(k**(-2) + eta_*eta_*h**(-2))**(-0.5)
 
         return d1, d2
 
