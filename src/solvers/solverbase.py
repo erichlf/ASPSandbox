@@ -472,7 +472,7 @@ class SolverBase:
         if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
             s += 'Nz' + str(problem.Nz)
 
-        s += 'K' + str(int(1./problem.k))
+        s += 'K' + str(int(1./float(problem.k)))
 
         return s
 
