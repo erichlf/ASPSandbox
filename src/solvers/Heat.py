@@ -36,7 +36,7 @@ class Solver(SolverBase):
         #u_(k+alpha)
         w_alpha = (1.0-alpha)*w_ + alpha*w
 
-        t = t0 + self.k
+        t = t0 + k
         #forcing and mass source/sink
         self.f_ = problem.F1(t)
         self.f = problem.F1(t)

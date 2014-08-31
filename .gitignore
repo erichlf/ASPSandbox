@@ -15,6 +15,9 @@
 *.spl
 *.latexmain
 latexSuiteTemp0.*
+*.run.*
+*.toc
+*-blx.bib
 
 #DOLFIN specific
 ffc_form_*.h
