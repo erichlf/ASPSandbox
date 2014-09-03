@@ -14,6 +14,9 @@ from dolfin import set_log_active, parameters, list_timings, NewtonSolver
 from problems import Problem, problems
 from solvers import Solver, solvers
 
+Default_Solver = 'NSE'
+Default_Problem = 'Cylinder'
+
 # Default options
 OPTIONS = { 'dim': 2, #number of dimensions
             'Nx': 20, #number of elements along x axis
@@ -55,8 +58,8 @@ def usage():
 #   Print usage
     print """\
 Usage: solve solver problem (run solver for given problem)
-solve solver (run solver for channel flow.)
-solve problem (run NSE for problem.)
+solve solver (run solver for """ + Default_Problem + """.)
+solve problem (run """ + Default_Solver + """ for problem.)
 
 Options are submitting in the form option=value
 
@@ -85,13 +88,13 @@ def main(args):
         usage()
         return 1
     elif len(args) == 1 and args[0] in problems:
-        solver_name = 'SWE'
+        solver_name = Default_Solver
         problem_name = args[0]
     elif len(args) == 1 and args[0] in solvers:
         solver_name = args[0]
-        problem_name = 'Drop'
+        problem_name = Default_Problem
     elif len(args) == 2 and args[0] in solvers and args[1] in problems:
-      solver_name, problem_name = args[:2]
+        solver_name, problem_name = args[:2]
     else:
         usage()
         return 1
