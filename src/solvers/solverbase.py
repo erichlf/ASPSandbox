@@ -326,7 +326,7 @@ class SolverBase:
 
             w_.assign(w)
             if func and t>0.9*T:
-                m += 1./k*assemble(self.functional(W.mesh(), w_), annotate=False)
+                m += k*assemble(self.functional(W.mesh(), w_), annotate=False)
             adj_inc_timestep(t,finished=t>=(T-k/2.))
 
             # Update
