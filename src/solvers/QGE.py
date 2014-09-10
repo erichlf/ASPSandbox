@@ -77,5 +77,19 @@ class Solver(SolverBase):
 
       return M
 
+    def file_naming(self, n=-1, dual=False):
+        if n==-1:
+            self._ufile = File(self.s + '_psi.pvd', 'compressed')
+            self._pfile = File(self.s + '_q.pvd', 'compressed')
+            self._uDualfile = File(self.s + '_psiDual.pvd', 'compressed')
+            self._pDualfile = File(self.s + '_qDual.pvd', 'compressed')
+            self.meshfile = File(self.s + '_mesh.xml')
+        else:
+            self._ufile = File(self.s + '_psi%d.pvd' % n, 'compressed')
+            self._pfile = File(self.s + '_q%d.pvd' % n, 'compressed')
+            self._uDualfile = File(self.s + '_psiDual%d.pvd' % n, 'compressed')
+            self._pDualfile = File(self.s + '_qDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(self.s + '_mesh%d.xml' % n)
+
     def __str__(self):
           return 'QGE'
