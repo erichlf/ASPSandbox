@@ -22,7 +22,7 @@ class Solver(SolverBase):
 
         return W
 
-    def weak_residual(self, problem, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False)
         (q, psi) = (w[0], w[1])
         (q_, psi_) = (w_[0], w_[1])
         (p, chi) = (wt[0], wt[1])
