@@ -383,7 +383,7 @@ class SolverBase:
         p = w.split()[1]
 
         if self.options['save_frequency'] != 0 \\
-                and ((self._timestep - 1) % self.options['save_frequency'] == 0 \\
+                and ((self._timestep - 1) % self.options['save_frequency'] == 0 \
                         || self._timestep == 0):
             if not dual:
                 self._ufile << u
