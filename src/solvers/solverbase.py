@@ -167,12 +167,15 @@ class SolverBase:
         '''
         print 'Solving the primal problem.'
         parameters["adjoint"]["stop_annotating"] = False
-        W, w, m = self.forward_solve(problem, mesh, k, func=True)
-        parameters["adjoint"]["stop_annotating"] = True
-        self._timestep = 0 #reset the time step to zero
 
         T = problem.T
         t0 = problem.t0
+        adj_checkpointing(strategy='multistage', steps=int((T- t0)/k),
+                          snaps_on_disk=2, snaps_in_ram=2, verbose=True)
+
+        W, w, m = self.forward_solve(problem, mesh, k, func=True)
+        parameters["adjoint"]["stop_annotating"] = True
+        self._timestep = 0 #reset the time step to zero
 
         phi = Function(W)
 
