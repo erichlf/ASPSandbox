@@ -173,7 +173,8 @@ class SolverBase:
         N = int((T - t0)/k)
         perN = 0.1
         adj_checkpointing(strategy='multistage', steps=N,
-                  snaps_on_disk=int(perN*N), snaps_in_ram=int(perN*N), verbose=True)
+                  snaps_on_disk=int(perN*N), snaps_in_ram=int(perN*N),
+                  verbose=False)
 
         W, w, m = self.forward_solve(problem, mesh, k, func=True)
         parameters["adjoint"]["stop_annotating"] = True
