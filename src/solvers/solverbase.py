@@ -147,7 +147,8 @@ class SolverBase:
         self.file_naming(n=-1, dual=False)
 
         #record so that we can evaluate our functional
-        parameters["adjoint"]["stop_annotating"] = not self.options['adaptive']
+        parameters["adjoint"]["stop_annotating"] = not (self.options['adaptive']
+                and self.options['optimize'] and 'Optimize' in dir(self))
         W, w, m = self.forward_solve(problem, mesh, k, func=self.options['adaptive'])
         if m is not None:
             print
