@@ -170,7 +170,7 @@ class SolverBase:
 
         T = problem.T
         t0 = problem.t0
-        N = int((T - t0)/k)
+        N = int(round(T - t0)/k))
         perN = 0.2
         adj_checkpointing(strategy='multistage', steps=N,
                   snaps_on_disk=int(perN*N), snaps_in_ram=int(perN*N),
