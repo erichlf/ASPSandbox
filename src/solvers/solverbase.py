@@ -147,9 +147,8 @@ class SolverBase:
         self.file_naming(n=-1, dual=False)
 
         #record so that we can evaluate our functional
-        parameters["adjoint"]["stop_annotating"] = False
+        parameters["adjoint"]["stop_annotating"] = not self.options['adaptive']
         W, w, m = self.forward_solve(problem, mesh, k, func=self.options['adaptive'])
-        adj_html("forward.html", "forward")
         if m is not None:
             print
             print 'The size of the functional is: %0.3G' % m
