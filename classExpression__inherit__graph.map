@@ -1,0 +1,19 @@
+<map id="Expression" name="Expression">
+<area shape="rect" id="node2" href="$classproblems_1_1Cavity_1_1InitialConditions2D.htm" title="{problems.Cavity.InitialConditions2D\n||+ eval()\l+ value_shape()\l}" alt="" coords="5,182,235,274"/>
+<area shape="rect" id="node3" href="$classproblems_1_1Cavity_1_1InitialConditions3D.htm" title="{problems.Cavity.InitialConditions3D\n||+ eval()\l+ value_shape()\l}" alt="" coords="259,182,489,274"/>
+<area shape="rect" id="node4" href="$classproblems_1_1Channel_1_1InitialConditions.htm" title="{problems.Channel.Initial\lConditions\n||+ eval()\l+ value_shape()\l}" alt="" coords="515,175,677,281"/>
+<area shape="rect" id="node5" href="$classproblems_1_1Cylinder_1_1InitialConditions2D.htm" title="{problems.Cylinder.Initial\lConditions2D\n||+ eval()\l+ value_shape()\l}" alt="" coords="701,175,864,281"/>
+<area shape="rect" id="node6" href="$classproblems_1_1Cylinder_1_1InitialConditions3D.htm" title="{problems.Cylinder.Initial\lConditions3D\n||+ eval()\l+ value_shape()\l}" alt="" coords="888,175,1051,281"/>
+<area shape="rect" id="node7" href="$classproblems_1_1DensityCylinder_1_1InitialConditions.htm" title="{problems.DensityCylinder.\lInitialConditions\n|+ A1\l+ A2\l+ S\l|+ __init__()\l+ eval()\l+ value_shape()\l}" alt="" coords="1075,153,1251,303"/>
+<area shape="rect" id="node8" href="$classproblems_1_1DoubleGyre_1_1InitialConditions.htm" title="{problems.DoubleGyre.Initial\lConditions\n||+ eval()\l+ value_shape()\l}" alt="" coords="1275,175,1457,281"/>
+<area shape="rect" id="node9" href="$classproblems_1_1Drop_1_1InitialConditions.htm" title="{problems.Drop.InitialConditions\n|+ A\l+ S\l|+ __init__()\l+ eval()\l+ value_shape()\l}" alt="" coords="1482,167,1685,289"/>
+<area shape="rect" id="node10" href="$classproblems_1_1Ground_1_1InitialConditions.htm" title="{problems.Ground.InitialConditions\n||+ eval()\l}" alt="" coords="1711,189,1929,267"/>
+<area shape="rect" id="node11" href="$classproblems_1_1Hole_1_1InitialConditions.htm" title="{problems.Hole.InitialConditions\n||+ eval()\l}" alt="" coords="1953,189,2156,267"/>
+<area shape="rect" id="node12" href="$classproblems_1_1PeregrineSoliton_1_1InitialConditions.htm" title="{problems.PeregrineSoliton.\lInitialConditions\n|+ n_0\l|+ __init__()\l+ eval()\l+ value_shape()\l}" alt="" coords="2180,167,2359,289"/>
+<area shape="rect" id="node13" href="$classproblems_1_1Plate_1_1InitialConditions.htm" title="{problems.Plate.InitialConditions\n||+ eval()\l}" alt="" coords="2383,189,2589,267"/>
+<area shape="rect" id="node14" href="$classproblems_1_1Point_1_1InitialConditions.htm" title="{problems.Point.InitialConditions\n|+ p1\l+ p2\l+ Ap\l+ An\l+ s\l|+ __init__()\l+ eval()\l+ value_shape()\l}" alt="" coords="2614,145,2820,311"/>
+<area shape="rect" id="node15" href="$classproblems_1_1Pool_1_1InitialConditions.htm" title="{problems.Pool.InitialConditions\n||+ eval()\l+ value_shape()\l}" alt="" coords="2845,182,3048,274"/>
+<area shape="rect" id="node16" href="$classproblems_1_1Pool_1_1Object.htm" title="This expression takes the CST parameters and outputs the y cooresponding to x for the wave object..." alt="" coords="3072,131,3219,325"/>
+<area shape="rect" id="node17" href="$classproblems_1_1Square_1_1InitialConditions.htm" title="{problems.Square.InitialConditions\n||+ eval()\l+ value_shape()\l}" alt="" coords="3243,182,3460,274"/>
+<area shape="rect" id="node18" href="$classproblems_1_1TwoFluid_1_1InitialConditions.htm" title="{problems.TwoFluid.Initial\lConditions\n||+ eval()\l+ value_shape()\l}" alt="" coords="3485,175,3651,281"/>
+</map>

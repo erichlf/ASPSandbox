@@ -1,0 +1,9 @@
+<map id="solvers.solverbase.SolverBase" name="solvers.solverbase.SolverBase">
+<area shape="rect" id="node2" href="$classsolvers_1_1ADR_1_1Solver.htm" title="Solver class for solving the Advection&#45;Diffusion&#45;Reaction equation. " alt="" coords="5,542,187,722"/>
+<area shape="rect" id="node3" href="$classsolvers_1_1DensityNSE_1_1Solver.htm" title="Solver class for solving the variable density incompressible Navier&#45;Stokes equation. " alt="" coords="211,491,393,773"/>
+<area shape="rect" id="node4" href="$classsolvers_1_1Heat_1_1Solver.htm" title="Solver class for solving the Heat equation. " alt="" coords="418,527,555,737"/>
+<area shape="rect" id="node5" href="$classsolvers_1_1NSE_1_1Solver.htm" title="Solver class for solving both 2D and 3D Incompressible Navier&#45;Stokes equation. " alt="" coords="579,564,761,700"/>
+<area shape="rect" id="node6" href="$classsolvers_1_1Peregrine_1_1Solver.htm" title="Solver class for Peregrine system. " alt="" coords="786,425,968,839"/>
+<area shape="rect" id="node7" href="$classsolvers_1_1QGE_1_1Solver.htm" title="Solver class for solving the Quasi&#45;Geostrophic equations in Steamfunction&#45;Vorticity form..." alt="" coords="993,549,1132,715"/>
+<area shape="rect" id="node8" href="$classsolvers_1_1SWE_1_1Solver.htm" title="Solver class for solving the Rotational Shallow Water Equation. " alt="" coords="1157,483,1339,781"/>
+</map>
