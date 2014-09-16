@@ -48,6 +48,8 @@ class Solver(SolverBase):
 
         #U_(k+alpha)
         U_alpha = (1.0-alpha)*U_ + alpha*U
+        #p_(k+alpha)
+        p_alpha = (1.0-alpha)*p_ + alpha*p
 
         t = t0 + k
         #forcing and mass source/sink
@@ -62,14 +64,14 @@ class Solver(SolverBase):
 
         #weak form of the equations
         r = z*((1./k)*inner(U - U_,v) \
-            + inner(grad(p) + grad(U_alpha)*U_alpha,v))*dx
+            + inner(grad(p_alpha) + grad(U_alpha)*U_alpha,v))*dx
         r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         r += z*div(U_alpha)*q*dx
 
         #forcing function
         r -= z*inner(F,v)*dx
 
-        R1, R2 = self.strong_residual(U_alpha,U_alpha,p)
+        R1, R2 = self.strong_residual(U_alpha,U_alpha,p_alpha)
         Rv1, Rv2 = self.strong_residual(U_alpha,v,q)
         r += z*(d1*inner(R1 - F, Rv1) + d2*R2*Rv2)*dx
 
