@@ -127,7 +127,7 @@ class Problem(ProblemBase):
 
         self.t0 = 0.
         self.T = options['T']
-        C_CFL = 5.
+        C_CFL = 100.
         self.k = C_CFL*self.mesh.hmin()/self.Ubar #mesh size
 
         #since Cube relies on this code we need a lot of selfs

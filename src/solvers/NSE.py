@@ -62,8 +62,7 @@ class Solver(SolverBase):
 
         #weak form of the equations
         r = z*((1./k)*inner(U - U_,v) \
-            - p*div(v) \
-            + inner(grad(U_alpha)*U_alpha,v))*dx
+            + inner(grad(p) + grad(U_alpha)*U_alpha,v))*dx
         r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
         r += z*div(U_alpha)*q*dx
 
