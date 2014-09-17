@@ -38,6 +38,7 @@ OPTIONS = { 'dim': 2, #number of dimensions
             'alpha': 0.5, #time-stepping method
             'adaptive': False, #mesh adaptivity
             'optimize': False, #optimize as defined in solver
+            'onDisk' : 0., #percent of steps on disk
             'save_solution': True,
             'save_frequency': 1,
             'plot_solution': False,

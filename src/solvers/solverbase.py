@@ -78,9 +78,9 @@ class SolverBase:
             should be used or if a problem is an optimization problem.
         '''
         mesh = problem.mesh
-        k = problem.k #time step
         T = problem.T
         t0 = problem.t0
+        k = self.adjust_dt(t0,T,problem.k) #adjust time step so that we evenly divide time interval
 
         TOL = 0*1E-10
         COND = 1
@@ -89,7 +89,7 @@ class SolverBase:
         self.s = 'results/' + self.prefix(problem) \
                 + self.suffix(problem)
 
-        maxadaps = 2*10 #max number of adaptive steps
+        maxadaps = 3*10 #max number of adaptive steps
         adapt_ratio = 0.1 #number of cells to refine
         nth = ('st','nd','rd','th') #numerical descriptors
 
@@ -134,7 +134,7 @@ class SolverBase:
                 print 'Refining mesh.'
                 mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
                 if 'time_step' in dir(self):
-                    k = self.time_step(problem.Ubar, mesh)
+                    k = self.adjust_dt(t0, T, self.time_step(problem.Ubar, mesh))
 
                 adj_reset() #reset the dolfin-adjoint
 
@@ -171,10 +171,13 @@ class SolverBase:
         T = problem.T
         t0 = problem.t0
         N = int(round((T - t0)/k))
-        perN = 0.2
-        adj_checkpointing(strategy='multistage', steps=N,
-                  snaps_on_disk=int(perN*N), snaps_in_ram=int(perN*N),
-                  verbose=False)
+        perN = self.options['onDisk']
+
+        assert perN <= 1. or perN >= 0.
+        if perN > 0:
+            adj_checkpointing(strategy='multistage', steps=N,
+                    snaps_on_disk=int(perN*N), snaps_in_ram=int((1.-perN)*N),
+                    verbose=False)
 
         W, w, m = self.forward_solve(problem, mesh, k, func=True)
         parameters["adjoint"]["stop_annotating"] = True
@@ -210,8 +213,8 @@ class SolverBase:
         print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
             #the tape is backwards so i+1 is the previous time step
-            wtape_alpha = alpha*wtape[i] + (1. - alpha)*wtape[i+1]
-            LR1 = k*self.weak_residual(problem, k, W, wtape_alpha, wtape[i] wtape[i], wtape[i+1], phi[i], ei_mode=True)
+            wtape_alpha = self.alpha*wtape[i] + (1. - self.alpha)*wtape[i+1]
+            LR1 = k*self.weak_residual(problem, k, W, wtape_alpha, wtape[i], wtape[i+1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1,annotate=False).array()
 
         return W, w, m, ei
@@ -306,6 +309,17 @@ class SolverBase:
         mesh = refine(mesh, cell_markers)
 
         return mesh
+
+    def adjust_dt(self, t0, T, k):
+        '''
+            Adjust time step so that we evenly divide the time interval, but
+            ensure that the new time step is always smaller than the original.
+        '''
+        div, rem = divmod((T - t0),k)
+        if rem is not 0:
+            k = (T - t0)/(div + 1)
+
+        return k
 
     def timeStepper(self, problem, t, T, k, W, w, w_, F, func=False):
         '''
