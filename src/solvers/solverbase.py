@@ -189,7 +189,7 @@ class SolverBase:
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(self.functional(mesh, w)*dt[0.9*(T-t0):T], name='DualArgument')
+        J = Functional(self.functional(mesh, w)*dt, name='DualArgument')
         print
         print 'The size of the functional is: %0.3G' % m
         timestep = None
@@ -249,8 +249,11 @@ class SolverBase:
         w = Function(W, name='w')
         w_ = Function(ic, name='w_')
 
+        alpha = self.options['alpha']
+        w_alpha = (1. - alpha)*w_ + alpha*w
+
         #weak form of the primal problem
-        F = self.weak_residual(problem, k, W, w, w_, wt, ei_mode=False)
+        F = self.weak_residual(problem, k, W, w_alpha, w, w_, wt, ei_mode=False)
 
         w, m = self.timeStepper(problem, t, T, k, W, w, w_, F, func=func)
 

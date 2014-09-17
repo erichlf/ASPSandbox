@@ -51,7 +51,7 @@ OPTIONS = { 'dim': 2, #number of dimensions
             'stabilize': True, #stabilize?
             'linear': False, #use the linear version?
             'inviscid': False, #use the inviscid version?
-	    'initialMesh' : None # to use for initial computation
+            'initialMesh' : None # to use for initial computation
 }
 
 def usage():

@@ -152,9 +152,10 @@ class Problem(ProblemBase):
 
         # Create outflow boundary condition for pressure
         bc2 = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
+        bc3 = DirichletBC(W.sub(0), self.U, OutflowBoundary())
 
         # Collect boundary conditions
-        bcs = [bc0, bc1, bc2]
+        bcs = [bc0, bc1, bc2, bc3]
 
         return bcs
 
