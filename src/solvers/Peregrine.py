@@ -38,10 +38,12 @@ class Solver(SolverBase):
 
         return W
 
-    def strong_residual(self, problem, H, U, v, eta, chi):
+    def strong_residual(self, problem, H, w, wt):
         '''
             Defines the strong residual for Peregrine System.
         '''
+        (u, eta) = (as_vector((w[0], w[1])), w[2])
+        (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
         #Parameters
         sigma = problem.sigma
         epsilon = problem.epsilon
@@ -52,7 +54,7 @@ class Solver(SolverBase):
         zeta_t = 1./k*(self.Zeta - self.Zeta_)
 
         #strong form for stabilization
-        R1 = epsilon*grad(v)*U + grad(chi)
+        R1 = epsilon*grad(v)*u + grad(chi)
         z1 = -sigma**2*H/2.*grad(zeta_tt)
 
         R2 = div(v*(H + epsilon*eta))
@@ -60,18 +62,19 @@ class Solver(SolverBase):
 
         return R1, R2, z1, z2
 
-    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
         '''
             Defines the weak residual for Peregrine System, including LS
             Stabilization.
         '''
-        (U, eta) = (as_vector((w[0], w[1])), w[2])
-        (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
+        (u, eta) = (as_vector((w[0], w[1])), w[2])
+        (U, Eta) = (as_vector((ww[0], ww[1])), ww[2])
+        (U_, Eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
         h = CellSize(W.mesh()) #mesh size
         d = 0.1*h**(3./2.) #stabilization parameter
-        d1, d2 = self.stabilization_parameters(U_, eta_, k, h) #stabilization parameters
+        d1, d2 = self.stabilization_parameters(U_, Eta_, k, h) #stabilization parameters
 
         #set up error indicators
         Z = FunctionSpace(W.mesh(), "DG", 0)
@@ -94,8 +97,6 @@ class Solver(SolverBase):
         zeta_t = 1./k*(self.Zeta - self.Zeta_)
 
         #Time stepping method
-        U_alpha = (1. - alpha)*U_ + alpha*U
-        eta_alpha = (1. - alpha)*eta_ + alpha*eta
         zeta_alpha = (1. - alpha)*self.Zeta_ + alpha*self.Zeta
         H_alpha = (1. - alpha)*self.H_ + alpha*self.H
 
@@ -109,31 +110,29 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*(1./k*inner(U-U_,v) + epsilon*inner(grad(U_alpha)*U_alpha,v) \
-            - div(v)*eta_alpha)*dx
+        r = z*(1./k*inner(U - U_,v) + epsilon*inner(grad(u)*u,v) \
+            - div(v)*eta)*dx
 
         r += z*(sigma**2*1./k*div(H_alpha*(U-U_))*div(H_alpha*v/2.) \
               - sigma**2*1./k*div(U-U_)*div(H_alpha**2*v/6.))*dx
         r += z*sigma**2*zeta_tt*div(H_alpha*v/2.)*dx
 
-        r += z*(1./k*(eta-eta_)*chi + zeta_t*chi)*dx
-        r -= z*inner(U_alpha,grad(chi))*(epsilon*eta_alpha + H_alpha)*dx
+        r += z*(1./k*(Eta-Eta_)*chi + zeta_t*chi)*dx
+        r -= z*inner(u,grad(chi))*(epsilon*eta + H_alpha)*dx
 
-        r += z*d*(inner(grad(U_alpha),grad(v)) + inner(grad(eta_alpha),grad(chi)))*dx
+        r += z*d*(inner(grad(u),grad(v)) + inner(grad(eta),grad(chi)))*dx
 
-        R1, R2, z1, z2 = self.strong_residual(problem, H_alpha, U_alpha, U_alpha, \
-                eta_alpha, eta_alpha)
-        Rv1, Rv2, z1, z2 = self.strong_residual(problem, H_alpha, U_alpha, v, \
-                eta_alpha, chi)
+        R1, R2, z1, z2 = self.strong_residual(problem, H_alpha, w, w)
+        Rv1, Rv2, z1, z2 = self.strong_residual(problem, H_alpha, w, wt)
         r += z*(d1*inner(R1 + z1, Rv1) + d2*(R2 + z2)*Rv2)*dx
 
         return r
 
-    def stabilization_parameters(self, U_, eta_, k, h):
+    def stabilization_parameters(self, u, eta, k, h):
         K1  = 2.
         K2  = 2.
-        d1 = K1*(k**(-2) + inner(U_,U_)*h**(-2))**(-0.5)
-        d2 = K2*(k**(-2) + eta_*eta_*h**(-2))**(-0.5)
+        d1 = K1*(k**(-2) + inner(u,u)*h**(-2))**(-0.5)
+        d2 = K2*(k**(-2) + eta*eta*h**(-2))**(-0.5)
 
         return d1, d2
 
@@ -167,7 +166,7 @@ class Solver(SolverBase):
                 (opt_params[0], opt_params[1], opt_params[2], opt_params[3], \
                 opt_params[4], opt_params[5], opt_params[6], opt_params[7])
 
-    def functional(self,mesh,w):
+    def functional(self, mesh, w):
         '''
             Functional for mesh adaptivity
         '''
@@ -182,7 +181,8 @@ class Solver(SolverBase):
         '''
             Update for wave object at each time step.
         '''
-        H, H_, zeta, zeta_, zeta__ = problem.update_bathymetry(Q, t)
+        annotate = self.options['adaptive'] or self.options['optimize']
+        H, H_, zeta, zeta_, zeta__ = problem.update_bathymetry(Q, t, annotate=annotate)
 
         self.Zeta.assign(zeta)
         self.Zeta_.assign(zeta_)

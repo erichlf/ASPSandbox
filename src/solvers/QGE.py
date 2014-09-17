@@ -17,14 +17,15 @@ class Solver(SolverBase):
     def function_space(self, mesh):
         # Define function spaces
         Q = FunctionSpace(mesh, 'CG', self.Pu)
-        Psi = FunctionSpace(mesh, 'CG', self.Pp)
-        W = MixedFunctionSpace([Q, Psi])
+        P = FunctionSpace(mesh, 'CG', self.Pp)
+        W = MixedFunctionSpace([Q, P])
 
         return W
 
-    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w , ww, w_, wt, ei_mode=False):
         (q, psi) = (w[0], w[1])
-        (q_, psi_) = (w_[0], w_[1])
+        (Q, Psi) = (ww[0], ww[1])
+        (Q_, Psi_) = (w_[0], w_[1])
         (p, chi) = (wt[0], wt[1])
 
         h = CellSize(W.mesh()) #mesh size
@@ -40,11 +41,6 @@ class Solver(SolverBase):
         self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
-        #psi_(k+alpha)
-        psi_alpha = (1.0-alpha)*psi_ + alpha*psi
-        #q_(k+alpha)
-        q_alpha = (1.0-alpha)*q_ + alpha*q
-
         t = t0 + self.k
         #forcing and mass source/sink
         f = problem.F(t)
@@ -57,12 +53,12 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./self.k)*(q - q_)*p \
-            + (1./Re)*inner(grad(q_alpha),grad(p)) \
-            + self.Jac(psi,q_alpha)*p \
+        r = z*((1./self.k)*(Q - Q_)*p \
+            + (1./Re)*inner(grad(q),grad(p)) \
+            + self.Jac(psi,q)*p \
             - psi.dx(0)*p)*dx
         r -= z*f*p*dx #forcing function
-        r += z*(q_alpha*chi - Ro*inner(grad(psi),grad(chi)))*dx
+        r += z*(q*chi - Ro*inner(grad(psi),grad(chi)))*dx
 
         return r
 

@@ -14,27 +14,23 @@ class Solver(SolverBase):
 
     def function_space(self, mesh):
         # Define function spaces
-        Q = FunctionSpace(mesh, 'CG', self.Pu)
+        V = FunctionSpace(mesh, 'CG', self.Pu)
 
-        return Q
+        return V
 
-    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
 
-        h = CellSize(W.mesh()) #mesh size
+        h = CellSize(V.mesh()) #mesh size
 
         #set up error indicators
-        Z = FunctionSpace(W.mesh(), "DG", 0)
+        Z = FunctionSpace(V.mesh(), "DG", 0)
         z = TestFunction(Z)
 
-        alpha = self.alpha #time stepping method
         t0 = problem.t0
 
         kappa = problem.kappa
         rho = problem.rho
         c = problem.rho
-
-        #u_(k+alpha)
-        w_alpha = (1.0-alpha)*w_ + alpha*w
 
         t = t0 + k
         #forcing and mass source/sink
@@ -45,17 +41,17 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*rho*c*(1./k)*(w - w_)*wt*dx
+        r = z*rho*c*(1./k)*(U - U_)*v*dx
         if kappa.rank() == 0:
-            r += z*kappa*inner(grad(w_alpha),grad(wt))*dx
+            r += z*kappa*inner(grad(u),grad(v))*dx
         else: #anisotropic case
-            r += z*inner(dot(kappa,grad(w_alpha)),grad(wt))*dx
+            r += z*inner(dot(kappa,grad(u)),grad(v))*dx
 
         return r
 
-    def functional(self, mesh, w):
+    def functional(self, mesh, u):
 
-      M = w*dx # Mean of the vorticity in the whole domain
+      M = u*dx # Mean of the vorticity in the whole domain
 
       return M
 
@@ -68,12 +64,12 @@ class Solver(SolverBase):
         '''
         return abs(m - m_)
 
-    def Save(self, problem, w, dual=False):
+    def Save(self, problem, u, dual=False):
         if self.options['save_frequency'] !=0 and (self._timestep - 1) % self.options['save_frequency'] == 0:
             if not dual:
-                self._ufile << w
+                self._ufile << u
             else:
-                self._uDualfile << w
+                self._uDualfile << u
 
     def file_naming(self, n=-1, dual=False):
         if n==-1:
@@ -85,13 +81,13 @@ class Solver(SolverBase):
             self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
             self.meshfile = File(self.s + '_mesh%d.xml' % n)
 
-    def Plot(self, problem, W, w):
+    def Plot(self, problem, V, u):
 
         # Plot velocity and height and wave object
         if self.vizU is None:
-            self.vizU = plot(w, title='Temperature', rescale=True, elevate=0.0)
+            self.vizU = plot(u, title='Temperature', rescale=True, elevate=0.0)
         else :
-            self.vizU.plot(w)
+            self.vizU.plot(u)
 
     def __str__(self):
           return 'Heat'

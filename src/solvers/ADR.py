@@ -16,22 +16,22 @@ class Solver(SolverBase):
         self.beta = options['beta']
 
     #strong residual for cG(1)cG(1)
-    def strong_residual(self,u):
+    def strong_residual(self, u):
         epsilon = self.epsilon #diffusion coefficient
         a = self.a #reaction coefficient
         beta = self.beta #velocity
 
-        R = a*u + dot(beta,grad(u))
+        R = a*u + dot(beta, grad(u))
 
         return R
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, k, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
         h = CellSize(W.mesh()) #mesh size
         d = self.stabilization_parameters(U_, k, h) #stabilization parameters
 
         #set up error indicators
-        Z = FunctionSpace(W.mesh(), "DG", 0)
+        Z = FunctionSpace(V.mesh(), "DG", 0)
         z = TestFunction(Z)
 
         a = self.a #reaction coefficient
@@ -41,12 +41,9 @@ class Solver(SolverBase):
         alpha = self.alpha #time stepping method
         t0 = problem.t0
 
-        #U_(k+alpha)
-        U_alpha = (1.0-alpha)*U_ + alpha*U
-
         t = t0 + k
         #forcing and mass source/sink
-        F = problem.F1(t)
+        F = problem.F(t)
 
         #least squares stabilization
         if(not self.options["stabilize"] or ei_mode):
@@ -57,29 +54,29 @@ class Solver(SolverBase):
         #weak form of the equations
         r = z*((1./k)*inner(U - U_,v) \
             + alpha*inner(u,v)
-            + epsilon*inner(grad(U_alpha),grad(v)) \
-            + inner(dot(beta,grad(U_alpha)),v)*dx
+            + epsilon*inner(grad(u),grad(v)) \
+            + inner(dot(beta,grad(u)),v)*dx
 
         #forcing function
         r -= z*inner(F,v)*dx
 
-        R = self.strong_residual(U_alpha)
+        R = self.strong_residual(u)
         Rv = self.strong_residual(v)
-        r += z*d1*inner(R1 - F, Rv1)*dx
+        r += z*d1*inner(R - F, Rv)*dx
 
         return r
 
-    def stabilization_parameters(self, U, k, h):
+    def stabilization_parameters(self, u, k, h):
         K  = 1.
         if(h > self.epsilon):
-            d = K*(k**(-2) + inner(U,U)*h**(-4))**(-0.5)
+            d = K*(k**(-2) + inner(u,u)*h**(-4))**(-0.5)
         else:
-            d = K*(k**(-2) + inner(U,U)*h**(-2))**(-0.5)
+            d = K*(k**(-2) + inner(u,u)*h**(-2))**(-0.5)
 
         return d
 
     #this is the functional used for adaptivity
-    def functional(self, mesh, w):
+    def functional(self, mesh, u):
         M = u[0]*dx # Mean of the x-velocity in the whole domain
 
         return M

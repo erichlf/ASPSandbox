@@ -29,22 +29,26 @@ class Solver(SolverBase):
         return W
 
     #strong residual for cG(1)cG(1)
-    def strong_residual(self,U,v,rho,r,p):
-        R1 = rho*grad(v)*U + grad(p)
-        R2 = div(rho*v)
-        R3 = div(v)
+    def strong_residual(self, w, w2):# U, v, rho, r, p):
+        (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
+        (U, Rho, P) = (as_vector((w2[0], w2[1])), w2[2], w2[3])
+
+        R1 = Rho*grad(U)*u + grad(p)
+        R2 = div(Rho*u)
+        R3 = div(u)
 
         return R1, R2, R3
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,problem, k, W, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
         #rho = 1/rho' - 1
-        (U, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
-        (U_, rho_, p_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
+        (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
+        (U, Rho, P) = (as_vector((ww[0], ww[1])), ww[2], ww[3])
+        (U_, Rho_, P_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
         (v, nu, q) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
 
         h = CellSize(W.mesh()) #mesh size
-        d1, d2, d3 = self.stabilization_parameters(U_, rho_, p_, k, h) #stabilization parameters
+        d1, d2, d3 = self.stabilization_parameters(U_, Rho_, P_, k, h) #stabilization parameters
         d = 0.1*h**(3./2.) #stabilization parameter
 
         #set up error indicators
@@ -53,12 +57,7 @@ class Solver(SolverBase):
 
         Re = self.Re #Reynolds Number
 
-        alpha = self.alpha #time stepping method
         t0 = problem.t0
-
-        #U_(k+alpha)
-        U_alpha = (1.0-alpha)*U_ + alpha*U
-        rho_alpha = (1.0-alpha)*rho_ + alpha*rho
 
         t = t0 + k
         #forcing and mass source/sink
@@ -74,23 +73,23 @@ class Solver(SolverBase):
           z = 1.
 
         #weak form of the equations
-        r = z*((1./k)*(rho - rho_) + div(rho_alpha*U_alpha))*nu*dx #mass equation
-        r += z*(rho_alpha*((1./k)*inner(U - U_,v) \
-            + inner(grad(U_alpha)*U_alpha,v)) \
+        r = z*((1./k)*(Rho - Rho_) + div(rho*u))*nu*dx #mass equation
+        r += z*(rho*((1./k)*inner(U - U_,v) \
+            + inner(grad(u)*u,v)) \
             + inner(grad(p),v) \
-            + 1./Re*inner(grad(U_alpha),grad(v)) \
-            + rho_alpha*dot(f,v))*dx #momentum equation
-        r += z*div(U_alpha)*q*dx #continuity equation
+            + 1./Re*inner(grad(u),grad(v)) \
+            + rho*dot(f,v))*dx #momentum equation
+        r += z*div(u)*q*dx #continuity equation
 
-        R1, R2, R3 = self.strong_residual(U_alpha,U_alpha,rho_alpha,rho_alpha,p)
-        Rv1, Rv2, Rv3 = self.strong_residual(U_alpha,v,rho_alpha,nu,q)
-        r += z*(d1*inner(R1 - rho_alpha*f, Rv1) + d2*R2*Rv2 + d3*R3*Rv3)*dx
-        r += z*d*(inner(grad(U_alpha),grad(v)))*dx
-        r += z*d*(inner(grad(rho_alpha),grad(nu)))*dx
+        R1, R2, R3 = self.strong_residual(w,w)
+        Rv1, Rv2, Rv3 = self.strong_residual(wt,w)
+        r += z*(d1*inner(R1 - rho*f, Rv1) + d2*R2*Rv2 + d3*R3*Rv3)*dx
+        r += z*d*(inner(grad(u),grad(v)))*dx
+        r += z*d*(inner(grad(rho),grad(nu)))*dx
 
         return r
 
-    def functional(self,mesh,w):
+    def functional(self, mesh, w):
 
       (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
 
@@ -98,11 +97,11 @@ class Solver(SolverBase):
 
       return M
 
-    def stabilization_parameters(self, U, rho, p, k, h):
+    def stabilization_parameters(self, u, rho, p, k, h):
         K1  = 1.
         K2  = 1.
         K3  = 0.5
-        d1 = K1*(k**(-2) + inner(U,U)*h**(-2))**(-0.5)
+        d1 = K1*(k**(-2) + inner(u,u)*h**(-2))**(-0.5)
         d2 = K2*(k**(-2) + rho*rho*h**(-2))**(-0.5)
         d3 = K3*h
 

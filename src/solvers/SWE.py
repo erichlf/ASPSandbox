@@ -32,7 +32,10 @@ class Solver(SolverBase):
             self.inviscid = 1
 
     #strong residual for cG(1)cG(1)
-    def strong_residual(self,U,v,eta):
+    def strong_residual(self, w, w2):
+        (u, eta) = (as_vector((w[0], w[1])), w[2])
+        (U, Eta) = (as_vector((w2[0], w2[1])), w2[2])
+
         #get problem parameters
         Re = self.Re #Reynolds number
         H = self.H #Fluid depth
@@ -43,22 +46,23 @@ class Solver(SolverBase):
         NonLinear = self.NonLinear
 
         #momentum equation
-        R1 = NonLinear*grad(v)*U \
-            + 1/Ro*as_vector((-U[1],U[0])) \
+        R1 = NonLinear*grad(u)*U \
+            + 1/Ro*as_vector((-u[1],u[0])) \
             + Fr**(-2)*Th*grad(eta)
         #continuity equation
-        R2 = 1/Th*H*div(v)
+        R2 = 1/Th*H*div(u)
 
         return R1, R2
 
     #weak residual for cG(1)cG(1)
-    def weak_residual(self,problem, k, W, w, w_, wt, ei_mode=False):
-        (U, eta) = (as_vector((w[0], w[1])), w[2])
-        (U_, eta_) = (as_vector((w_[0], w_[1])), w_[2])
+    def weak_residual(self,problem, k, W, w, ww, w_, wt, ei_mode=False):
+        (u, eta) = (as_vector((w[0], w[1])), w[2])
+        (U, Eta) = (as_vector((ww[0], ww[1])), ww[2])
+        (U_, Eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
         h = CellSize(W.mesh()) #mesh size
-        d1, d2 = self.stabilization_parameters(U_, eta_, k, h) #stabilization parameters
+        d1, d2 = self.stabilization_parameters(U_, Eta_, k, h) #stabilization parameters
 
         #set up error indicators
         Z = FunctionSpace(W.mesh(), "DG", 0)
@@ -72,21 +76,18 @@ class Solver(SolverBase):
         Fr = self.Fr #Froude number
 
         NonLinear = self.NonLinear
-        inviscid = self.inviscid
+        if self.options['inviscid']:
+            inviscid = 0
+        else:
+            inviscid = 1.
 
         alpha = self.alpha #time stepping method
         t0 = problem.t0
 
-        #U_(k+alpha)
-        U_alpha = (1.0-alpha)*U_ + alpha*U
-
-        #p_(k+alpha)
-        eta_alpha = (1.0-alpha)*eta_ + alpha*eta
-
         t = t0 + k
         #forcing and mass source/sink
-        F1_alpha = alpha*problem.F1(t) + (1 - alpha)*problem.F1(t0)
-        F2_alpha = alpha*problem.F2(t) + (1 - alpha)*problem.F2(t0)
+        F1 = problem.F1(t) 
+        F2 = problem.F2(t) 
 
         #least squares stabilization
         if(not self.options["stabilize"] or ei_mode):
@@ -98,20 +99,20 @@ class Solver(SolverBase):
         #weak form of the equations
         #momentum equation
         r = z*((1./k)*inner(U - U_,v) \
-            + 1/Ro*(U_alpha[0]*v[1] - U_alpha[1]*v[0]) \
-            - Fr**(-2)*Th*eta_alpha*div(v))*dx
-        r += z*inviscid/Re*inner(grad(U_alpha),grad(v))*dx
+            + 1/Ro*(u[0]*v[1] - u[1]*v[0]) \
+            - Fr**(-2)*Th*eta*div(v))*dx
+        r += z*inviscid/Re*inner(grad(u),grad(v))*dx
         #add the terms for the non-linear SWE
-        r += z*NonLinear*inner(grad(U_alpha)*U_alpha,v)*dx
+        r += z*NonLinear*inner(grad(u)*u,v)*dx
         #continuity equation
-        r += z*((1./k)*(eta - eta_)*chi \
-            + H/Th*div(U_alpha)*chi)*dx
+        r += z*((1./k)*(Eta - Eta_)*chi \
+            + H/Th*div(u)*chi)*dx
 
-        r -= z*(inner(F1_alpha,v) + F2_alpha*chi)*dx
+        r -= z*(inner(F1,v) + F2*chi)*dx
 
-        R1, R2 = self.strong_residual(U_alpha,U_alpha,eta_alpha)
-        Rv1, Rv2 = self.strong_residual(U_alpha,v,chi)
-        r += z*(d1*inner(R1 - F1_alpha, Rv1) + d2*(R2 - F2_alpha)*Rv2)*dx
+        R1, R2 = self.strong_residual(w, w)
+        Rv1, Rv2 = self.strong_residual(wt, w)
+        r += z*(d1*inner(R1 - F1, Rv1) + d2*(R2 - F2)*Rv2)*dx
 
         return r
 

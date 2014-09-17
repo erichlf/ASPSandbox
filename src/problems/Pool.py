@@ -284,18 +284,18 @@ class Problem(ProblemBase):
 
         return obj
 
-    def update_bathymetry(self, Q, t):
+    def update_bathymetry(self, Q, t, annotate=True):
         '''
             Tells the solver what the bathymetry looks like at time t.
         '''
         D = Expression(self.D, element=Q.ufl_element(), annotate=False)
 
         self.zeta0.t = t
-        zeta = project(self.zeta0, Q, annotate=True)
+        zeta = project(self.zeta0, Q, annotate=annotate)
         self.zeta0.t = max(t - self.k, self.t0)
-        zeta_ = project(self.zeta0, Q, annotate=True)
+        zeta_ = project(self.zeta0, Q, annotate=annotate)
         self.zeta0.t = max(t - 2*self.k, self.t0)
-        zeta__ = project(self.zeta0, Q, annotate=True)
+        zeta__ = project(self.zeta0, Q, annotate=annotate)
 
         H = project(D + self.epsilon*zeta, Q)
         H_ = project(D + self.epsilon*zeta_, Q)

@@ -26,9 +26,7 @@ class Solver(SolverBase):
         R1 = grad(U)*u + grad(p)
         R2 = div(u)
 
-        R1 = [R1[i] for i in range(0, W.mesh().topology().dim())]
-
-        return as_vector(R1 + [R2])
+        return R1, R2
 
     #weak residual for cG(1)cG(1)
     def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
@@ -79,16 +77,16 @@ class Solver(SolverBase):
         #forcing function
         r -= z*inner(F,v)*dx
 
-        R = self.strong_residual(W,w,w)
-        Rv = self.strong_residual(W,wt,w)
-        r += z*d1*inner(R, Rv)*dx
+        R1, R2 = self.strong_residual(W,w,w)
+        Rv1, Rv2 = self.strong_residual(W,wt,w)
+        r += z*(d1*inner(R1 - F, Rv1) + d2*R2*Rv2)*dx
 
         return r
 
     def stabilization_parameters(self, u, p, k, h):
         K1  = 1.
-        K2  = 1.
-        d1 = K1*h
+        K2  = 0.5
+        d1 = K1*(k**(-2) + inner(u,u)*h**(-2))**(-0.5)
         d2 = K2*h
 
         return d1, d2
