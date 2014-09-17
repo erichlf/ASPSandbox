@@ -85,8 +85,8 @@ class Solver(SolverBase):
 
     def stabilization_parameters(self, u, p, k, h):
         K1  = 1.
-        K2  = 0.5
-        d1 = K1*(k**(-2) + inner(u,u)*h**(-2))**(-0.5)
+        K2  = 1.
+        d1 = K1*h#(k**(-2) + inner(u,u)*h**(-2))**(-0.5)
         d2 = K2*h
 
         return d1, d2
