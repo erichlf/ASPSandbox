@@ -87,7 +87,7 @@ class PsiMarker(Expression):
         self.cube = cube
 
     def eval(self, values, x):
-        object = ObjectBoundary(dim, cube)
+        object = ObjectBoundary(self.dim, self.cube)
 
         if(object.inside(x, True)):
             values[0] = 1.0
