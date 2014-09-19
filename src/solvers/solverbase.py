@@ -195,6 +195,7 @@ class SolverBase:
         wtape = []
         phi = []
 
+        print
         print 'Solving the dual problem.'
         for (adj, var) in compute_adjoint(J,forget=False):
             if var.name == 'w' and timestep != var.timestep:
