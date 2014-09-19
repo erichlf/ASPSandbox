@@ -50,6 +50,20 @@ class NoSlipBoundary(SubDomain):
         SubDomain.__init__(self)
         self.dim = dim
         self.cube = cube
+        self.object = ObjectBoundary(dim, cube)
+
+    def inside(self, x, on_boundary):
+
+        return on_boundary \
+                and (near(x[1], ymin) or near(x[1], ymax) \
+                or (self.dim == 3 and (near(x[2], zmin) or near(x[2], zmax))) \
+                or self.object.inside(x, on_boundary))
+
+class ObjectBoundary(SubDomain):
+    def __init__(self, dim, cube):
+        SubDomain.__init__(self)
+        self.dim = dim
+        self.cube = cube
 
     def inside(self, x, on_boundary):
         dx = x[0] - xcenter
@@ -59,16 +73,26 @@ class NoSlipBoundary(SubDomain):
         Cube = near(x[0], xcenter - radius) or near(x[0], xcenter + radius) \
                 or near(x[1], ycenter - radius) or near(x[1], ycenter + radius)
 
-        return on_boundary \
-                and (near(x[1], ymin) or near(x[1], ymax) \
-                or (self.dim == 3 and (near(x[2], zmin) or near(x[2], zmax))) \
-                or (not self.cube and r < radius + bmarg) \
+        return on_boundary and ((not self.cube and r < radius + bmarg) \
                 or (self.cube and Cube))
 
 # Outflow boundary
 class OutflowBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and near(x[0], xmax)
+
+class PsiMarker(Expression):
+    def __init__(self, dim, cube):
+        self.dim = dim
+        self.cube = cube
+
+    def eval(self, values, x):
+        object = ObjectBoundary(dim, cube)
+
+        if(object.inside(x, True)):
+            values[0] = 1.0
+        else:
+            values[0] = 0.0
 
 # Problem definition
 class Problem(ProblemBase):
@@ -157,6 +181,10 @@ class Problem(ProblemBase):
         bcs = [bc0, bc1, bc2]
 
         return bcs
+
+    def marker(self):
+        #provide a marker to indicate if we are on the object
+        return ObjectBoundary(self.dim, self.cube)
 
     def F1(self, t):
         #forcing function for the momentum equation

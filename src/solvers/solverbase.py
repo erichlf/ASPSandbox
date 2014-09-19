@@ -116,9 +116,9 @@ class SolverBase:
 
                 # Solve primal and dual problems and compute error indicators
                 m_ = m #save the previous functional value
-                W, w, m, ei = self.adaptive_solve(problem, mesh, k)
+                W, w, m, ei = self.adaptive_solve(problem, mesh, t0, T, k)
                 COND = self.condition(ei, m, m_)
-                print 'Stopping Criterion=%0.3G' % COND
+                print 'The size of the functions is %0.5G and the stopping Criterion=%0.5G' % (m, COND)
 
                 if i==0 and self.options['plot_solution']:
                     plot(ei, title="Error Indicators.", elevate=0.0)
@@ -149,7 +149,7 @@ class SolverBase:
         #record so that we can evaluate our functional
         parameters["adjoint"]["stop_annotating"] = not (self.options['adaptive']
                 and self.options['optimize'] and 'Optimize' in dir(self))
-        W, w, m = self.forward_solve(problem, mesh, k, func=self.options['adaptive'])
+        W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=self.options['adaptive'])
         if m is not None:
             print
             print 'The size of the functional is: %0.3G' % m
@@ -160,7 +160,7 @@ class SolverBase:
 
         return w
 
-    def adaptive_solve(self, problem, mesh, k):
+    def adaptive_solve(self, problem, mesh, t0, T, k):
         '''
             Adaptive solve applies the error representation to goal-oriented
             adaptivity. This is all done automatically using the weak_residual.
@@ -168,8 +168,6 @@ class SolverBase:
         print 'Solving the primal problem.'
         parameters["adjoint"]["stop_annotating"] = False
 
-        T = problem.T
-        t0 = problem.t0
         N = int(round((T - t0)/k))
         perN = self.options['onDisk']
 
@@ -179,7 +177,7 @@ class SolverBase:
                     snaps_on_disk=int(perN*N), snaps_in_ram=int((1.-perN)*N),
                     verbose=False)
 
-        W, w, m = self.forward_solve(problem, mesh, k, func=True)
+        W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=True)
         parameters["adjoint"]["stop_annotating"] = True
         self._timestep = 0 #reset the time step to zero
 
@@ -192,9 +190,7 @@ class SolverBase:
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(self.functional(mesh, w)*dt, name='DualArgument')
-        print
-        print 'The size of the functional is: %0.3G' % m
+        J = Functional(self.functional(problem, mesh, w)*dt, name='DualArgument')
         timestep = None
         wtape = []
         phi = []
@@ -229,15 +225,12 @@ class SolverBase:
         '''
         return abs(sum(ei.vector()))
 
-    def forward_solve(self, problem, mesh, k, func=False):
+    def forward_solve(self, problem, mesh, t0, T, k, func=False):
         '''
             Here we take the weak_residual and apply boundary conditions and then
             send it to time_stepper for solving.
         '''
         h = CellSize(mesh) #mesh size
-
-        t = problem.t0
-        T = problem.T #final time
 
         # Define function spaces
         #we do it this way so that it can be overloaded
@@ -276,7 +269,7 @@ class SolverBase:
 
         return W
 
-    def functional(self, mesh, w):
+    def functional(self, problem, mesh, w):
         '''
             This is the functional used for adaptivity.
             We assume the problem is much like NSE. This can be overloaded by
@@ -287,7 +280,11 @@ class SolverBase:
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
 
+        n = FacetNormal(mesh)
+        marker = problem.marker()
+
         M = u[0]*dx # Mean of the x-velocity in the whole domain
+        #M = marker*p*n[0]*ds # Drag (only pressure)
 
         return M
 
@@ -349,8 +346,8 @@ class SolverBase:
             solve(F==0, w, bcs=bcs)
 
             w_.assign(w)
-            if func and t>0.9*T:
-                m += k*assemble(self.functional(W.mesh(), w_), annotate=False)
+            if func and t>T:
+                m += k*assemble(self.functional(problem, W.mesh(), w_), annotate=False)
             adj_inc_timestep(t,finished=t>=(T-k/2.))
 
             # Update
@@ -473,6 +470,8 @@ class SolverBase:
             s = 'Inviscid' + s
         if(self.options['linear']):
             s = 'Linear' + s
+
+        s += 'T' + problem.T
 
         return problem.output_location + s + p
 
