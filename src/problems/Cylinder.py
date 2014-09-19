@@ -184,7 +184,7 @@ class Problem(ProblemBase):
 
     def marker(self):
         #provide a marker to indicate if we are on the object
-        return ObjectBoundary(self.dim, self.cube)
+        return PsiMarker(self.dim, self.cube)
 
     def F1(self, t):
         #forcing function for the momentum equation
