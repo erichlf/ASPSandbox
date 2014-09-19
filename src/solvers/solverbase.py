@@ -237,7 +237,7 @@ class SolverBase:
         W = self.function_space(mesh)
 
         # Get boundary conditions
-        bcs = problem.boundary_conditions(W, t)
+        bcs = problem.boundary_conditions(W, t0)
 
         ic = problem.initial_conditions(W)
 
@@ -252,7 +252,7 @@ class SolverBase:
         #weak form of the primal problem
         F = self.weak_residual(problem, k, W, w_alpha, w, w_, wt, ei_mode=False)
 
-        w, m = self.timeStepper(problem, t, T, k, W, w, w_, F, func=func)
+        w, m = self.timeStepper(problem, t0, T, k, W, w, w_, F, func=func)
 
         return W, w, m
 
