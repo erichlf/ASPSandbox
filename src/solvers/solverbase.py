@@ -471,7 +471,7 @@ class SolverBase:
         if(self.options['linear']):
             s = 'Linear' + s
 
-        s += 'T' + problem.T
+        s += 'T' + str(problem.T)
 
         return problem.output_location + s + p
 
