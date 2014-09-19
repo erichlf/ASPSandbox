@@ -118,7 +118,7 @@ class SolverBase:
                 m_ = m #save the previous functional value
                 W, w, m, ei = self.adaptive_solve(problem, mesh, t0, T, k)
                 COND = self.condition(ei, m, m_)
-                print 'The size of the functions is %0.5G and the stopping Criterion=%0.5G' % (m, COND)
+                print 'The size of the functional is %0.5G and the stopping Criterion=%0.5G' % (m, COND)
 
                 if i==0 and self.options['plot_solution']:
                     plot(ei, title="Error Indicators.", elevate=0.0)
@@ -346,7 +346,7 @@ class SolverBase:
             solve(F==0, w, bcs=bcs)
 
             w_.assign(w)
-            if func and t>T:
+            if func:
                 m += k*assemble(self.functional(problem, W.mesh(), w_), annotate=False)
             adj_inc_timestep(t,finished=t>=(T-k/2.))
 
