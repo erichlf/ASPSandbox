@@ -400,7 +400,7 @@ class SolverBase:
 
         # Print progress
         if not dual:
-            s = 'Time step %d finished in %g seconds,' % (self._timestep,
+            s = 'Time step %d finished in %g seconds, ' % (self._timestep,
                                                           timestep_cputime)
             s += '%g%% done (t = %g, T = %g).' % (100.0*(t/problem.T), t,
                                                   problem.T)
