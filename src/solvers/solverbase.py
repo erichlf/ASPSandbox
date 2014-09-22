@@ -426,7 +426,7 @@ class SolverBase:
 
         if self.options['save_frequency'] != 0 \
                 and ((self._timestep - 1) % self.options['save_frequency'] == 0
-                     or self._timestep == 0):
+                     or self._timestep == 0 or self._timestep == problem.T):
             if not dual:
                 self._ufile << u
                 self._pfile << p
