@@ -1,6 +1,6 @@
 __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
-__license__  = "GNU GPL version 3 or any later version"
+__license__ = "GNU GPL version 3 or any later version"
 #
 #   adapted from solverbase.py in nsbench originally developed by
 #   Anders Logg <logg@simula.no>
@@ -12,10 +12,7 @@ from dolfin_adjoint import *
 from time import time
 from os import getpid
 from commands import getoutput
-from numpy import absolute
-import re
 import sys
-import math
 
 dolfin.parameters["adjoint"]["record_all"] = True
 
@@ -23,29 +20,31 @@ dolfin.parameters["adjoint"]["record_all"] = True
 maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
+
 class SolverBase:
     '''
-    SolverBase provides a general solver class for the various Solvers. Its
-    purpose is take a weak_residual and then solve it using the theta-method
+        SolverBase provides a general solver class for the various Solvers. Its
+        purpose is take a weak_residual and then solve it using the theta-method
     '''
     def __init__(self, options):
 
         # Store options
         self.options = options
 
-        #initialize parameters
-        self.Re = None #Reynolds number
-        self.H = None #Fluid depth
-        self.Ro = None #Rossby number
-        self.Fr = None #Froude number
+        # initialize parameters
+        self.Re = None  # Reynolds number
+        self.H = None  # Fluid depth
+        self.Ro = None  # Rossby number
+        self.Fr = None  # Froude number
         self.Th = None
 
-        #initialize the time stepping method parameters
-        self.alpha = self.options['alpha'] #time stepping method
+        # initialize the time stepping method parameters
+        self.alpha = self.options['alpha']  # time stepping method
 
-        #initialize element orders
-        self.Pu = self.options['velocity_order'] #order of velocity element
-        self.Pp = self.options['height_order'] #order of height/pressure element
+        # initialize element orders
+        self.Pu = self.options['velocity_order']  # order of velocity element
+        # order of height/pressure element
+        self.Pp = self.options['height_order']
 
         if(self.Pu == 2 and self.options['stabilize']):
             self.options['stabilize'] = False
@@ -68,7 +67,7 @@ class SolverBase:
         # Reset storage for functional values and errors
         self._t = []
 
-        #create plot objects
+        # create plot objects
         self.vizU = None
         self.vizP = None
 
@@ -80,85 +79,99 @@ class SolverBase:
         mesh = problem.mesh
         T = problem.T
         t0 = problem.t0
-        k = self.adjust_dt(t0,T,problem.k) #adjust time step so that we evenly divide time interval
 
         TOL = 0*1E-10
-        COND = 1
 
-        #naming scheme
-        self.s = 'results/' + self.prefix(problem) \
-                + self.suffix(problem)
+        # naming scheme
+        self.s = 'results/' + self.prefix(problem) + self.suffix(problem)
 
-        maxadaps = 3*10 #max number of adaptive steps
-        adapt_ratio = 0.1 #number of cells to refine
-        nth = ('st','nd','rd','th') #numerical descriptors
+        maxadaps = 3*10  # max number of adaptive steps
+        adapt_ratio = 0.1  # number of cells to refine
 
-        if self.options['adaptive']: #solve with adaptivity
-            #files specific to adaptivity
-            self.eifile = File(self.s + '_ei.pvd') #error indicators
+        if self.options['adaptive']:  # solve with adaptivity
+            mesh, k = self.adaptivity(maxadaps, adapt_ratio, TOL, problem, mesh,
+                                      T, t0)
 
-            # Adaptive loop
-            i = 0
-            m = 0 #initialize
-            while(i<=maxadaps and COND>TOL):
-                #setup file names
-                self.file_naming(n=i, dual=False)
-                #save our current mesh
-                if not self.options['plot_solution']:
-                    self.meshfile << mesh
-
-                if i==0:
-                    print 'Solving on initial mesh.'
-                elif i < len(nth):
-                    print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
-                else:
-                    print 'Solving on %d%s adapted mesh.' % (i, nth[-1])
-
-                # Solve primal and dual problems and compute error indicators
-                m_ = m #save the previous functional value
-                W, w, m, ei = self.adaptive_solve(problem, mesh, t0, T, k)
-                COND = self.condition(ei, m, m_)
-                print 'The size of the functional is %0.5G and the stopping Criterion=%0.5G' % (m, COND)
-
-                if i==0 and self.options['plot_solution']:
-                    plot(ei, title="Error Indicators.", elevate=0.0)
-                    plot(mesh, title='Initial mesh', size=((600, 300)))
-                elif (i==maxadaps or COND<=TOL) and self.options['plot_solution']:
-                    plot(ei, title="Error Indicators.", elevate=0.0)
-                    plot(mesh, title='Final mesh', size=((600, 300)))
-                    interactive()
-                elif not self.options['plot_solution']:
-                    self.eifile << ei
-
-                # Refine the mesh
-                print 'Refining mesh.'
-                mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
-                if 'time_step' in dir(self):
-                    k = self.adjust_dt(t0, T, self.time_step(problem.Ubar, mesh))
-
-                adj_reset() #reset the dolfin-adjoint
-
-                i += 1
-
-            if i>maxadaps and COND>TOL:
-                s = 'Warning reached max adaptive iterations with sum(abs(EI))=%0.3G.  Solution may not be accurate.' % COND
-                print s
         print 'Solving the primal problem.'
         self.file_naming(n=-1, dual=False)
 
-        #record so that we can evaluate our functional
-        parameters["adjoint"]["stop_annotating"] = not (self.options['adaptive']
-                and self.options['optimize'] and 'Optimize' in dir(self))
-        W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=self.options['adaptive'])
+        # record so that we can evaluate our functional
+        parameters["adjoint"]["stop_annotating"] = \
+            not (self.options['adaptive'] and self.options['optimize']
+                 and 'Optimize' in dir(self))
+        W, w, m = self.forward_solve(problem, mesh, t0, T, k,
+                                     func=self.options['adaptive'])
         if m is not None:
             print
             print 'The size of the functional is: %0.3G' % m
 
-        #solve the optimization problem
-        if(self.options['optimize'] and  'Optimize' in dir(self)):
+        # solve the optimization problem
+        if(self.options['optimize'] and 'Optimize' in dir(self)):
             self.Optimize(problem, w)
 
         return w
+
+    def adaptivity(self, maxadaps, adapt_ratio, TOL, problem, mesh, T, t0):
+        COND = 1
+        # files specific to adaptivity
+        self.eifile = File(self.s + '_ei.pvd')  # error indicators
+        nth = ('st', 'nd', 'rd', 'th')  # numerical descriptors
+
+        # adjust time step so that we evenly divide time interval
+        k = self.adjust_dt(t0, T, problem.k)
+
+        # Adaptive loop
+        i = 0
+        m = 0  # initialize
+        while(i <= maxadaps and COND > TOL):
+            # setup file names
+            self.file_naming(n=i, dual=False)
+            # save our current mesh
+            if not self.options['plot_solution']:
+                self.meshfile << mesh
+
+            if i == 0:
+                print 'Solving on initial mesh.'
+            elif i < len(nth):
+                print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
+            else:
+                print 'Solving on %d%s adapted mesh.' % (i, nth[-1])
+
+            # Solve primal and dual problems and compute error indicators
+            m_ = m  # save the previous functional value
+            W, w, m, ei = self.adaptive_solve(problem, mesh, t0, T, k)
+            COND = self.condition(ei, m, m_)
+            print 'DOFs=%d functional=%0.5G err_est=%0.5G' \
+                % (mesh.num_vertices(), m, COND)
+
+            if i == 0 and self.options['plot_solution']:
+                plot(ei, title="Error Indicators.", elevate=0.0)
+                plot(mesh, title='Initial mesh', size=((600, 300)))
+            elif (i == maxadaps or COND <= TOL) \
+                    and self.options['plot_solution']:
+                plot(ei, title="Error Indicators.", elevate=0.0)
+                plot(mesh, title='Final mesh', size=((600, 300)))
+                interactive()
+            elif not self.options['plot_solution']:
+                self.eifile << ei
+
+            # Refine the mesh
+            print 'Refining mesh.'
+            mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
+            if 'time_step' in dir(self):
+                k = self.adjust_dt(t0, T, self.time_step(problem.Ubar, mesh))
+
+            adj_reset()  # reset the dolfin-adjoint
+
+            i += 1
+
+        if i > maxadaps and COND > TOL:
+            s = 'Warning reached max adaptive iterations with' \
+                + 'sum(abs(EI))=%0.3G.  Solution may not be accurate.' \
+                % COND
+            print s
+
+        return mesh, k
 
     def adaptive_solve(self, problem, mesh, t0, T, k):
         '''
@@ -174,45 +187,48 @@ class SolverBase:
         assert perN <= 1. or perN >= 0.
         if perN > 0:
             adj_checkpointing(strategy='multistage', steps=N,
-                    snaps_on_disk=int(perN*N), snaps_in_ram=int((1.-perN)*N),
-                    verbose=False)
+                              snaps_on_disk=int(perN*N),
+                              snaps_in_ram=int((1.-perN)*N),
+                              verbose=False)
 
         W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=True)
         parameters["adjoint"]["stop_annotating"] = True
-        self._timestep = 0 #reset the time step to zero
+        self._timestep = 0  # reset the time step to zero
 
         phi = Function(W)
 
         # Generate error indicators
         Z = FunctionSpace(mesh, "DG", 0)
         ei = Function(Z, name='Error Indicator')
-        z = TestFunction(Z)
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(self.functional(problem, mesh, w)*dt, name='DualArgument')
+        J = Functional(self.functional(problem, mesh, w)*dt,
+                       name='DualArgument')
         timestep = None
         wtape = []
         phi = []
 
         print
         print 'Solving the dual problem.'
-        for (adj, var) in compute_adjoint(J,forget=False):
+        for (adj, var) in compute_adjoint(J, forget=False):
             if var.name == 'w' and timestep != var.timestep:
                 timestep = var.timestep
                 # Compute error indicators ei
-                wtape.append(DolfinAdjointVariable(w).tape_value(timestep=timestep))
+                wtape.append(DolfinAdjointVariable(w).
+                             tape_value(timestep=timestep))
                 phi.append(adj)
                 self.update(problem, None, W, adj, dual=True)
 
-        self._timestep = 0 #reset the time step to zero
+        self._timestep = 0  # reset the time step to zero
 
         print 'Building error indicators.'
         for i in range(0, len(wtape)-1):
-            #the tape is backwards so i+1 is the previous time step
+            # the tape is backwards so i+1 is the previous time step
             wtape_alpha = self.alpha*wtape[i] + (1. - self.alpha)*wtape[i+1]
-            LR1 = k*self.weak_residual(problem, k, W, wtape_alpha, wtape[i], wtape[i+1], phi[i], ei_mode=True)
-            ei.vector()[:] += assemble(LR1,annotate=False).array()
+            LR1 = k*self.weak_residual(problem, k, W, wtape_alpha, wtape[i],
+                                       wtape[i+1], phi[i], ei_mode=True)
+            ei.vector()[:] += assemble(LR1, annotate=False).array()
 
         return W, w, m, ei
 
@@ -224,25 +240,26 @@ class SolverBase:
             m - current functional size (Galerkin-orthogonal problems)
             m_ - previous functional size (Galerkin-orthogonal problems)
         '''
-        return abs(sum(ei.vector()))
+        if(self.options['stabilize']
+           and 'stabilization_parameters' in dir(self)):
+            c = abs(sum(ei.vector()))
+        else:
+            c = abs(m - m_)
+
+        return c
 
     def forward_solve(self, problem, mesh, t0, T, k, func=False):
         '''
-            Here we take the weak_residual and apply boundary conditions and then
-            send it to time_stepper for solving.
+            Here we take the weak_residual and apply boundary conditions and
+            then send it to time_stepper for solving.
         '''
-        h = CellSize(mesh) #mesh size
-
         # Define function spaces
-        #we do it this way so that it can be overloaded
+        # we do it this way so that it can be overloaded
         W = self.function_space(mesh)
-
-        # Get boundary conditions
-        bcs = problem.boundary_conditions(W, t0)
 
         ic = problem.initial_conditions(W)
 
-        #define trial and test function
+        # define trial and test function
         wt = TestFunction(W)
         w = Function(W, name='w')
         w_ = Function(ic, name='w_')
@@ -250,14 +267,14 @@ class SolverBase:
         alpha = self.options['alpha']
         w_alpha = (1. - alpha)*w_ + alpha*w
 
-        #weak form of the primal problem
+        # weak form of the primal problem
         F = self.weak_residual(problem, k, W, w_alpha, w, w_, wt, ei_mode=False)
 
         w, m = self.timeStepper(problem, t0, T, k, W, w, w_, F, func=func)
 
         return W, w, m
 
-    #define functions spaces
+    # define functions spaces
     def function_space(self, mesh):
         '''
             Sets up a general mixed function space. We assume there are only two
@@ -281,19 +298,19 @@ class SolverBase:
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
 
-        n = FacetNormal(mesh)
-        marker = problem.marker()
+        # n = FacetNormal(mesh)
+        # marker = problem.marker()
 
-        M = u[0]*dx # Mean of the x-velocity in the whole domain
-        #M = marker*p*n[0]*ds # Drag (only pressure)
+        M = u[0]*dx  # Mean of the x-velocity in the whole domain
+        # M = marker*p*n[0]*ds  # Drag (only pressure)
 
         return M
 
     # Refine the mesh based on error indicators
     def adaptive_refine(self, mesh, ei, adapt_ratio):
         '''
-            Take a mesh and the associated error indicators and refine adapt_ration%
-            of cells.
+            Take a mesh and the associated error indicators and refine
+            adapt_ratio% of cells.
         '''
         gamma = abs(ei.vector().array())
 
@@ -313,7 +330,7 @@ class SolverBase:
             Adjust time step so that we evenly divide the time interval, but
             ensure that the new time step is always smaller than the original.
         '''
-        div, rem = divmod((T - t0),k)
+        div, rem = divmod((T - t0), k)
         if rem is not 0:
             k = (T - t0)/(div + 1)
 
@@ -331,25 +348,26 @@ class SolverBase:
         # Time loop
         self.start_timing()
 
-        #plot and save initial condition
+        # plot and save initial condition
         self.update(problem, t, W, w_)
 
         adj_start_timestep(t)
-        while t<(T-k/2.):
+        while t < (T-k/2.):
             t += k
 
             if('wave_object' in dir(self)):
                 self.wave_object(problem, self.Q, t, k)
 
-            #evaluate bcs again (in case they are time-dependent)
+            # evaluate bcs again (in case they are time-dependent)
             bcs = problem.boundary_conditions(W, t)
 
-            solve(F==0, w, bcs=bcs)
+            solve(F == 0, w, bcs=bcs)
 
             w_.assign(w)
             if func:
-                m += k*assemble(self.functional(problem, W.mesh(), w_), annotate=False)
-            adj_inc_timestep(t,finished=t>=(T-k/2.))
+                m += k*assemble(self.functional(problem, W.mesh(), w_),
+                                annotate=False)
+            adj_inc_timestep(t, finished=t >= (T-k/2.))
 
             # Update
             self.update(problem, t, W, w_)
@@ -372,23 +390,25 @@ class SolverBase:
         if self.options['save_solution']:
             # Save velocity and pressure
             self.Save(problem, w, dual=dual)
-        else: # Plot solution
+        else:  # Plot solution
             self.options['plot_solution'] = True
             self.Plot(problem, W, w)
 
         # Check memory usage
         if self.options['check_mem_usage']:
-            print 'Memory usage is:' , self.getMyMemoryUsage()
+            print 'Memory usage is:', self.getMyMemoryUsage()
 
         # Print progress
         if not dual:
-            s = 'Time step %d finished in %g seconds, %g%% done (t = %g, T = %g).' \
-                % (self._timestep, timestep_cputime, 100.0*(t / problem.T), t, problem.T)
+            s = 'Time step %d finished in %g seconds,' % (self._timestep,
+                                                          timestep_cputime)
+            s += '%g%% done (t = %g, T = %g).' % (100.0*(t/problem.T), t,
+                                                  problem.T)
             sys.stdout.flush()
             sys.stdout.write('\033[K')
             sys.stdout.write(s + '\r')
 
-            #record current time
+            # record current time
             self._time = time()
 
         # Increase time step
@@ -396,17 +416,17 @@ class SolverBase:
 
     def Save(self, problem, w, dual=False):
         '''
-            Save a variables associated with a time step. Here we assume there are
-            two variables where the first variable is vector-valued and the second
-            variable is a scalar. If this doesn't fit the particular solvers
-            variables the user will need to overload this function.
+            Save a variables associated with a time step. Here we assume there
+            are two variables where the first variable is vector-valued and the
+            second variable is a scalar. If this doesn't fit the particular
+            solvers variables the user will need to overload this function.
         '''
         u = w.split()[0]
         p = w.split()[1]
 
         if self.options['save_frequency'] != 0 \
-                and ((self._timestep - 1) % self.options['save_frequency'] == 0 \
-                        or self._timestep == 0):
+                and ((self._timestep - 1) % self.options['save_frequency'] == 0
+                     or self._timestep == 0):
             if not dual:
                 self._ufile << u
                 self._pfile << p
@@ -417,11 +437,11 @@ class SolverBase:
     def file_naming(self, n=-1, dual=False):
         '''
             Names our files for saving variables. Here we assume there are
-            two variables where the first variable is vector-valued and the second
-            variable is a scalar. If this doesn't fit the particular solvers
-            variables the user will need to overload this function.
+            two variables where the first variable is vector-valued and the
+            second variable is a scalar. If this doesn't fit the particular
+            solvers variables the user will need to overload this function.
         '''
-        if n==-1:
+        if n == -1:
             self._ufile = File(self.s + '_u.pvd', 'compressed')
             self._pfile = File(self.s + '_p.pvd', 'compressed')
             self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
@@ -434,13 +454,14 @@ class SolverBase:
             self._pDualfile = File(self.s + '_pDual%d.pvd' % n, 'compressed')
             self.meshfile = File(self.s + '_mesh%d.xml' % n)
 
-    #this is a separate function so that it can be overloaded
+    # this is a separate function so that it can be overloaded
     def Plot(self, problem, W, w):
         '''
-            Plots our variables associated with a time step. Here we assume there are
-            two variables where the first variable is vector-valued and the second
-            variable is a scalar. If this doesn't fit the particular solvers
-            variables the user will need to overload this function.
+            Plots our variables associated with a time step. Here we assume
+            there are two variables where the first variable is vector-valued
+            and the second variable is a scalar. If this doesn't fit the
+            particular solvers variables the user will need to overload this
+            function.
         '''
         u = w.split()[0]
         p = w.split()[1]
@@ -449,7 +470,7 @@ class SolverBase:
             # Plot velocity and pressure
             self.vizU = plot(u, title='Velocity', rescale=True)
             self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
-        else :
+        else:
             self.vizU.plot(u)
             self.vizP.plot(p)
 
@@ -458,21 +479,20 @@ class SolverBase:
             Obtains the beginning of file naming, e.g. Probem Name, Solver Name,
             dimension, etc.
         '''
-        #Return file prefix for output files
+        # Return file prefix for output files
         p = problem.__module__.split('.')[-1]
         if problem.mesh.topology().dim() > 2:
             p += '3D'
         else:
             p += '2D'
         s = self.__module__.split('.')[-1]
-        if(self.options['stabilize'] and 'stabilization_parameters' in dir(self)):
+        if(self.options['stabilize']
+           and 'stabilization_parameters' in dir(self)):
             s += 'Stabilized'
         if(self.options['inviscid']):
             s = 'Inviscid' + s
         if(self.options['linear']):
             s = 'Linear' + s
-
-        s += 'T' + str(problem.T)
 
         return problem.output_location + s + p
 
@@ -482,7 +502,7 @@ class SolverBase:
         '''
         s = ''
 
-        #Return file suffix for output files
+        # Return file suffix for output files
         if not self.options['inviscid'] and self.Re is not None:
             s = 'Re' + str(int(self.Re))
         if self.Ro is not None:
@@ -492,7 +512,7 @@ class SolverBase:
         if self.Th is not None:
             s += 'Th' + str(self.Th)
 
-        s += 'Nx' + str(problem.Nx)
+        s += 'T' + str(problem.T) + 'Nx' + str(problem.Nx)
         if problem.Ny is not None:
             s += 'Ny' + str(problem.Ny)
         if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
