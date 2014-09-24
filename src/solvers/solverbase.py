@@ -159,7 +159,7 @@ class SolverBase:
             # Refine the mesh
             print 'Refining mesh.'
             mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
-            if 'time_step' in dir(proble):
+            if 'time_step' in dir(problem):
                 k = self.adjust_dt(t0, T, problem.time_step(problem.Ubar, mesh))
 
             adj_reset()  # reset the dolfin-adjoint
