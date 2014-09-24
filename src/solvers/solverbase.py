@@ -22,10 +22,12 @@ tolerance = default_tolerance = 1e-4
 
 
 class SolverBase:
+
     '''
         SolverBase provides a general solver class for the various Solvers. Its
         purpose is take a weak_residual and then solve it using the theta-method
     '''
+
     def __init__(self, options):
 
         # Store options
@@ -79,18 +81,20 @@ class SolverBase:
         mesh = problem.mesh
         T = problem.T
         t0 = problem.t0
+        # adjust time step so that we evenly divide time interval
+        k = self.adjust_dt(t0, T, problem.k)
 
-        TOL = 0*1E-10
+        TOL = 0 * 1E-10
 
         # naming scheme
         self.s = 'results/' + self.prefix(problem) + self.suffix(problem)
 
-        maxadaps = 3*10  # max number of adaptive steps
+        maxadaps = 3 * 10  # max number of adaptive steps
         adapt_ratio = 0.1  # number of cells to refine
 
         if self.options['adaptive']:  # solve with adaptivity
             mesh, k = self.adaptivity(maxadaps, adapt_ratio, TOL, problem, mesh,
-                                      T, t0)
+                                      T, t0, k)
 
         print 'Solving the primal problem.'
         self.file_naming(n=-1, dual=False)
@@ -111,14 +115,11 @@ class SolverBase:
 
         return w
 
-    def adaptivity(self, maxadaps, adapt_ratio, TOL, problem, mesh, T, t0):
+    def adaptivity(self, maxadaps, adapt_ratio, TOL, problem, mesh, T, t0, k):
         COND = 1
         # files specific to adaptivity
         self.eifile = File(self.s + '_ei.pvd')  # error indicators
         nth = ('st', 'nd', 'rd', 'th')  # numerical descriptors
-
-        # adjust time step so that we evenly divide time interval
-        k = self.adjust_dt(t0, T, problem.k)
 
         # Adaptive loop
         i = 0
@@ -133,7 +134,7 @@ class SolverBase:
             if i == 0:
                 print 'Solving on initial mesh.'
             elif i < len(nth):
-                print 'Solving on %d%s adapted mesh.' % (i, nth[i-1])
+                print 'Solving on %d%s adapted mesh.' % (i, nth[i - 1])
             else:
                 print 'Solving on %d%s adapted mesh.' % (i, nth[-1])
 
@@ -158,8 +159,8 @@ class SolverBase:
             # Refine the mesh
             print 'Refining mesh.'
             mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
-            if 'time_step' in dir(self):
-                k = self.adjust_dt(t0, T, self.time_step(problem.Ubar, mesh))
+            if 'time_step' in dir(proble):
+                k = self.adjust_dt(t0, T, problem.time_step(problem.Ubar, mesh))
 
             adj_reset()  # reset the dolfin-adjoint
 
@@ -181,14 +182,14 @@ class SolverBase:
         print 'Solving the primal problem.'
         parameters["adjoint"]["stop_annotating"] = False
 
-        N = int(round((T - t0)/k))
+        N = int(round((T - t0) / k))
         perN = self.options['onDisk']
 
         assert perN <= 1. or perN >= 0.
         if perN > 0:
             adj_checkpointing(strategy='multistage', steps=N,
-                              snaps_on_disk=int(perN*N),
-                              snaps_in_ram=int((1.-perN)*N),
+                              snaps_on_disk=int(perN * N),
+                              snaps_in_ram=int((1. - perN) * N),
                               verbose=False)
 
         W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=True)
@@ -203,7 +204,7 @@ class SolverBase:
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(self.functional(problem, mesh, w)*dt,
+        J = Functional(self.functional(problem, mesh, w) * dt,
                        name='DualArgument')
         timestep = None
         wtape = []
@@ -223,11 +224,12 @@ class SolverBase:
         self._timestep = 0  # reset the time step to zero
 
         print 'Building error indicators.'
-        for i in range(0, len(wtape)-1):
+        for i in range(0, len(wtape) - 1):
             # the tape is backwards so i+1 is the previous time step
-            wtape_alpha = self.alpha*wtape[i] + (1. - self.alpha)*wtape[i+1]
-            LR1 = k*self.weak_residual(problem, k, W, wtape_alpha, wtape[i],
-                                       wtape[i+1], phi[i], ei_mode=True)
+            wtape_alpha = self.alpha * \
+                wtape[i] + (1. - self.alpha) * wtape[i + 1]
+            LR1 = k * self.weak_residual(problem, k, W, wtape_alpha, wtape[i],
+                                         wtape[i + 1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1, annotate=False).array()
 
         return W, w, m, ei
@@ -265,7 +267,7 @@ class SolverBase:
         w_ = Function(ic, name='w_')
 
         alpha = self.options['alpha']
-        w_alpha = (1. - alpha)*w_ + alpha*w
+        w_alpha = (1. - alpha) * w_ + alpha * w
 
         # weak form of the primal problem
         F = self.weak_residual(problem, k, W, w_alpha, w, w_, wt, ei_mode=False)
@@ -301,7 +303,7 @@ class SolverBase:
         # n = FacetNormal(mesh)
         # marker = problem.marker()
 
-        M = u[0]*dx  # Mean of the x-velocity in the whole domain
+        M = u[0] * dx  # Mean of the x-velocity in the whole domain
         # M = marker*p*n[0]*ds  # Drag (only pressure)
 
         return M
@@ -316,7 +318,7 @@ class SolverBase:
 
         # Mark cells for refinement
         cell_markers = MeshFunction("bool", mesh, mesh.topology().dim())
-        gamma_0 = sorted(gamma, reverse=True)[int(len(gamma)*adapt_ratio) - 1]
+        gamma_0 = sorted(gamma, reverse=True)[int(len(gamma) * adapt_ratio) - 1]
         for c in cells(mesh):
             cell_markers[c] = gamma[c.index()] > gamma_0
 
@@ -332,7 +334,7 @@ class SolverBase:
         '''
         div, rem = divmod((T - t0), k)
         if rem is not 0:
-            k = (T - t0)/(div + 1)
+            k = (T - t0) / (div + 1)
 
         return k
 
@@ -352,7 +354,7 @@ class SolverBase:
         self.update(problem, t, W, w_)
 
         adj_start_timestep(t)
-        while t < (T-k/2.):
+        while t < (T - k / 2.):
             t += k
 
             if('wave_object' in dir(self)):
@@ -365,9 +367,9 @@ class SolverBase:
 
             w_.assign(w)
             if func:
-                m += k*assemble(self.functional(problem, W.mesh(), w_),
-                                annotate=False)
-            adj_inc_timestep(t, finished=t >= (T-k/2.))
+                m += k * assemble(self.functional(problem, W.mesh(), w_),
+                                  annotate=False)
+            adj_inc_timestep(t, finished=t >= (T - k / 2.))
 
             # Update
             self.update(problem, t, W, w_)
@@ -400,9 +402,9 @@ class SolverBase:
 
         # Print progress
         if not dual:
-            s = 'Time step %d finished in %g seconds, ' % (self._timestep,
-                                                          timestep_cputime)
-            s += '%g%% done (t = %g, T = %g).' % (100.0*(t/problem.T), t,
+            s = 'Time step %d finished in %g seconds, ' \
+                % (self._timestep, timestep_cputime)
+            s += '%g%% done (t = %g, T = %g).' % (100.0 * (t / problem.T), t,
                                                   problem.T)
             sys.stdout.flush()
             sys.stdout.write('\033[K')
@@ -518,7 +520,7 @@ class SolverBase:
         if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
             s += 'Nz' + str(problem.Nz)
 
-        s += 'K' + str(int(1./problem.k))
+        s += 'K' + str(int(1. / problem.k))
 
         return s
 
