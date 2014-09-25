@@ -450,11 +450,11 @@ class SolverBase:
             self._pDualfile = File(self.s + '_pDual.pvd', 'compressed')
             self.meshfile = File(self.s + '_mesh.xml')
         else:
-            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
-            self._pfile = File(self.s + '_p%d.pvd' % n, 'compressed')
-            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
-            self._pDualfile = File(self.s + '_pDual%d.pvd' % n, 'compressed')
-            self.meshfile = File(self.s + '_mesh%d.xml' % n)
+            self._ufile = File(self.s + '_u%02d.pvd' % n, 'compressed')
+            self._pfile = File(self.s + '_p%02d.pvd' % n, 'compressed')
+            self._uDualfile = File(self.s + '_uDual%02d.pvd' % n, 'compressed')
+            self._pDualfile = File(self.s + '_pDual%02d.pvd' % n, 'compressed')
+            self.meshfile = File(self.s + '_mesh%02d.xml' % n)
 
     # this is a separate function so that it can be overloaded
     def Plot(self, problem, W, w):
