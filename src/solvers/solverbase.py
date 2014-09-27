@@ -56,6 +56,10 @@ class SolverBase:
         self._cputime = 0.0
         self._timestep = 0
 
+        self.adapt_ratio = self.options['adapt_ratio']
+        self.maxadapts = self.options['max_adaptations']
+        self.adaptTOL = self.options['adaptive_TOL']
+
         # Reset files for storing solution
         self.s = None
         self._ufile = None
@@ -84,16 +88,11 @@ class SolverBase:
         # adjust time step so that we evenly divide time interval
         k = self.adjust_dt(t0, T, problem.k)
 
-        TOL = 0 * 1E-10
-
         # naming scheme
         self.s = 'results/' + self.prefix(problem) + self.suffix(problem)
 
-        maxadaps = 3 * 10  # max number of adaptive steps
-        adapt_ratio = 0.1  # number of cells to refine
-
         if self.options['adaptive']:  # solve with adaptivity
-            mesh, k = self.adaptivity(maxadaps, adapt_ratio, TOL, problem, mesh,
+            mesh, k = self.adaptivity(problem, mesh,
                                       T, t0, k)
 
         print 'Solving the primal problem.'
@@ -104,7 +103,7 @@ class SolverBase:
             not (self.options['adaptive'] or (self.options['optimize']
                  and 'Optimize' in dir(self)))
         W, w, m = self.forward_solve(problem, mesh, t0, T, k,
-                                     func=self.options['adaptive'])
+                                     func=True)#self.options['adaptive'])
         if m is not None:
             print
             print 'The size of the functional is: %0.3G' % m
@@ -115,7 +114,7 @@ class SolverBase:
 
         return w
 
-    def adaptivity(self, maxadaps, adapt_ratio, TOL, problem, mesh, T, t0, k):
+    def adaptivity(self, problem, mesh, T, t0, k):
         COND = 1
         # files specific to adaptivity
         self.eifile = File(self.s + '_ei.pvd')  # error indicators
@@ -124,7 +123,7 @@ class SolverBase:
         # Adaptive loop
         i = 0
         m = 0  # initialize
-        while(i <= maxadaps and COND > TOL):
+        while(i <= self.maxadapts and COND > self.adaptTOL):
             # setup file names
             self.file_naming(n=i, dual=False)
             # save our current mesh
@@ -148,7 +147,7 @@ class SolverBase:
             if i == 0 and self.options['plot_solution']:
                 plot(ei, title="Error Indicators.", elevate=0.0)
                 plot(mesh, title='Initial mesh', size=((600, 300)))
-            elif (i == maxadaps or COND <= TOL) \
+            elif (i == self.maxadapts or COND <= self.adaptTOL) \
                     and self.options['plot_solution']:
                 plot(ei, title="Error Indicators.", elevate=0.0)
                 plot(mesh, title='Final mesh', size=((600, 300)))
@@ -158,7 +157,7 @@ class SolverBase:
 
             # Refine the mesh
             print 'Refining mesh.'
-            mesh = self.adaptive_refine(mesh, ei, adapt_ratio)
+            mesh = self.adaptive_refine(mesh, ei)
             if 'time_step' in dir(problem):
                 k = self.adjust_dt(t0, T, problem.time_step(problem.Ubar, mesh))
 
@@ -166,7 +165,7 @@ class SolverBase:
 
             i += 1
 
-        if i > maxadaps and COND > TOL:
+        if i > self.maxadapts and COND > self.adaptTOL:
             s = 'Warning reached max adaptive iterations with' \
                 + 'sum(abs(EI))=%0.3G.  Solution may not be accurate.' \
                 % COND
@@ -309,7 +308,7 @@ class SolverBase:
         return M
 
     # Refine the mesh based on error indicators
-    def adaptive_refine(self, mesh, ei, adapt_ratio):
+    def adaptive_refine(self, mesh, ei):
         '''
             Take a mesh and the associated error indicators and refine
             adapt_ratio% of cells.
@@ -318,7 +317,7 @@ class SolverBase:
 
         # Mark cells for refinement
         cell_markers = MeshFunction("bool", mesh, mesh.topology().dim())
-        gamma_0 = sorted(gamma, reverse=True)[int(len(gamma) * adapt_ratio) - 1]
+        gamma_0 = sorted(gamma, reverse=True)[int(len(gamma) * self.adapt_ratio) - 1]
         for c in cells(mesh):
             cell_markers[c] = gamma[c.index()] > gamma_0
 

@@ -1,16 +1,17 @@
 #!/usr/bin/python
 __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
-__license__  = "GNU GPL version 3 or any later version"
+__license__ = "GNU GPL version 3 or any later version"
 #
 #   adapted from ns in nsbench originally developed by
 #   Anders Logg <logg@simula.no>
 #
 
-import sys, commands, time
+import sys
+import time
 import re
 
-from dolfin import set_log_active, parameters, list_timings, NewtonSolver
+from dolfin import set_log_active, parameters, NewtonSolver
 from problems import Problem, problems
 from solvers import Solver, solvers
 
@@ -18,45 +19,50 @@ Default_Solver = 'NSE'
 Default_Problem = 'Cylinder'
 
 # Default options
-OPTIONS = { 'dim': 2, #number of dimensions
-            'Nx': 20, #number of elements along x axis
-            'Ny' : 20, #number of elements along y axis
-            'Nz' : 20, #number of elements along z axis
-            'dt': 0.01, #time-step
-            'T': 1.0, #final-time
-            'Re': 1000, #Reynolds number
-            'Ro': 0.0125, #Rossby number
-            'Fr': 1, #Froude number
-            'Theta': 6.25, #wave deflection number
-            'H': 1, #water depth
-            'F1': '(0,0)', #momentum forcing function
-            'F2': '0', #mass source/sink
-            'x0': '-5', #x-coordinate of the bottom-left corner
-            'x1': '10', #x-coordinate of the top-right corner
-            'y0': '-2', #y-coordinate of the bottom-left corner
-            'y1': '2', #y-coordinate of the top-right corner
-            'alpha': 0.5, #time-stepping method
-            'adaptive': False, #mesh adaptivity
-            'optimize': False, #optimize as defined in solver
-            'onDisk' : 0., #percent of steps on disk
-            'save_solution': True,
-            'save_frequency': 1,
-            'plot_solution': False,
-            'debug': False,
-            'check_mem_usage': False,
-            'absolute_tolerance': 1e-25,
-            'relative_tolerance': 1e-12,
-            'monitor_convergence': False,
-            'velocity_order': 1, #order of velocity element
-            'height_order': 1, #order of height/pressure element
-            'stabilize': True, #stabilize?
-            'linear': False, #use the linear version?
-            'inviscid': False, #use the inviscid version?
-            'initialMesh' : None # to use for initial computation
+OPTIONS = {
+    'dim': 2,  # number of dimensions
+    'Nx': 20,  # number of elements along x axis
+    'Ny': 20,  # number of elements along y axis
+    'Nz': 20,  # number of elements along z axis
+    'dt': 0.01,  # time-step
+    'T': 1.0,  # final-time
+    'Re': 1000,  # Reynolds number
+    'Ro': 0.0125,  # Rossby number
+    'Fr': 1,  # Froude number
+    'Theta': 6.25,  # wave deflection number
+    'H': 1,  # water depth
+    'F1': '(0,0)',  # momentum forcing function
+    'F2': '0',  # mass source/sink
+    'x0': '-5',  # x-coordinate of the bottom-left corner
+    'x1': '10',  # x-coordinate of the top-right corner
+    'y0': '-2',  # y-coordinate of the bottom-left corner
+    'y1': '2',  # y-coordinate of the top-right corner
+    'alpha': 0.5,  # time-stepping method
+    'adaptive': False,  # mesh adaptivity
+    'adapt_ratio': 0.1,  # percent of mesh to refine
+    'max_adaptations': 30,  # max number of times to adapt mesh
+    'adaptive_TOL': 1E-10,  # tolerance for terminating adaptivity
+    'optimize': False,  # optimize as defined in solver
+    'onDisk': 0.,  # percent of steps on disk
+    'save_solution': True,
+    'save_frequency': 1,
+    'plot_solution': False,
+    'debug': False,
+    'check_mem_usage': False,
+    'absolute_tolerance': 1e-25,
+    'relative_tolerance': 1e-12,
+    'monitor_convergence': False,
+    'velocity_order': 1,  # order of velocity element
+    'height_order': 1,  # order of height/pressure element
+    'stabilize': True,  # stabilize?
+    'linear': False,  # use the linear version?
+    'inviscid': False,  # use the inviscid version?
+    'initialMesh': None  # to use for initial computation
 }
 
+
+#  Print usage
 def usage():
-#   Print usage
     print """\
 Usage: solve solver problem (run solver for given problem)
 solve solver (run solver for """ + Default_Problem + """.)
@@ -68,21 +74,21 @@ Available solvers:
 %s
 
 Available problems:
-%s 
+%s
 
 Available options: (option = default value)
 %s
 """ % ('\n'.join('  ' + s for s in solvers),
        '\n'.join('  ' + p for p in problems),
-       '\n'.join('  ' + key + ' = ' + str(value) \
-               for key, value in OPTIONS.iteritems()))
+       '\n'.join('  ' + key + ' = ' + str(value)
+                 for key, value in OPTIONS.iteritems()))
 
-def main(args):
+
 #   Parse command-line arguments and run solver.
-
+def main(args):
     # Extract arguments (note: don't change the order here!)
     params = [arg for arg in args if "=" in arg]
-    args = [arg for arg in args if not "=" in arg]
+    args = [arg for arg in args if "=" not in arg]
 
     # Decide list of problems and solvers based on command-line arguments
     if len(args) < 1:
@@ -104,8 +110,7 @@ def main(args):
     options = OPTIONS.copy()
     for parameter in params:
         try:
-            #key, value = parameter.split("=")
-            key, value = parameter.split('=',1)
+            key, value = parameter.split('=', 1)
             try:
                 options[key] = eval(value)
             except:
@@ -113,18 +118,18 @@ def main(args):
         except:
             print 'Warning: Unhandled command-line argument', parameter
 
-    #the momentum forcing function needs to be made into a vector of strings
-    #options['F1'] = [
+    # the momentum forcing function needs to be made into a vector of strings
+    # options['F1'] = [
     pattern = re.compile('^\((.+),\s*(.+)\)$')
     m = pattern.match(str(options['F1']))
     options['F1'] = [m.group(1), m.group(2)]
 
     # Set global DOLFIN parameters
     parameters['form_compiler']['cpp_optimize'] = True
-    parameters['allow_extrapolation'] = True;
+    parameters['allow_extrapolation'] = True
     nonLinearSolver = NewtonSolver()
     prm = nonLinearSolver.parameters
-    prm['convergence_criterion'] = 'incremental' 
+    prm['convergence_criterion'] = 'incremental'
     prm['absolute_tolerance'] = options["absolute_tolerance"]
     prm['relative_tolerance'] = options["relative_tolerance"]
     prm['report'] = options["monitor_convergence"]
@@ -132,7 +137,7 @@ def main(args):
     # Set debug level
     set_log_active(options["debug"])
 
-    print 'Solving %s for the %s problem.' % (solver_name,problem_name)
+    print 'Solving %s for the %s problem.' % (solver_name, problem_name)
     # Create problem and solver
     solver = Solver(solver_name, options)
     problem = Problem(problem_name, options)
@@ -144,11 +149,10 @@ def main(args):
     # Compute elapsed time
     wct = time.time() - wct
 
-    # Compute number of degrees of freedom
-    #num_dofs = u.vector().size() + p.vector().size()
     sys.stdout.flush()
     sys.stdout.write('\033[K')
-    print 'Solved %s for the %s problem in %g seconds.' % (solver_name,problem_name,wct)
+    print 'Solved %s for the %s problem in %g seconds.' % (solver_name,
+                                                           problem_name, wct)
 
     return 0
 
