@@ -95,7 +95,7 @@ class Problem(ProblemBase):
         # mass source for the continuity equation
         return Expression(self.options['F2'], t=t)
 
-    def functional(self, problem, mesh, u):
+    def functional(self, mesh, u):
 
         M = u * dx  # Mean of the vorticity in the whole domain
 
