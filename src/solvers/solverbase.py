@@ -102,8 +102,9 @@ class SolverBase:
         parameters["adjoint"]["stop_annotating"] = \
             not (self.options['adaptive'] or (self.options['optimize']
                  and 'Optimize' in dir(self)))
+        func = 'functional' in dir(self)
         W, w, m = self.forward_solve(problem, mesh, t0, T, k,
-                                     func=True)#self.options['adaptive'])
+                                     func=func)
         if m is not None:
             print
             print 'The size of the functional is: %0.3G' % m
