@@ -102,7 +102,7 @@ class SolverBase:
         parameters["adjoint"]["stop_annotating"] = \
             not (self.options['adaptive'] or (self.options['optimize']
                  and 'Optimize' in dir(self)))
-        func = 'functional' in dir(self)
+        func = 'functional' in dir(problem)
         W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=func)
         if m is not None:
             print
@@ -287,25 +287,6 @@ class SolverBase:
         W = MixedFunctionSpace([V, Q])
 
         return W
-
-    def functional(self, problem, mesh, w):
-        '''
-            This is the functional used for adaptivity.
-            We assume the problem is much like NSE. This can be overloaded by
-            each individual problem.
-        '''
-        if mesh.topology().dim() == 2:
-            (u, p) = (as_vector((w[0], w[1])), w[2])
-        else:
-            (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
-
-        # n = FacetNormal(mesh)
-        # marker = problem.marker()
-
-        M = u[0] * dx  # Mean of the x-velocity in the whole domain
-        # M = marker*p*n[0]*ds  # Drag (only pressure)
-
-        return M
 
     # Refine the mesh based on error indicators
     def adaptive_refine(self, mesh, ei):

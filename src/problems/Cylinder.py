@@ -229,5 +229,24 @@ class Problem(ProblemBase):
         # mass source for the continuity equation
         return Constant(0)
 
+    def functional(self, problem, mesh, w):
+        '''
+            This is the functional used for adaptivity.
+            We assume the problem is much like NSE. This can be overloaded by
+            each individual problem.
+        '''
+        if mesh.topology().dim() == 2:
+            (u, p) = (as_vector((w[0], w[1])), w[2])
+        else:
+            (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
+
+        # n = FacetNormal(mesh)
+        # marker = problem.marker()
+
+        M = u[0] * dx  # Mean of the x-velocity in the whole domain
+        # M = marker*p*n[0]*ds  # Drag (only pressure)
+
+        return M
+
     def __str__(self):
         return 'Cylinder'
