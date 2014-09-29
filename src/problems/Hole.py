@@ -102,4 +102,4 @@ class Problem(ProblemBase):
         return M
 
     def __str__(self):
-        return 'Plate'
+        return 'Hole'
