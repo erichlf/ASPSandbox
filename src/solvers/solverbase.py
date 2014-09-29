@@ -103,8 +103,7 @@ class SolverBase:
             not (self.options['adaptive'] or (self.options['optimize']
                  and 'Optimize' in dir(self)))
         func = 'functional' in dir(self)
-        W, w, m = self.forward_solve(problem, mesh, t0, T, k,
-                                     func=func)
+        W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=func)
         if m is not None:
             print
             print 'The size of the functional is: %0.3G' % m
@@ -318,7 +317,8 @@ class SolverBase:
 
         # Mark cells for refinement
         cell_markers = MeshFunction("bool", mesh, mesh.topology().dim())
-        gamma_0 = sorted(gamma, reverse=True)[int(len(gamma) * self.adapt_ratio) - 1]
+        gamma_0 = sorted(gamma,
+                         reverse=True)[ int(len(gamma) * self.adapt_ratio) - 1]
         for c in cells(mesh):
             cell_markers[c] = gamma[c.index()] > gamma_0
 
