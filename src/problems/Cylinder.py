@@ -229,11 +229,10 @@ class Problem(ProblemBase):
         # mass source for the continuity equation
         return Constant(0)
 
-    def functional(self, problem, mesh, w):
+    def functional(self, mesh, w):
         '''
             This is the functional used for adaptivity.
-            We assume the problem is much like NSE. This can be overloaded by
-            each individual problem.
+            We assume the problem is much like NSE.
         '''
         if mesh.topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])

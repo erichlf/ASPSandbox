@@ -128,14 +128,6 @@ class Solver(SolverBase):
 
         return d1, d2
 
-    def functional(self, mesh, w):
-
-        (u, eta) = (as_vector((w[0], w[1])), w[2])
-
-        M = u[0] * dx  # Mean of the x-velocity in the whole domain
-
-        return M
-
     def file_naming(self, n=-1, dual=False):
         if n == -1:
             self._ufile = File(self.s + '_u.pvd', 'compressed')

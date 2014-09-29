@@ -101,7 +101,7 @@ class SolverBase:
         # record so that we can evaluate our functional
         parameters["adjoint"]["stop_annotating"] = \
             not (self.options['adaptive'] or (self.options['optimize']
-                 and 'Optimize' in dir(self)))
+                 and 'Optimize' in dir(problem)))
         func = 'functional' in dir(problem)
         W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=func)
         if m is not None:
@@ -109,8 +109,8 @@ class SolverBase:
             print 'The size of the functional is: %0.3G' % m
 
         # solve the optimization problem
-        if(self.options['optimize'] and 'Optimize' in dir(self)):
-            self.Optimize(problem, w)
+        if(self.options['optimize'] and 'Optimize' in dir(problem)):
+            problem.Optimize(self,W,w)
 
         return w
 
@@ -203,8 +203,7 @@ class SolverBase:
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(self.functional(problem, mesh, w) * dt,
-                       name='DualArgument')
+        J = Functional(problem.functional(mesh, w) * dt, name='DualArgument')
         timestep = None
         wtape = []
         phi = []
@@ -348,7 +347,7 @@ class SolverBase:
 
             w_.assign(w)
             if func:
-                m += k * assemble(self.functional(problem, W.mesh(), w_),
+                m += k * assemble(problem.functional(W.mesh(), w_),
                                   annotate=False)
             adj_inc_timestep(t, finished=t >= (T - k / 2.))
 

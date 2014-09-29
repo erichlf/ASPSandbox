@@ -5,6 +5,7 @@ from solverbase import *
 
 
 class Solver(SolverBase):
+
     '''
         Solver class for solving the Heat equation.
     '''
@@ -39,19 +40,13 @@ class Solver(SolverBase):
             z = 1.
 
         # weak form of the equations
-        r = z*rho*c*(1./k)*(U - U_)*v*dx
+        r = z * rho * c * (1. / k) * (U - U_) * v * dx
         if kappa.rank() == 0:
-            r += z*kappa*inner(grad(u), grad(v))*dx
+            r += z * kappa * inner(grad(u), grad(v)) * dx
         else:  # anisotropic case
-            r += z*inner(dot(kappa, grad(u)), grad(v))*dx
+            r += z * inner(dot(kappa, grad(u)), grad(v)) * dx
 
         return r
-
-    def functional(self, problem, mesh, u):
-
-        M = u*dx  # Mean of the vorticity in the whole domain
-
-        return M
 
     def condition(self, ei, m, m_):
         '''

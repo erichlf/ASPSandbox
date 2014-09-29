@@ -141,55 +141,6 @@ class Solver(SolverBase):
 
         return d1, d2
 
-    # Optimization Function
-    def Optimize(self, problem, w):
-        '''
-            Shape optimization for Peregrine System.
-        '''
-        eta = w.split()[1]
-        self.optfile = File(
-            self.s +
-            '_Opt.pvd')  # file for solution to optimization
-
-        # bounds on object
-#        lb = project(Expression('-0.5'), self.Q, name='LowerBound')
-#        ub = project(Expression('0.0'), self.Q, name='UpperBound')
-
-        # Functionnal to be minimized: L2 norm over a subdomain
-        J = Functional(-
-                       inner(eta, eta) *
-                       dx *
-                       dt[FINISH_TIME] +
-                       self.Zeta *
-                       self.Zeta *
-                       dx)
-
-        # shape parameters
-        m = [Control(p) for p in problem.params]
-        Jhat = ReducedFunctional(J, m)  # Reduced Functional
-        opt_params = minimize(Jhat)
-        opt_object = project(problem.object_init(opt_params), self.Q)
-        if self.options['plot_solution']:
-            plot(opt_object, title='Optimization result.')
-            interactive()
-        else:
-            optfile << opt_object
-
-        print 'H=%f, N1=%f, N2=%f, W=[%f, %f, %f, %f], dz=%f]' % \
-            (opt_params[0], opt_params[1], opt_params[2], opt_params[3],
-             opt_params[4], opt_params[5], opt_params[6], opt_params[7])
-
-    def functional(self, mesh, w):
-        '''
-            Functional for mesh adaptivity
-        '''
-
-        (u, eta) = (as_vector((w[0], w[1])), w[2])
-
-        M = u[0] * dx  # Mean of the x-velocity in the whole domain
-
-        return M
-
     def wave_object(self, problem, Q, t, k):
         '''
             Update for wave object at each time step.

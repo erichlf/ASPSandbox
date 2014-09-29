@@ -89,14 +89,6 @@ class Solver(SolverBase):
 
         return r
 
-    def functional(self, mesh, w):
-
-      (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
-
-      M = rho*dx # Mean of the x-velocity in the whole domain
-
-      return M
-
     def stabilization_parameters(self, u, rho, p, k, h):
         K1  = 1.
         K2  = 1.
