@@ -41,7 +41,7 @@ class SolverBase:
         self.Th = None
 
         # initialize the time stepping method parameters
-        self.alpha = self.options['alpha']  # time stepping method
+        self.theta = self.options['theta']  # time stepping method
 
         # initialize element orders
         self.Pu = self.options['velocity_order']  # order of velocity element
@@ -225,9 +225,9 @@ class SolverBase:
         print 'Building error indicators.'
         for i in range(0, len(wtape) - 1):
             # the tape is backwards so i+1 is the previous time step
-            wtape_alpha = self.alpha * \
-                wtape[i] + (1. - self.alpha) * wtape[i + 1]
-            LR1 = k * self.weak_residual(problem, k, W, wtape_alpha, wtape[i],
+            wtape_theta = self.theta * \
+                wtape[i] + (1. - self.theta) * wtape[i + 1]
+            LR1 = k * self.weak_residual(problem, k, W, wtape_theta, wtape[i],
                                          wtape[i + 1], phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1, annotate=False).array()
 
@@ -265,11 +265,11 @@ class SolverBase:
         w = Function(W, name='w')
         w_ = Function(ic, name='w_')
 
-        alpha = self.options['alpha']
-        w_alpha = (1. - alpha) * w_ + alpha * w
+        theta = self.theta
+        w_theta = (1. - theta) * w_ + theta * w
 
         # weak form of the primal problem
-        F = self.weak_residual(problem, k, W, w_alpha, w, w_, wt, ei_mode=False)
+        F = self.weak_residual(problem, k, W, w_theta, w, w_, wt, ei_mode=False)
 
         w, m = self.timeStepper(problem, t0, T, k, W, w, w_, F, func=func)
 

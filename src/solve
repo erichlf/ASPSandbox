@@ -37,7 +37,7 @@ OPTIONS = {
     'x1': '10',  # x-coordinate of the top-right corner
     'y0': '-2',  # y-coordinate of the bottom-left corner
     'y1': '2',  # y-coordinate of the top-right corner
-    'alpha': 0.5,  # time-stepping method
+    'theta': 0.5,  # time-stepping method
     'adaptive': False,  # mesh adaptivity
     'adapt_ratio': 0.1,  # percent of mesh to refine
     'max_adaptations': 30,  # max number of times to adapt mesh
