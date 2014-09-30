@@ -122,6 +122,7 @@ class Solver(SolverBase):
             self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
             self._rhoDualfile = File(self.s + '_rhoDual.pvd', 'compressed')
             self._pDualfile = File(self.s + '_pDual.pvd', 'compressed')
+            self.meshfile = File(self.s + '_mesh.xml')
         else:
             self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
             self._rhofile = File(self.s + '_rho%d.pvd' % n, 'compressed')
@@ -129,6 +130,7 @@ class Solver(SolverBase):
             self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
             self._rhoDualfile = File(self.s + '_rhoDual%d.pvd' % n, 'compressed')
             self._pDualfile = File(self.s + '_pDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(self.s + '_mesh%02d.xml' % n)
 
     def Plot(self, problem, W, w):
         u = w.split()[0]
