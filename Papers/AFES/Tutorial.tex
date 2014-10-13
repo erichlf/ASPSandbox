@@ -65,17 +65,40 @@ entering the details for the domain, boundary conditions, and the weak form.
     \end{equation}
     where $k$ is the time step, $u^n_h$ is the FE solution at the
     $n^{th}$-timestep, $u^{n-1}_h$ is the FE solution at the
-    $(n-1)^{st}$-timestep, and $\kappa$ is the heat coefficient. To further
+    $(n-1)^{st}$-timestep, $\hat{u}$ is given by \eqref{eq:uAvg}, and $\kappa$
+    is the heat coefficient. To further
     specify the problem we will define the domain to be the unit square, i.e.
     \begin{equation}
         \Omega := [0, 1] \times [0, 1],
         \label{eq:HeatDomain}
     \end{equation}
+    let the initial condition be
+    \begin{equation}
+        u0 := \sin(pi\, x)\, \sin(pi\, y)
+        \label{eq:HeatIC}
+    \end{equation}
     define the function to be
     \begin{equation}
-        f(x,y,t) = \sin(pi\, x
-        \label{<+label+>}
-    \end{equation}<++>
+        f(x,y,t) := 0
+        \label{eq:HeatSource}
+    \end{equation}
+    and the boundary condition to be
+    \begin{equation}
+        g(x,y,t) := 0
+        \label{eq:HeatBC}
+    \end{equation}
+
+    \lstinputlisting[numbers=none]{Heat.py}
+
+    While this code looks more complicated than the corresponding code in the
+    FEniCS manual \cite[Section 1.1.3]{Alnae2011}, what it offers is the ability
+    to quickly change problem parameters, problem definition, and even the
+    equations. The main power of this approach lies in the lines
+    \lstinputlisting[numbers=none,firstline=111,lastline=113]{Heat.py}
+    With this approach we can easily mix and match problems and solvers.
+
+    Additionally, many of the problems a user will create will not look
+    significantly different than the
 
 \subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
 
