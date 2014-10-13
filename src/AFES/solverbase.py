@@ -30,6 +30,19 @@ class Solver:
 
     def __init__(self, options):
 
+        # Set global DOLFIN parameters
+        parameters['form_compiler']['cpp_optimize'] = True
+        parameters['allow_extrapolation'] = True
+        nonLinearSolver = NewtonSolver()
+        prm = nonLinearSolver.parameters
+        prm['convergence_criterion'] = 'incremental'
+        prm['absolute_tolerance'] = options["absolute_tolerance"]
+        prm['relative_tolerance'] = options["relative_tolerance"]
+        prm['report'] = options["monitor_convergence"]
+
+        # Set debug level
+        set_log_active(options["debug"])
+
         # Store options
         self.options = options
 

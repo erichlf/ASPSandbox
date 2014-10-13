@@ -11,8 +11,7 @@ from numpy import linspace
 from math import *
 
 
-class Problem:
-#   Base class for all problems.
+class Problem:  # Base class for all problems.
 
     def __init__(self, options):
 
@@ -22,8 +21,11 @@ class Problem:
         # Parameters must be defined by subclass
         self.mesh = None
 
-        self.t = 0
+        # time domain and time step
+        self.t0 = 0
+        self.t = self.t0
         self.T = options["T"]  # final time
+        self.k = options['k']
 
         # reset our discretization
         self.Nx = None
@@ -32,3 +34,6 @@ class Problem:
 
         self.solver = None
         self.output_location = ''
+
+    def update(self, W, t):
+        pass

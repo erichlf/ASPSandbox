@@ -90,16 +90,17 @@ entering the details for the domain, boundary conditions, and the weak form.
 
     \lstinputlisting[numbers=none]{Heat.py}
 
-    While from a coders point of view this looks more complicated that the
+    While from a coders point of view this looks more complicated than the
     standard heat equation solver in the FEniCS demos, the beauty of this code
     is that the main() portion of the script remains mostly unchanged from
     problem to problem. The power of this approach can be seen in the following
     code snippets
-    \lstinputlisting[numbers=none,firstline=111,lastline=113]{Heat.py}
-    With this approach we can easily mix and match problems and solvers.
-
-    Additionally, many of the problems a user will create will not look
-    significantly different than the
+    \lstinputlisting[numbers=none,firstline=77,lastline=80]{Heat.py}
+    and
+    \lstinputlisting[numbers=none,firstline=70,lastline=73]{Heat.py}
+    With this approach we can easily mix and match problems and solvers. Thus,
+    we can use the same main() to run, say, the heat equation or even the
+    Navier-Stokes equations.
 
 \subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
 

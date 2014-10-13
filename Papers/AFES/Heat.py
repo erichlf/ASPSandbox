@@ -2,21 +2,22 @@ from AFES import *
 import sys
 import time
 
-
 '''
-    This class is used to define our domain, bcs, and ics.
+    The following functions are used to define ics, and bcs.
 '''
 
 
 def initial_conditions(self, V):  # create initial conditions
 
-    return project(self.u0, V)
+    u0 = Expression('sin(pi*x[0])*sin(pi*x[1])')  # ic
+
+    return project(u0, V)
 
 
 def boundary_conditions(self, V, t):  # Create boundary condition
+    self.g = Expression('0')  # boundary condition
 
     return DirichletBC(V, self.g, 'on_boundary')
-
 
 '''
     The following will create our solver and tells AFES what to do with
@@ -28,8 +29,6 @@ def function_space(self, mesh):
     V = FunctionSpace(mesh, 'CG', 1)  # Define function spaces
 
     return V
-
-# define our weak form
 
 
 def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
@@ -56,46 +55,21 @@ def Plot(self, problem, V, u):
 
 def main():
     # setup problem options
-    options = {
-        'T': 1.,  # stopping time
-        'k': 0.01,  # time step
-        'theta': 1,  # implicit Euler
-        'kappa': Constant(1E-2),  # heat coefficient
-        'u0': Expression('sin(pi*x[0])*sin(pi*x[1])'),  # ic
-        'f': Expression('0'),  # forcing
-        'g': Expression('0'),  # boundary condition
-        'Nx': 20,  # spacial discretization along x-axis
-        'Ny': 20,  # spacial discretization along y-axis
-        'velocity_order': 1,  # order of the finite element
-
-        # setup AFES specific options
-        'adaptive': False,  # mesh adaptivity
-        'optimize': False,  # optimize as defined in solver
-        'save_solution': False,  # don't save the solution
-        'plot_solution': True,  # plot the solution
-    }
-
+    options = OPTIONS.copy()
     problem = Problem(options)
 
     # Spacial discretization
-    Nx = options['Nx']
-    Ny = options['Ny']
+    Nx = 20
+    Ny = 20
 
     problem.mesh = UnitSquareMesh(Nx, Ny)  # Create mesh
 
-    # time domain and time step
-    problem.t0 = 0.
-    problem.T = options['T']
-    problem.k = options['k']
+    problem.kappa = Constant(1E-2)  # heat coefficient
+    problem.f = Expression('0')  # forcing
 
-    problem.kappa = options['kappa']  # heat capacity
-
-    problem.u0 = options['u0']  # ic
-    problem.f = options['f']  # forcing
-    problem.g = options['g']  # boundary condition
-
-    Problem.initial_conditions = initial_conditions  # create initial conditions
-    Problem.boundary_conditions = boundary_conditions  # Create boundary condition
+    # create initial and boundary conditions
+    Problem.initial_conditions = initial_conditions
+    Problem.boundary_conditions = boundary_conditions
 
     # Create problem and solver
     solver = Solver(options)
