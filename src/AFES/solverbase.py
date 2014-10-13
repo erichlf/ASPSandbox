@@ -216,6 +216,7 @@ class Solver:
 
         # Generate error indicators
         Z = FunctionSpace(mesh, "DG", 0)
+        z = TestFunction(Z)
         ei = Function(Z, name='Error Indicator')
         LR1 = 0.
 
@@ -245,7 +246,7 @@ class Solver:
             wtape_theta = self.theta * \
                 wtape[i] + (1. - self.theta) * wtape[i + 1]
             LR1 = k * self.weak_residual(problem, k, W, wtape_theta, wtape[i],
-                                         wtape[i + 1], phi[i], ei_mode=True)
+                                         wtape[i + 1], z*phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1, annotate=False).array()
 
         return W, w, m, ei

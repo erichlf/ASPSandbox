@@ -88,6 +88,49 @@ entering the details for the domain, boundary conditions, and the weak form.
         \label{eq:HeatBC}
     \end{equation}
 
+    Just as in the definition of the PDE AFES requires certain things to be
+    defined. First, we can define the mesh (we will use a
+    \texttt{UnitSquareMesh} as our domain), and then the mesh must be passed to
+    the \texttt{Problem} class. This can be done in the following way
+    \lstinputlisting[firstline=61,lastline=66,numbers=none]{Heat.py}
+    we need to define the initial conditions and
+    boundary conditions. For the initial condition, \eqref{eq:HeatIC}, and
+    the boundary condition, \eqref{eq:HeatBC}, these functions can be defined
+    as follows
+    \lstinputlisting[firstline=10,lastline=20,numbers=none]{Heat.py}
+    To be able to access these functions AFES needs them define. To do this we
+    must pass the functions to AFES' \texttt{Problem} class. This is done quite
+    easily in the following way
+    \lstinputlisting[firstline=71,lastline=72,numbers=none]{Heat.py}
+    To define the heat source/sink things are actually a bit easier and the user
+    need only to pass the function directly to the \texttt{Problem} class. This
+    is done in a quite similar way as to the way we passed the ICs and BCs, as
+    can be seen below
+    \lstinputlisting[firstline=68,lastline=68,numbers=none]{Heat.py}
+    In fact, this could be left out if the user does not require it in the weak
+    form, but we include it here for completeness.
+
+    Next, we need to create our function space; here we will choose $P^1$ finite
+    elements, i.e. piecewise linear basis functions. To do this we create a
+    function named \texttt{function\_space}. However, this time we will pass the
+    functions to the \texttt{Solver} class. Then we can also define our weak
+    form by defining the functions \texttt{weak\_residual}. Similar to
+    \texttt{function\_space} we then pass it to the \texttt{Solver} class in the
+    same way we passed \texttt{functions\_space}. The definition of the function
+    space and the weak form given by \eqref{eq:WeakHeat} can be seen below
+    \lstinputlisting[firstline=28,lastline=44,numbers=none]{Heat.py}
+    These functions are then passed to the \texttt{Solver} class in the
+    following way
+    \lstinputlisting[firstline=78,lastline=79,numbers=none]{Heat.py}
+
+    In addition to the standard functions above, we can define some auxiliary
+    functions. Some examples are \texttt{Plot}, \texttt{Name}, and \texttt{Save}
+    functions; AFES assumes the equation given is similar to the Navier-Stokes
+    equation, i.e. the first variable is a vector function and the second
+    variable is a scalar function, thus it may be necessary to override the
+    built in functionality so as to fit your own specifics. For this example we
+    only override the \texttt{Plot} function; this is done in much the same way
+    as we did for the other functions already seen above.
     \lstinputlisting[numbers=none]{Heat.py}
 
     While from a coders point of view this looks more complicated than the

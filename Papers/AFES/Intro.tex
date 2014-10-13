@@ -28,11 +28,9 @@ novel automated goal oriented mesh adaptivity \cite{Foster2014e, Jansson2014a,
 Jansson2014b}.  The goal oriented mesh adaptivity code is based on solving a
 dual problem.  This dual problem is constructed and solved using DOLFIN-Adjoint
 \cite{Ham2012, Ferrell2014}, an automated adjointing framework for FEniCS, and
-thus needs very little user input.  Currently, the only additional tasks the
-user must perform, for implementing the adaptivity, are defining a goal
-functional and the addition of an extra ``test function.'' Eventually, we would
-like to eliminate the requirement for the additional ``test function.'' In this
-way the weak form of the PDE would not change at all and the user would only
-need to add the definition of a goal functional.
+thus needs very little user input.  Currently, the only additional task the user
+must perform, for implementing the adaptivity, is defining a goal functional.
+In this way the weak form of the PDE does not change at all and the user need
+only to add the definition of a goal functional.
 
 The AFES api also offers the ability of optimization.

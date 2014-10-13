@@ -62,7 +62,7 @@ def main():
     Nx = 20
     Ny = 20
 
-    problem.mesh = UnitSquareMesh(Nx, Ny)  # Create mesh
+    Problem.mesh = UnitSquareMesh(Nx, Ny)  # Create mesh
 
     problem.kappa = Constant(1E-2)  # heat coefficient
     problem.f = Expression('0')  # forcing
