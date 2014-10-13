@@ -64,10 +64,10 @@ class Solver:
         self._cputime = 0.0
         self._timestep = 0
 
-        if 'adapts_ratio' in self.options:
+        if 'adapt_ratio' in self.options:
             self.adapt_ratio = self.options['adapt_ratio']
         else:
-            self.adapt_ration = 0.1
+            self.adapt_ratio = 0.1
         if 'max_adaptations' in self.options:
             self.maxadapts = self.options['max_adaptations']
         else:
@@ -239,6 +239,7 @@ class Solver:
         self._timestep = 0  # reset the time step to zero
 
         print 'Building error indicators.'
+
         for i in range(0, len(wtape) - 1):
             # the tape is backwards so i+1 is the previous time step
             wtape_theta = self.theta * \
@@ -354,11 +355,8 @@ class Solver:
         while t < (T - k / 2.):
             t += k
 
-            if('wave_object' in dir(self)):
-                self.wave_object(problem, self.Q, t, k)
-
-            # evaluate bcs again (in case they are time-dependent)
-            bcs = problem.boundary_conditions(W, t)
+            if('update' in dir(problem)):
+                bcs = problem.update(W, t)
 
             solve(F == 0, w, bcs=bcs)
 
@@ -394,7 +392,8 @@ class Solver:
             self.Plot(problem, W, w)
 
         # Check memory usage
-        if 'check_mem_usage' in self.options and self.options['check_mem_usage']:
+        if 'check_mem_usage' in self.options \
+                and self.options['check_mem_usage']:
             print 'Memory usage is:', self.getMyMemoryUsage()
 
         # Print progress

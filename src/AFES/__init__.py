@@ -34,3 +34,14 @@ OPTIONS = {
     'stabilize': False,  # stabilize?
     'initialMesh': None  # to use for initial computation
 }
+
+
+# Set global DOLFIN parameters
+parameters['form_compiler']['cpp_optimize'] = True
+parameters['allow_extrapolation'] = True
+nonLinearSolver = NewtonSolver()
+prm = nonLinearSolver.parameters
+prm['convergence_criterion'] = 'incremental'
+prm['absolute_tolerance'] = OPTIONS["absolute_tolerance"]
+prm['relative_tolerance'] = OPTIONS["relative_tolerance"]
+prm['report'] = OPTIONS["monitor_convergence"]
