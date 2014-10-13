@@ -1,0 +1,84 @@
+In this section we introduce the usage of AFES by the use of examples. The AFES
+api is written solely in Python (with the exception of UFL for the weak form)
+and thus the user is expected to have a basic knowledge of Python programming.
+However, since AFES is based on the FEniCS/DOLFIN Python interface it does not
+compromise on performance\cite{Alnae2011}. The use of DOLFIN's Python interface
+allows for greater ease of use, as compared to the C++ interface. Eventually, we
+intend to offer a GUI which would require the use of no programming and only
+entering the details for the domain, boundary conditions, and the weak form.
+
+\subsection{Solving a PDE} \label{sse:Solver}
+
+    In this subsection we explain how to solve a basic time dependent PDE using
+    the AFES api. We choose to explain the API through example; we choose to
+    make things quite simple at first and so the first example is the Heat
+    equation.  Since, the FEM requires the weak form of any PDE we assume the
+    user understands how to determine the weak for a given PDE and thus no
+    explanation of the weak form is given. For a very basic explanation of the
+    weak form see \cite[Chapter 6.2.2]{Eriksson2009}.
+
+    Of course to be able to solve any PDE certain assumptions must be made. AFES
+    makes the assumption that an $H^1$ FE is appropriate for solving the given
+    PDE, i.e. the FE discretization is stable. Additionally, AFES assumes the
+
+    \begin{equation}
+        R(u) = u_t - F(u;t) = 0.
+        \label{eq:BasicForm}
+    \end{equation}
+    AFES also assumes that the given PDE can be discretized in time in the
+    following way
+    \begin{equation}
+        r(u^n, u^n, v) = \frac{1}{k} (u^n - u^{n-1}, v) - (F(\hat{u};t^n), v) = 0,
+        \label{eq:WeakResidual}
+    \end{equation}
+    where $u^n,\, u^{n-1},\, \hat{u}$, and $v$ are the solution at the
+    $n^{th}$-timestep, the solution at the $(n-1)^{st}$-timestep,
+    $\theta$-weighted average of the solution for the $n^{th}$ and
+    $(n-1)^{th}$-timestep, i.e.
+    \begin{equation}
+        \hat{u} = \theta\, u^n + (1 - \theta)\, u^{n-1},
+        \label{eq:uAvg}
+    \end{equation}
+    and the test function, respectively.
+
+\subsubsection{Heat Equation} \label{sss:Heat}
+    The heat equation is a canonical example of parabolic partial differential
+    equations. Given the domain $\Omega$ with boundary $\partial \Omega$ and
+    time interval $I$ the heat equation is given by
+    \begin{equation}
+        \begin{split}
+            u_t - \nabla \left( \kappa \nabla u \right) &= f
+                \qquad (\mathbf{x}, t)\in \Omega \times I \\
+            u(\mathbf{x}, 0) &= u_0(\mathbf{x}) \quad \mathbf{x} \in \Omega \\
+            u(\mathbf{x}, t) &= g(\mathbf{x},t) \quad (\mathbf{x}, t)\in
+                \partial\Omega \times I, \\
+        \end{split}
+        \label{eq:Heat}
+    \end{equation}
+    where $f$ is the internal heat source/sink and $g$ is the boundary
+    condition. Taking our FE basis functions $v_h\in V^h\subset H^1_0(\Omega)$
+    then we are trying to find a $u^n_h \in V^h \subset H^1(\Omega)$ such that
+    \begin{equation}
+        \frac{1}{k} (u^n - u^{n-1}, v_h) + (\kappa \nabla \hat{u}, \nabla v_h) =
+        0 \quad \forall v_h \in V^h,
+        \label{eq:WeakHeat}
+    \end{equation}
+    where $k$ is the time step, $u^n_h$ is the FE solution at the
+    $n^{th}$-timestep, $u^{n-1}_h$ is the FE solution at the
+    $(n-1)^{st}$-timestep, and $\kappa$ is the heat coefficient. To further
+    specify the problem we will define the domain to be the unit square, i.e.
+    \begin{equation}
+        \Omega := [0, 1] \times [0, 1],
+        \label{eq:HeatDomain}
+    \end{equation}
+    define the function to be
+    \begin{equation}
+        f(x,y,t) = \sin(pi\, x
+        \label{<+label+>}
+    \end{equation}<++>
+
+\subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
+
+\subsubsection{Navier-Stokes Equation} \label{sss:NSE}
+
+\subsection{Optimization} \label{sse:Optimization}

@@ -1,0 +1,59 @@
+\documentclass[a4paper]{article}
+\PassOptionsToPackage{a4paper}{geometry}
+\PassOptionsToPackage{firstinits=true,isbn=false,url=false,doi=false,style=numeric}{biblatex}
+\usepackage{elf}
+
+\addbibresource{Complete.bib}
+
+%keywords environment
+\def\keywords{\vspace{.5em}
+{\textit{Keywords}:\,\relax%
+}}
+\def\endkeywords{\par}
+
+\title{AFES-- Automated Finite Element Solver}
+
+\author[1]{Erich L Foster}
+
+\author[2]{Cem Degirmenci}
+
+\author[1,2]{Johan Jansson}
+
+\affil[1]{Basque Center for Applied Mathematics, Bilbao, Basque Country -- Spain}
+
+\affil[2]{CSC, KTH Royal Institute of Technology, Stockholm, Sweden}
+
+\date{October 2014}
+
+\begin{document}
+    \maketitle
+
+    \begin{abstract}
+        In this report we describe a computational framework for automated
+        finite element solutions of time dependent partial differential
+        equations, based on FEniCS/DOLFIN. This computational framework
+        not only includes the ability to solve a general PDE, using $H^1$ FEs,
+        but offers automated goal oriented mesh adaptivity, and adjoint based
+        optimization. Both the adaptivity and the optimization routines use
+        DOLFIN-Adjoint to automatically generate and solve the dual problem,
+        given a primal problem.
+    \end{abstract}
+
+    \begin{keywords}
+        Finite elements, adjoint, error control, adaptivity, optimization.
+    \end{keywords}
+
+    \tableofcontents
+
+    \section{Introduction} \label{sec:Intro}
+    \input{Intro.tex}
+
+    \section{AFES Tutorial} \label{sec:Tutorial}
+    \input{Tutorial.tex}
+
+    \section{Conlcusions} \label{sec:Conclusions}
+
+    \printbibliography
+\end{document}
+
+

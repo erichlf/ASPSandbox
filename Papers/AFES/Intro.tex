@@ -1,0 +1,38 @@
+Partial differential equations (PDEs) describe many models in accross all fields
+of science, while the Finite element method (FEM) is one of the most powerful
+methods for solving PDEs. However, the FEM can be both difficult to program and
+difficult for many to fully grasp. Additionally, many of the associated tasks
+with solving time dependent (and steady state) PDEs are the similar (if not the
+same) for most PDEs and can be automated. Furthermore, many scientists may
+not be familiar with programming. Thus, a package which can simplify the
+process of implementing finite element (FE) solutions, including the reduction
+of repetitive tasks and the amount of programming required, would be very useful.
+
+The FEniCS project\cite{Alnae2011} set out to address many of these issues, by
+offering various programming libraries (in both C++ and Python). However, the
+FEniCS project, as of yet, does not automate the time-stepping procedure for
+PDEs. Additionally, many of the required steps for implementing a FE solver in
+FEniCS are quite repetitive and could be automated. The AFES library sets out to
+further automate the solutions of PDEs and hopefully will simplify the process.
+Currently, the user is still required to do some basic programming, but we
+intend to reduce this to either none or a very minimal amount.
+
+The AFES software library offers a simple Python programming interface, built
+upon FEniCS, which will greatly reduce the amount of programming required by the
+user and completely eliminate the necessity for creating a simple time stepper.
+However, the user is required to setup the problem domain, boundary conditions,
+forcing functions, and weak residual using the FEniCS/DOLFIN Python interface.
+
+In addition to automating the solution to time dependent PDEs, AFES offers a
+novel automated goal oriented mesh adaptivity \cite{Foster2014e, Jansson2014a,
+Jansson2014b}.  The goal oriented mesh adaptivity code is based on solving a
+dual problem.  This dual problem is constructed and solved using DOLFIN-Adjoint
+\cite{Ham2012, Ferrell2014}, an automated adjointing framework for FEniCS, and
+thus needs very little user input.  Currently, the only additional tasks the
+user must perform, for implementing the adaptivity, are defining a goal
+functional and the addition of an extra ``test function.'' Eventually, we would
+like to eliminate the requirement for the additional ``test function.'' In this
+way the weak form of the PDE would not change at all and the user would only
+need to add the definition of a goal functional.
+
+The AFES api also offers the ability of optimization.
