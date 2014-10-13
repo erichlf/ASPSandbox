@@ -1,6 +1,6 @@
 from AFES import *
 import sys
-import time
+from time import time
 
 '''
     The following functions are used to define ics, and bcs.
@@ -79,15 +79,13 @@ def main():
     Solver.weak_residual = weak_residual
     Solver.Plot = Plot  # Add the plotter
 
-    Solver.__str__ = 'Heat'
+    Solver.__str__ = 'Heat Equation'
     Problem.__str__ = 'Square'
 
     # Solve problem with solver
-    wct = time.time()
+    wct = time()
     w = solver.solve(problem)
-
-    # Compute elapsed time
-    wct = time.time() - wct
+    wct = time() - wct # Compute elapsed time
 
     sys.stdout.flush()
     sys.stdout.write('\033[K')
