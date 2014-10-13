@@ -1,119 +1,112 @@
 from AFES import *
+import sys
+import time
 
 
-class Problem(ProblemBase):
-
-    '''
-        This class is used to define our domain, bcs, and ics.
-    '''
-
-    def __init__(self, options):  # initialize the problem
-        ProblemBase.__init__(self, options)  # send options to problembase
-
-        # Spacial discretization
-        Nx = options['Nx']
-        Ny = options['Ny']
-
-        self.mesh = UnitSquareMesh(Nx, Ny)  # Create mesh
-
-        # time domain and time step
-        self.t0 = 0.
-        self.T = options['T']
-        self.k = options['k']
-
-        self.kappa = options['kappa']  # heat capacity
-
-        self.u0 = options['u0']  # ic
-        self.f = options['f']  # forcing
-        self.g = options['g']  # boundary condition
-
-    # create initial conditions
-    def initial_conditions(self, V):
-
-        return project(self.u0, V)
-
-    # Create boundary condition
-    def boundary_conditions(self, V, t):
-
-        return DirichletBC(V, self.g, 'on_boundary')
-
-    def __str__(self):
-        return 'Square'
+'''
+    This class is used to define our domain, bcs, and ics.
+'''
 
 
-class Solver(SolverBase):
+def initial_conditions(self, V):  # create initial conditions
 
-    '''
-        This class is used to create our solver and tells AFES what to do with
-        the solutions that you obtain.
-    '''
+    return project(self.u0, V)
 
-    def __init__(self, options):  # initialize the solver
-        SolverBase.__init__(self, options)  # send options to solverbase
 
-    def function_space(self, mesh):
-        V = FunctionSpace(mesh, 'CG', 1)  # Define function spaces
+def boundary_conditions(self, V, t):  # Create boundary condition
 
-        return V
+    return DirichletBC(V, self.g, 'on_boundary')
 
-    # define our weak form
-    def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
-        kappa = problem.kappa  # heat coefficient
 
-        f = problem.f  # source/sink
+'''
+    The following will create our solver and tells AFES what to do with
+    the solutions that you obtain.
+'''
 
-        # weak form of the equations
-        r = (1. / k) * (U - U_) * v * dx \
-            + kappa * inner(grad(u), grad(v)) * dx \
-            - f * v * dx
 
-        return r
+def function_space(self, mesh):
+    V = FunctionSpace(mesh, 'CG', 1)  # Define function spaces
 
-    def Plot(self, problem, V, u):
+    return V
 
-        # Plot energy
-        if self.vizU is None:
-            self.vizU = plot(u, title='Temperature', rescale=False)
-        else:
-            self.vizU.plot(u)
+# define our weak form
 
-    def Save(self, problem, u, dual=False):
 
-        self._ufile << u
+def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
+    kappa = problem.kappa  # heat coefficient
 
-    def file_naming(self, n=-1, dual=False):
-        s = 'HeatEq'
+    f = problem.f  # source/sink
 
-        # name our files
-        self._ufile = File(s + '_u.pvd', 'compressed')
-        self.meshfile = File(s + '_mesh.xml')
+    # weak form of the equations
+    r = (1. / k) * (U - U_) * v * dx \
+        + kappa * inner(grad(u), grad(v)) * dx \
+        - f * v * dx
 
-    def __str__(self):
-        return 'Heat'
+    return r
+
+
+def Plot(self, problem, V, u):
+
+    # Plot energy
+    if self.vizU is None:
+        self.vizU = plot(u, title='Temperature', rescale=False)
+    else:
+        self.vizU.plot(u)
 
 
 def main():
     # setup problem options
-    options['T'] = 1.  # stopping time
-    options['k'] = 0.01  # time step
-    options['theta'] = 1  # implicit Euler
-    options['kappa'] = Constant(1E-2)  # heat coefficient
-    options['u0'] = Expression('sin(pi*x[0])*sin(pi*x[1])')  # ic
-    options['f'] = Expression('0')  # forcing
-    options['g'] = Expression('0')  # boundary condition
+    options = {
+        'T': 1.,  # stopping time
+        'k': 0.01,  # time step
+        'theta': 1,  # implicit Euler
+        'kappa': Constant(1E-2),  # heat coefficient
+        'u0': Expression('sin(pi*x[0])*sin(pi*x[1])'),  # ic
+        'f': Expression('0'),  # forcing
+        'g': Expression('0'),  # boundary condition
+        'Nx': 20,  # spacial discretization along x-axis
+        'Ny': 20,  # spacial discretization along y-axis
+        'velocity_order': 1,  # order of the finite element
 
-    # setup AFES specific options
-    options['adaptive'] = False  # mesh adaptivity
-    options['optimize'] = False  # optimize as defined in solver
-    options['save_solution'] = False  # don't save the solution
-    options['plot_solution'] = True  # plot the solution
+        # setup AFES specific options
+        'adaptive': False,  # mesh adaptivity
+        'optimize': False,  # optimize as defined in solver
+        'save_solution': False,  # don't save the solution
+        'plot_solution': True,  # plot the solution
+    }
+
+    problem = Problem(options)
+
+    # Spacial discretization
+    Nx = options['Nx']
+    Ny = options['Ny']
+
+    problem.mesh = UnitSquareMesh(Nx, Ny)  # Create mesh
+
+    # time domain and time step
+    problem.t0 = 0.
+    problem.T = options['T']
+    problem.k = options['k']
+
+    problem.kappa = options['kappa']  # heat capacity
+
+    problem.u0 = options['u0']  # ic
+    problem.f = options['f']  # forcing
+    problem.g = options['g']  # boundary condition
+
+    Problem.initial_conditions = initial_conditions  # create initial conditions
+    Problem.boundary_conditions = boundary_conditions  # Create boundary condition
 
     # Create problem and solver
     solver = Solver(options)
-    problem = Problem(options)
 
-    solver_name = solver.__str__()
-    problem_name = problem.__str__()
+    # create our user defined problem and function space
+    Solver.function_space = function_space
+    Solver.weak_residual = weak_residual
+    Solver.Plot = Plot  # Add the plotter
+
+    Solver.__str__ = 'Heat'
+    Problem.__str__ = 'Square'
 
     # Solve problem with solver
     wct = time.time()
@@ -124,8 +117,8 @@ def main():
 
     sys.stdout.flush()
     sys.stdout.write('\033[K')
-    print 'Solved %s for the %s problem in %g seconds.' % (solver_name,
-                                                           problem_name, wct)
+    print 'Solved %s for the %s problem in %g seconds.' % (solver.__str__,
+                                                           problem.__str__, wct)
 
     return 0
 

@@ -90,10 +90,11 @@ entering the details for the domain, boundary conditions, and the weak form.
 
     \lstinputlisting[numbers=none]{Heat.py}
 
-    While this code looks more complicated than the corresponding code in the
-    FEniCS manual \cite[Section 1.1.3]{Alnae2011}, what it offers is the ability
-    to quickly change problem parameters, problem definition, and even the
-    equations. The main power of this approach lies in the lines
+    While from a coders point of view this looks more complicated that the
+    standard heat equation solver in the FEniCS demos, the beauty of this code
+    is that the main() portion of the script remains mostly unchanged from
+    problem to problem. The power of this approach can be seen in the following
+    code snippets
     \lstinputlisting[numbers=none,firstline=111,lastline=113]{Heat.py}
     With this approach we can easily mix and match problems and solvers.
 
