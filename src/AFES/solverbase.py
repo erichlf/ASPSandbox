@@ -21,18 +21,14 @@ maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
 
-class SolverBase:
+class Solver:
 
     '''
         SolverBase provides a general solver class for the various Solvers. Its
         purpose is take a weak_residual and then solve it using the theta-method
     '''
 
-    def __init__(self, function_space, weak_residual, options):
-
-        # create our user defined problem and function space
-        self.function_space = functions_space
-        self.weak_residual = weak_residual
+    def __init__(self, options):
 
         # Store options
         self.options = options
@@ -45,24 +41,28 @@ class SolverBase:
         self.Th = None
 
         # initialize the time stepping method parameters
-        self.theta = self.options['theta']  # time stepping method
-
-        # initialize element orders
-        self.Pu = self.options['velocity_order']  # order of velocity element
-        # order of height/pressure element
-        self.Pp = self.options['height_order']
-
-        if(self.Pu == 2 and self.options['stabilize']):
-            self.options['stabilize'] = False
+        if 'theta' in self.options:
+            self.theta = self.options['theta']  # time stepping method
+        else:
+            self.theta = 0.5
 
         # Reset some solver variables
         self._time = None
         self._cputime = 0.0
         self._timestep = 0
 
-        self.adapt_ratio = self.options['adapt_ratio']
-        self.maxadapts = self.options['max_adaptations']
-        self.adaptTOL = self.options['adaptive_TOL']
+        if 'adapts_ratio' in self.options:
+            self.adapt_ratio = self.options['adapt_ratio']
+        else:
+            self.adapt_ration = 0.1
+        if 'max_adaptations' in self.options:
+            self.maxadapts = self.options['max_adaptations']
+        else:
+            self.maxadapts = 30
+        if 'adaptive_TOL' in self.options:
+            self.adaptTOL = self.options['adaptive_TOL']
+        else:
+            self.adaptTOL = 1E-15
 
         # Reset files for storing solution
         self.s = None
@@ -381,7 +381,7 @@ class SolverBase:
             self.Plot(problem, W, w)
 
         # Check memory usage
-        if self.options['check_mem_usage']:
+        if 'check_mem_usage' in self.options and self.options['check_mem_usage']:
             print 'Memory usage is:', self.getMyMemoryUsage()
 
         # Print progress
@@ -472,13 +472,10 @@ class SolverBase:
         else:
             p += '2D'
         s = self.__module__.split('.')[-1]
-        if(self.options['stabilize']
-           and 'stabilization_parameters' in dir(self)):
-            s += 'Stabilized'
-        if(self.options['inviscid']):
-            s = 'Inviscid' + s
-        if(self.options['linear']):
-            s = 'Linear' + s
+        if 'stabilize' in self.options \
+                and self.options['stabilize'] \
+                and 'stabilization_parameters' in dir(self):
+                s += 'Stabilized'
 
         return problem.output_location + s + p
 
@@ -489,7 +486,7 @@ class SolverBase:
         s = ''
 
         # Return file suffix for output files
-        if not self.options['inviscid'] and self.Re is not None:
+        if self.Re is not None:
             s = 'Re' + str(int(self.Re))
         if self.Ro is not None:
             s += 'Ro' + str(self.Ro)
