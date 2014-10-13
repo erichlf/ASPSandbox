@@ -258,11 +258,7 @@ class Solver:
             m - current functional size (Galerkin-orthogonal problems)
             m_ - previous functional size (Galerkin-orthogonal problems)
         '''
-        if(self.options['stabilize']
-           and 'stabilization_parameters' in dir(self)):
-            c = abs(sum(ei.vector()))
-        else:
-            c = abs(m - m_)
+        c = abs(sum(ei.vector()))
 
         return c
 

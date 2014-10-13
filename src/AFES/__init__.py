@@ -18,7 +18,7 @@ OPTIONS = {
     'adaptive': False,  # mesh adaptivity
     'adapt_ratio': 0.1,  # percent of mesh to refine
     'max_adaptations': 30,  # max number of times to adapt mesh
-    'adaptive_TOL': 1E-10,  # tolerance for terminating adaptivity
+    'adaptive_TOL': 1E-20,  # tolerance for terminating adaptivity
     'optimize': False,  # optimize as defined in solver
     'onDisk': 0.,  # percent of steps on disk
     'save_solution': False,
