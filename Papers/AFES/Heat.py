@@ -56,6 +56,8 @@ def Plot(self, problem, V, u):
 def main():
     # setup problem options
     options = OPTIONS.copy()
+
+    # Create problem instance
     problem = Problem(options)
 
     # Spacial discretization
@@ -71,7 +73,7 @@ def main():
     Problem.initial_conditions = initial_conditions
     Problem.boundary_conditions = boundary_conditions
 
-    # Create problem and solver
+    # Create solver instance
     solver = Solver(options)
 
     # create our user defined problem and function space
@@ -85,7 +87,7 @@ def main():
     # Solve problem with solver
     wct = time()
     w = solver.solve(problem)
-    wct = time() - wct # Compute elapsed time
+    wct = time() - wct  # Compute elapsed time
 
     sys.stdout.flush()
     sys.stdout.write('\033[K')

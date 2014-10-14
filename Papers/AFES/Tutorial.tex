@@ -12,10 +12,10 @@ entering the details for the domain, boundary conditions, and the weak form.
     In this subsection we explain how to solve a basic time dependent PDE using
     the AFES api. We choose to explain the API through example; we choose to
     make things quite simple at first and so the first example is the Heat
-    equation.  Since, the FEM requires the weak form of any PDE we assume the
-    user understands how to determine the weak for a given PDE and thus no
-    explanation of the weak form is given. For a very basic explanation of the
-    weak form see \cite[Chapter 6.2.2]{Eriksson2009}.
+    equation.  Since, the FEM requires the weak form of any PDE we assume
+    the user understands how to determine the weak form for a given PDE and thus
+    no explanation of the weak form is given. For a very basic explanation of
+    the weak form see \cite[Chapter 6.2.2]{Eriksson2009}.
 
     Of course to be able to solve any PDE certain assumptions must be made. AFES
     makes the assumption that an $H^1$ FE is appropriate for solving the given
@@ -131,23 +131,141 @@ entering the details for the domain, boundary conditions, and the weak form.
     built in functionality so as to fit your own specifics. For this example we
     only override the \texttt{Plot} function; this is done in much the same way
     as we did for the other functions already seen above.
+    \lstinputlisting[firstline=47,lastline=54,numbers=none]{Heat.py}
+    \lstinputlisting[firstline=80,lastline=80,numbers=none]{Heat.py}
+
+    The entire code can be viewed below
     \lstinputlisting[numbers=none]{Heat.py}
 
     While from a coders point of view this looks more complicated than the
     standard heat equation solver in the FEniCS demos, the beauty of this code
     is that the main() portion of the script remains mostly unchanged from
-    problem to problem. The power of this approach can be seen in the following
-    code snippets
-    \lstinputlisting[numbers=none,firstline=77,lastline=80]{Heat.py}
+    problem to problem. The power of this approach can be seen in the
+    following code snippets
+    \lstinputlisting[numbers=none,firstline=77,lastline=79]{Heat.py}
     and
     \lstinputlisting[numbers=none,firstline=70,lastline=73]{Heat.py}
     With this approach we can easily mix and match problems and solvers. Thus,
     we can use the same main() to run, say, the heat equation or even the
-    Navier-Stokes equations.
+    Navier-Stokes equations (on a simple domain).
+
+\subsubsection{Navier-Stokes Equations} \label{sss:NSE}
+
+    In this subsection we demonstrate the use of AFES on a more complicated
+    example, namely the Navier-Stokes equations for flow around a cylinder.  We
+    discretize the Navier-Stokes equations using a Galerkin\slash~Least-Squares
+    (GLS) stabilized cG(1)cG(1) finite element, where the first cG(1) indicates
+    that the test and trial functions are both piecewise linear, while the
+    second cG(1) indicates that the test piecewise constants and the trial
+    functions are continuous piecewise linear (see \cite{Hoffman2006a} for more
+    details).
+
+    For this problem we are concerned with modelling the incompressible
+    Navier-Stokes equations with constant kinematic viscosity, $\nu>0$, in a
+    domain $\Omega\subset \R^d$, with boundary $\partial \Omega$, i.e.  where
+    the strong residual is given by
+    \begin{equation}
+        \begin{split}
+            \mathbf{u}_t + \left( \mathbf{u} \cdot \nabla \right) \mathbf{u}
+                - \nu\, \Delta \mathbf{u} + \nabla p = \mathbf{f},
+                    \quad \mathbf{x} \in \Omega \\
+            \nabla \cdot \mathbf{u} = 0, \quad \mathbf{x} \in \Omega
+        \end{split}
+    \label{eqn:NSE}
+    \end{equation}
+    Given a step size $k$ and applying the cG(1)cG(1) finite element discretization
+    to \eqref{eqn:NSE} with $V = (v, q) \in X \subset [H^1_0(\Omega)]^d \times
+    H^1(\Omega)$ gives the following weak residual
+    \begin{equation}
+    \begin{split}
+        r(\bar{U}^n; V) &= \left(\mathbf{u}^n - \mathbf{u}^{n-1}\right)\,k^{-1}
+            + (\left( \bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n, v) \\
+            &\quad+ \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
+            - (p^n, \nabla \cdot v) - (\mathbf{f}, v)
+            + (\nabla \cdot \bar{\mathbf{u}}^n, v) = 0
+    \end{split}
+    \label{eqn:WeakNSE}
+    \end{equation}
+    where $\bar{U}^n = (\bar{\mathbf{u}}^n,p)$, and $\bar{\mathbf{u}}^n =
+    \frac{1}{2}\left(\mathbf{u}^n + \mathbf{u}^{n-1}\right)$. Given the solution
+    $U=(\mathbf{u},p)$, since the elements we are concerned with (cG(1)cG(1)) have
+    test functions which are linear in space and constant in time the strong
+    residual is given by
+    \begin{equation}
+        R(\bar{U}^n,U) = \begin{cases}
+        \left(\mathbf{u} \cdot \nabla \right) \bar{\mathbf{u}}^n
+            + \nabla p^n - \mathbf{f} = 0 \\
+        \nabla \cdot \bar{\mathbf{u}}^n = 0.
+        \end{cases}
+    \label{eqn:StrongNSE}
+    \end{equation}
+    \textcolor{red}{Should $\mathbf{f}$ be an average between time steps?}
+    Finally, the GLS-cG(1)cG(1) discretization of \eqref{eqn:NSE} is given by
+    \begin{equation}
+    r(\bar{U}^n,V) + SD_{\delta}^n(\bar{U}^n,V) = 0, \quad \forall V=(v,q) \in X.
+    \label{eqn:G2}
+    \end{equation}
+    Here $SD_{\delta}^n$ is the GLS and is given by
+    \begin{equation}
+    SD_{\delta}^n \equiv
+        \delta_1 (\left(\bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n
+            + \nabla p^n - \mathbf{f},
+        \left(\bar{\mathbf{u}}^n \cdot \nabla \right) v + \nabla q)
+        + \delta_2 (\nabla \cdot \bar{\mathbf{U}}^n, \nabla \cdot v),
+    \label{eqn:NSEStabilization}
+    \end{equation}
+    where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}|^2\, h^{-2})^{-1/2}$, and
+    $\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem independent
+    constants of unit size. For each test case below we take the time-step to be
+    \begin{equation*}
+    k = C_{CFL}\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
+    \end{equation*}
+    where $C_{CFL}=10$.
+
+    This test case is based on a benchmark problem from Sch\"afer and Turek
+    \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
+    rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For
+    the inlet boundary condition we take
+    \begin{equation}
+        u(0,y,t) = (4\, U_m\,y\, (H - y)/H^2, 0),
+        \label{eqn:2DInlet}
+    \end{equation}
+    where $U_m = 1.5\, \text{m/s}$, $H = 0.41\, \text{m}$. For the kinematic
+    viscosity we take $\nu = 10^{-3}\, \text{m}^2\text{/s}$, resulting in a
+    Reynolds number of $Re=100$.
+
+    \begin{figure}[h]
+        \centering
+        \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
+        \begin{tikzpicture}[scale=6]
+            \draw (0,0) -- (2.2,0) -- (2.2,0.41) -- (0,0.41) -- cycle;
+            \draw (0.2,0.2) circle (0.05);
+            \draw[<->] (0,-0.05) -- (2.2,-0.05);
+            \draw (1.1,-0.1) node {2.2 m};
+            \draw[<->] (0,0.2) -- (0.15,0.2);
+            \draw (0.075,0.25) node {\footnotesize 0.15 m};
+            \draw[<->] (0.2,0) -- (0.2,0.15);
+            \draw (0.3,0.075) node {\footnotesize 0.15 m};
+            \draw[<->] (0.2,0.25) -- (0.2,0.41);
+            \draw (0.3,0.31) node {\footnotesize 0.16 m};
+            \draw[<->] (0.3,0.15) -- (0.3,0.25);
+            \draw (0.4,0.2) node {\footnotesize 0.1 m};
+            \node[rotate=90] (outflow) at (2.25, 0.2) {Outlet};
+            \node[rotate=90] (inflow) at (-0.05, 0.2) {Inlet};
+            \node (NoFlow) at (1.1,0.5) {$u=v=0$};
+            \draw[next] (NoFlow) to (1.1,0.41);
+            \draw[next] (NoFlow) to [out=-45,in=45] (1.1,0);
+            \draw[next] (NoFlow) to [out=-135,in=-35] (0.25,0.15);
+        \end{tikzpicture}
+        \caption{Problem Geometry, $\Omega$}
+        \label{fig:2DCylinder}
+    \end{figure}
+
+    \lstinputlisting[numbers=none]{NSE.py}
 
 \subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
 
-\subsubsection{Navier-Stokes Equation} \label{sss:NSE}
+\subsubsection{Navier-Stokes Equation} \label{sss:AdaptiveNSE}
     \lstinputlisting[numbers=none]{NSE.py}
 
 \subsection{Optimization} \label{sse:Optimization}
