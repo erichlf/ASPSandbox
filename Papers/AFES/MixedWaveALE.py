@@ -107,6 +107,7 @@ def strong_residual(self, W, w, w2):  # strong residual for cG(1)cG(1)
 
     rho = self.rho  # density
     c = self.c
+    Ud = self.Ud
 
     R1 = -rho * grad(u) * Ud + grad(p)
     R2 = -1. / (rho * c * c) * dot(Ud, grad(p)) + div(u)
@@ -127,6 +128,9 @@ def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
     c = problem.c  # speed of sound
     self.rho = rho
     self.c = c
+
+    Ud = problem.Ud
+    self.Ud = Ud
 
     t0 = problem.t0
 

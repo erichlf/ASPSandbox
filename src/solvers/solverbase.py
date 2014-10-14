@@ -28,11 +28,7 @@ class SolverBase:
         purpose is take a weak_residual and then solve it using the theta-method
     '''
 
-    def __init__(self, function_space, weak_residual, options):
-
-        # create our user defined problem and function space
-        self.function_space = functions_space
-        self.weak_residual = weak_residual
+    def __init__(self, options):
 
         # Store options
         self.options = options
