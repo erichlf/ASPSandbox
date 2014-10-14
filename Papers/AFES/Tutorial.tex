@@ -92,21 +92,29 @@ entering the details for the domain, boundary conditions, and the weak form.
     defined. First, we can define the mesh (we will use a
     \texttt{UnitSquareMesh} as our domain), and then the mesh must be passed to
     the \texttt{Problem} class. This can be done in the following way
-    \lstinputlisting[firstline=61,lastline=66,numbers=none]{Heat.py}
+    \lstinputlisting[firstline=63,lastline=68,
+        caption={Creating a mesh of unit square problem domain.}
+    ]{Heat.py}
     we need to define the initial conditions and
     boundary conditions. For the initial condition, \eqref{eq:HeatIC}, and
     the boundary condition, \eqref{eq:HeatBC}, these functions can be defined
     as follows
-    \lstinputlisting[firstline=10,lastline=20,numbers=none]{Heat.py}
+    \lstinputlisting[firstline=10,lastline=20,
+        caption={Create the initial conditions and boundary conditions.}
+    ]{Heat.py}
     To be able to access these functions AFES needs them define. To do this we
     must pass the functions to AFES' \texttt{Problem} class. This is done quite
     easily in the following way
-    \lstinputlisting[firstline=71,lastline=72,numbers=none]{Heat.py}
+    \lstinputlisting[firstline=73,lastline=74,
+        caption={Send initial conditions and boundary conditions to AFES.}
+    ]{Heat.py}
     To define the heat source/sink things are actually a bit easier and the user
     need only to pass the function directly to the \texttt{Problem} class. This
     is done in a quite similar way as to the way we passed the ICs and BCs, as
     can be seen below
-    \lstinputlisting[firstline=68,lastline=68,numbers=none]{Heat.py}
+    \lstinputlisting[firstline=69,lastline=69, label={lst:IC+BC2Problem},
+        caption={Send forcing function to AFES.}
+    ]{Heat.py}
     In fact, this could be left out if the user does not require it in the weak
     form, but we include it here for completeness.
 
@@ -118,10 +126,15 @@ entering the details for the domain, boundary conditions, and the weak form.
     \texttt{function\_space} we then pass it to the \texttt{Solver} class in the
     same way we passed \texttt{functions\_space}. The definition of the function
     space and the weak form given by \eqref{eq:WeakHeat} can be seen below
-    \lstinputlisting[firstline=28,lastline=44,numbers=none]{Heat.py}
+    \lstinputlisting[firstline=28,lastline=44,
+        caption={Defining the function space and weak residual}
+    ]{Heat.py}
     These functions are then passed to the \texttt{Solver} class in the
     following way
-    \lstinputlisting[firstline=78,lastline=79,numbers=none]{Heat.py}
+    \lstinputlisting[firstline=80,lastline=81, label={lst:FS+WR2Solver},
+        caption={Passing our function space and weak residual to
+            \texttt{Solver}.}
+    ]{Heat.py}
 
     In addition to the standard functions above, we can define some auxiliary
     functions. Some examples are \texttt{Plot}, \texttt{Name}, and \texttt{Save}
@@ -131,20 +144,23 @@ entering the details for the domain, boundary conditions, and the weak form.
     built in functionality so as to fit your own specifics. For this example we
     only override the \texttt{Plot} function; this is done in much the same way
     as we did for the other functions already seen above.
-    \lstinputlisting[firstline=47,lastline=54,numbers=none]{Heat.py}
-    \lstinputlisting[firstline=80,lastline=80,numbers=none]{Heat.py}
+    \lstinputlisting[firstline=47,lastline=54,
+        caption={Plot function for post processing.}
+    ]{Heat.py}
+    \lstinputlisting[firstline=82,lastline=82,
+        caption={Passing the plot function to \texttt{Solver}}
+    ]{Heat.py}
 
     The entire code can be viewed below
-    \lstinputlisting[numbers=none]{Heat.py}
+    \lstinputlisting[label={lst:Heat},
+        caption={Complete code for the Heat equation \eqref{eq:Heat}}
+    ]{Heat.py}
 
     While from a coders point of view this looks more complicated than the
     standard heat equation solver in the FEniCS demos, the beauty of this code
     is that the main() portion of the script remains mostly unchanged from
     problem to problem. The power of this approach can be seen in the
-    following code snippets
-    \lstinputlisting[numbers=none,firstline=77,lastline=79]{Heat.py}
-    and
-    \lstinputlisting[numbers=none,firstline=70,lastline=73]{Heat.py}
+    code snippets \autoref{lst:FS+WR2Solver} and \autoref{lst:IC+BC2Problem}.
     With this approach we can easily mix and match problems and solvers. Thus,
     we can use the same main() to run, say, the heat equation or even the
     Navier-Stokes equations (on a simple domain).
@@ -199,7 +215,6 @@ entering the details for the domain, boundary conditions, and the weak form.
         \end{cases}
     \label{eqn:StrongNSE}
     \end{equation}
-    \textcolor{red}{Should $\mathbf{f}$ be an average between time steps?}
     Finally, the GLS-cG(1)cG(1) discretization of \eqref{eqn:NSE} is given by
     \begin{equation}
     r(\bar{U}^n,V) + SD_{\delta}^n(\bar{U}^n,V) = 0, \quad \forall V=(v,q) \in X.
@@ -261,11 +276,84 @@ entering the details for the domain, boundary conditions, and the weak form.
         \label{fig:2DCylinder}
     \end{figure}
 
-    \lstinputlisting[numbers=none]{NSE.py}
+    For much of this example the code is quite similar to the previous example,
+    \autoref{lst:Heat}.  Some differences come from the more complex geometry,
+    time dependent boundary conditions, and stabilization. One additional
+    complexity is the non-linearity inherent to the Navier-Stokes equations
+    which does not exist in the Heat equation. AFES assumes all problems are
+    non-linear, and therefore no changes must be made to take into account a
+    non-linear problem.  It should, however, be mentioned that this assumption
+    by AFES does tend to slow the calculations down for linear problem. As for
+    the other complexity added by flow around a cylinder, AFES handles the
+    additionally complexity in a straight forward manner that is similar to what
+    one would expect in the standard Python interface of FEniCS/DOLFIN.
+
+    The first step we take is setting up problem specific parameters, including
+    definition of geometric extent, maximum velocity, etc.
+    \lstinputlisting[firstline=6,lastline=15,
+        caption={Problem specific parameter definitions for Navier-Stokes
+        equation}
+    ]{NSE.py}
+    Then in the same way we did in the previous example we setup the initial
+    conditions and send them to \texttt{Problem}
+    \lstinputlisting[firstline=22,lastline=30, label={lst:ICExpNSE},
+        caption={Expression for the initial conditions for Navier-Stokes
+        equations}
+    ]{NSE.py}
+    \lstinputlisting[firstline=70,lastline=72, label={lst:ICNSE},
+        caption={Initial conditions for Navier-Stokes equations}
+    ]{NSE.py}
+    \lstinputlisting[firstline=210,lastline=210,
+        caption={Passing the initial conditions for Navier-Stokes to
+            \texttt{Problem}}
+    ]{NSE.py}
+
+    Next we define the various boundaries, which include the inflow, outflow,
+    and no-slip boundaries (the cylinder is considered a no-slip boundary), then
+    we define the boundary conditions and send this to \texttt{Problem}
+    \lstinputlisting[firstline=33,lastline=67, label={lst:SubDomainsNSE},
+        caption={Defining problem specific boundaries for flow around a
+            cylinder.}
+    ]{NSE.py}
+    \lstinputlisting[firstline=80,lastline=94, label={lst:BCsNSE},
+        caption={Defining boundary conditions for Navier-Stokes equations}
+    ]{NSE.py}
+    \lstinputlisting[firstline=187,lastline=198, label={lst:DomainNSE},
+        caption={Definition of domain and mesh for flow around a cylinder.}
+    ]{NSE.py}
+    \lstinputlisting[firstline=210,lastline=210, label={lst:BC2ProblemNSE},
+        caption={Passing boundary conditions to \texttt{Problem} for
+            Navier-Stokes equations flow around a cylinder.}
+    ]{NSE.py}
+
+    With the domain and boundary conditions in place we must allow for the
+    boundary conditions to be updated. To do this we add the update function to
+    \texttt{Problem}, which is done in much the same way as the other functions
+    we have added up until now
+    \lstinputlisting[firstline=101,lastline=105, label={lst:UpdateBCs},
+        caption={Update boundary conditions.}
+    ]{NSE.py}
+    \lstinputlisting[firstline=214,lastline=214, label={lst:Update2Problem},
+        caption={Passing the update function to \texttt{Problem}.}
+    ]{NSE.py}
+
+    Now that the problem has been defined we then proceed to defining the
+    solver. Again the steps here are quite similar to before, except with the
+    addition of the stabilization terms.
+    \lstinputlisting[label={lst:NSE},
+        caption={Complete code for Navier-Stokes flow around a cylinder.}
+    ]{NSE.py}
 
 \subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
+    In this subsection we will introduce Goal Oriented Adaptivity in AFES. Again
+    this will be done by example, in fact, we will build off the previous
+    examples to show how easy it is to add adaptivity to your model. The only
+    required intervention by the user is the creation of a goal functional,
+    \texttt{Problem.functional}, while a \texttt{ei\_mode} boolean is
+    passed to \texttt{Solver.weak\_residual}, so that the user can change
+    behavior while calculating the error indicators.
 
 \subsubsection{Navier-Stokes Equation} \label{sss:AdaptiveNSE}
-    \lstinputlisting[numbers=none]{NSE.py}
+    \lstinputlisting{AdaptiveNSE.py}
 
 \subsection{Optimization} \label{sse:Optimization}

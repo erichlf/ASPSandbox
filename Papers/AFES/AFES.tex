@@ -5,6 +5,12 @@
 
 \addbibresource{Complete.bib}
 
+\lstset{
+    numbers=none,
+}
+\renewcommand{\lstlistlistingname}{Code Snippets}
+\renewcommand{\lstlistingname}{Snippet}
+
 %keywords environment
 \def\keywords{\vspace{.5em}
 {\textit{Keywords}:\,\relax%
@@ -52,6 +58,9 @@
     \input{Tutorial.tex}
 
     \section{Conlcusions} \label{sec:Conclusions}
+
+    \lstlistoflistings
+    \addcontentsline{toc}{section}{Code Snippets}
 
     \printbibliography
 \end{document}

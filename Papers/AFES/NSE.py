@@ -8,8 +8,6 @@ xmin = 0.0
 xmax = 2.2
 ymin = 0.0
 ymax = 0.41
-zmin = 0.0
-zmax = 0.41
 xcenter = 0.2
 ycenter = 0.2
 radius = 0.05
@@ -85,7 +83,7 @@ def boundary_conditions(self, W, t):
     bc0 = DirichletBC(W.sub(0), self.U, InflowBoundary())
 
     # Create no-slip boundary condition
-    bc1 = DirichletBC(W.sub(0), self.noSlip, NoSlipBoundary())
+    bc1 = DirichletBC(W.sub(0), Constant((0, 0)), NoSlipBoundary())
 
     # Create outflow boundary condition for pressure
     bc2 = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
@@ -195,7 +193,6 @@ def main():
     domain = channel - bluff
     problem.mesh = Mesh(domain, Nx)
 
-    problem.noSlip = Constant((0, 0))
     H = ymax
     problem.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)*t*t/(1+t*t)',
                             '0.0'), Um=Um, H=ymax, t=problem.t0)
