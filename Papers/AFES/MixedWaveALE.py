@@ -182,6 +182,7 @@ def main():
     # setup our domain
     problem.mesh = RectangleMesh(xmin, ymin, xmax, ymax, Nx, Ny)
 
+    problem.Ud = Ud
     problem.Ug = Expression(('sin(2*pi*f*t)', '0.0'), f=f, t=problem.t0)
 
     # problem specific parameters
