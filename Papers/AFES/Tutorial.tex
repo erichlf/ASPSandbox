@@ -337,23 +337,84 @@ entering the details for the domain, boundary conditions, and the weak form.
         caption={Passing the update function to \texttt{Problem}.}
     ]{NSE.py}
 
-    Now that the problem has been defined we then proceed to defining the
+    Now that the problem has been defined we then proceed by defining the
     solver. Again the steps here are quite similar to before, except with the
-    addition of the stabilization terms.
+    addition of the stabilization terms. Here the stabilization is given by the
+    function \texttt{strong\_residual}, and so this function, in addition to
+    \texttt{function\_space} and \texttt{weak\_residual}, must be sent to the
+    \texttt{Solver}. This can be seen in the following lines, including the
+    passing of the functions \texttt{function\_space}, \texttt{weak\_residual},
+    and \texttt{strong\_residual} to the \texttt{Solver} class.
+    \lstinputlisting[firstline=114,lastline=174, label={lst:WeakFormNSE},
+        caption={Function space, weak form, and stabilization of the
+        Navier-Stokes equation.}
+    ]{NSE.py}
+    \lstinputlisting[firstline=220,lastline=221, label={lst:Weak2SolverNSE},
+        caption={Passing the our function space, weak residual, and
+            stabilization to \texttt{Solve}.}
+    ]{NSE.py}
+
+    The entire code can be viewed below
     \lstinputlisting[label={lst:NSE},
         caption={Complete code for Navier-Stokes flow around a cylinder.}
     ]{NSE.py}
 
 \subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
-    In this subsection we will introduce Goal Oriented Adaptivity in AFES. Again
-    this will be done by example, in fact, we will build off the previous
-    examples to show how easy it is to add adaptivity to your model. The only
-    required intervention by the user is the creation of a goal functional,
-    \texttt{Problem.functional}, while a \texttt{ei\_mode} boolean is
-    passed to \texttt{Solver.weak\_residual}, so that the user can change
-    behavior while calculating the error indicators.
 
-\subsubsection{Navier-Stokes Equation} \label{sss:AdaptiveNSE}
-    \lstinputlisting{AdaptiveNSE.py}
+    In this subsection we will introduce Goal Oriented Adaptivity in AFES.  The
+    details for the goal oriented adaptivity algorithm used by AFES can be seen
+    in \cite{Foster2014e,Jansson2014a,Jansson2014b}. Again we will demonstrate
+    this functionality through example, in fact, we will build off the previous
+    example, specifically \autoref{sss:NSE}, to show how easy it is to add
+    adaptivity to your model. The only required intervention by the user is the
+    creation of a goal functional, \texttt{Problem.functional}, while a
+    \texttt{ei\_mode} boolean is passed to \texttt{Solver.weak\_residual}, so
+    that the user can change behavior while calculating the error indicators.
 
-\subsection{Optimization} \label{sse:Optimization}
+    Here we choose to use the Navier-Stokes equations, \ref{eqn:NSE}, as an
+    example of goal oriented adaptivity. For this demonstration of the
+    capabilities of AFES, in this respect, we choose a simple goal functional,
+    namely the average velocity in the $x$-direction, i.e.
+    \begin{equation}
+        \int_{I}\!\int_{\Omega} u\, d\mathbf{x}\,dt.
+        \label{eq:Functional}
+    \end{equation}
+
+    As stated previously, the addition of adaptivity to one's code is quite
+    simple and only requires the addition of \texttt{functional} to the
+    \texttt{Problem} class and the addition of setting the \texttt{adaptive}
+    boolean to true. In fact, since the code is almost the exact same we will
+    only present the differences.
+
+    \begin{remark}
+        We must mention that the stabilization for our formulation will be
+        turned off during the calculation of error indications, i.e. during
+        \texttt{ei\_mode}. Thus, the function \texttt{weak\_residual} is
+        presented again, only for completeness.
+    \end{remark}
+
+    \lstinputlisting[firstline=108,lastline=113, label={lst:Functional},
+        caption={Goal functional.}
+    ]{AdaptiveNSE.py}
+    \lstinputlisting[firstline=138,lastline=178,
+        label={lst:AdaptiveWeakFormNSE},
+        caption={Weak residual with the using \texttt{ei\_mode} to turn of
+        the stabilization for the Navier-Stokes equation.}
+    ]{AdaptiveNSE.py}
+    \lstinputlisting[firstline=192,lastline=192, label={lst:AdaptiveBool},
+        caption={Setting the the adaptive boolean to true.},
+    ]{AdaptiveNSE.py}
+    \lstinputlisting[firstline=221,lastline=221, label={lst:Goal2Problem},
+        caption={Passing the goal functional to the \texttt{Problem} class}
+    ]{AdaptiveNSE.py}
+    These are the only additions need for goal oriented adaptivity in the
+    Navier-Stokes equation. Most applications of the goal oriented adaptivity
+    will be quite similar and won't need any real changes.
+
+    The complete code can be seen below.
+    \lstinputlisting[label={lst:AdaptiveNSE},
+        caption={Complete code for Navier-Stokes flow around a cylinder using
+        goal oriented adaptivity.}
+    ]{AdaptiveNSE.py}
+
+%\subsection{Optimization} \label{sse:Optimization}

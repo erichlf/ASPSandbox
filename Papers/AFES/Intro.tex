@@ -3,10 +3,10 @@ of science, while the Finite element method (FEM) is one of the most powerful
 methods for solving PDEs. However, the FEM can be both difficult to program and
 difficult for many to fully grasp. Additionally, many of the associated tasks
 with solving time dependent (and steady state) PDEs are the similar (if not the
-same) for most PDEs and can be automated. Furthermore, many scientists may
-not be familiar with programming. Thus, a package which can simplify the
-process of implementing finite element (FE) solutions, including the reduction
-of repetitive tasks and the amount of programming required, would be very useful.
+same) for most PDEs and can be automated. Furthermore, many scientists may not
+be familiar with programming. Thus, a package which can simplify the process of
+implementing finite element (FE) solutions, including the reduction of
+repetitive tasks and the amount of programming required, would be very useful.
 
 The FEniCS project\cite{Alnae2011} set out to address many of these issues, by
 offering various programming libraries (in both C++ and Python). However, the
@@ -32,5 +32,3 @@ thus needs very little user input.  Currently, the only additional task the user
 must perform, for implementing the adaptivity, is defining a goal functional.
 In this way the weak form of the PDE does not change at all and the user need
 only to add the definition of a goal functional.
-
-The AFES api also offers the ability of optimization.
