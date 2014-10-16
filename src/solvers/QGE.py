@@ -1,7 +1,8 @@
 __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2013-08-27"
 
-from solverbase import *
+from AFES import *
+from AFES import Solver as SolverBase
 
 
 class Solver(SolverBase):
@@ -12,9 +13,18 @@ class Solver(SolverBase):
     '''
 
     def __init__(self, options):
+        try:
+            self.Re = options['Re']
+        except:
+            self.Re = 200
+            options['Re'] = self.Re
+        try:
+            self.Ro = options['Ro']
+        except:
+            self.Ro = 0.0016
+            options['Ro'] = self.Ro
+
         SolverBase.__init__(self, options)
-        self.Re = options['Re']
-        self.Ro = options['Ro']
 
     def function_space(self, mesh):
         # Define function spaces
@@ -30,36 +40,22 @@ class Solver(SolverBase):
         (Q_, Psi_) = (w_[0], w_[1])
         (p, chi) = (wt[0], wt[1])
 
-        h = CellSize(W.mesh())  # mesh size
-
-        # set up error indicators
-        Z = FunctionSpace(W.mesh(), "DG", 0)
-        z = TestFunction(Z)
-
         Re = self.Re  # Reynolds Number
         Ro = self.Ro  # Rossby Number
 
-        self.k = Expression('dt', dt=problem.k)
         t0 = problem.t0
 
-        t = t0 + self.k
+        t = t0 + k
         # forcing and mass source/sink
         f = problem.F(t)
 
-        # least squares stabilization
-        if(not self.options["stabilize"] or ei_mode):
-            d1 = 0
-            d2 = 0
-        if(not ei_mode):
-            z = 1.
-
         # weak form of the equations
-        r = z * ((1. / self.k) * (Q - Q_) * p
-                 + (1. / Re) * inner(grad(q), grad(p))
-                 + self.Jac(psi, q) * p
-                 - psi.dx(0) * p) * dx
-        r -= z * f * p * dx  # forcing function
-        r += z * (q * chi - Ro * inner(grad(psi), grad(chi))) * dx
+        r = ((1. / k) * (Q - Q_) * p
+             + (1. / Re) * inner(grad(q), grad(p))
+             + self.Jac(psi, q) * p
+             - psi.dx(0) * p) * dx
+        r -= f * p * dx  # forcing function
+        r += (q * chi - Ro * inner(grad(psi), grad(chi))) * dx
 
         return r
 

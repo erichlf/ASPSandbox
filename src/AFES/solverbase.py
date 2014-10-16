@@ -47,11 +47,26 @@ class SolverBase:
         self.options = options
 
         # initialize parameters
-        self.Re = None  # Reynolds number
-        self.H = None  # Fluid depth
-        self.Ro = None  # Rossby number
-        self.Fr = None  # Froude number
-        self.Th = None
+        try:  # Reynolds number
+            self.Re = options['Re']
+        except:
+            self.Re = None
+        try:  # Fluid depth
+            self.H = options['H']
+        except:
+            self.H = None
+        try:  # Rossby number
+            self.Ro = options['Ro']
+        except:
+            self.Ro = None
+        try:  # Froude number
+            self.Fr = options['Fr']
+        except:
+            self.Fr = None
+        try:
+            self.Th = options['Theta']
+        except:
+            self.Th = None
 
         # initialize the time stepping method parameters
         if 'theta' in self.options:
