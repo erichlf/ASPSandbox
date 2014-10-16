@@ -14,7 +14,7 @@ class Solver(SolverBase):
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
-        self.Re = options['Re']
+        self.nu = 1. / options['Re']
 
     # strong residual for cG(1)cG(1)
     def strong_residual(self, W, w, w2):
@@ -51,7 +51,7 @@ class Solver(SolverBase):
         Z = FunctionSpace(W.mesh(), "DG", 0)
         z = TestFunction(Z)
 
-        Re = self.Re  # Reynolds Number
+        nu = self.nu  # Reynolds Number
 
         t0 = problem.t0
 
@@ -74,7 +74,7 @@ class Solver(SolverBase):
         # weak form of the equations
         r = z * (1. / k) * inner(U - U_, v) * dx \
             + z * inner(grad(p) + grad(u) * u, v) * dx
-        r += z * inviscid / Re * inner(grad(u), grad(v)) * dx
+        r += z * inviscid * nu * inner(grad(u), grad(v)) * dx
         r += z * div(u) * q * dx
 
         # forcing function

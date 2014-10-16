@@ -1,5 +1,8 @@
 *.py[cod]
 
+#error logs
+*.err
+
 #swap files and stuff
 *.swp
 *.swo
@@ -64,3 +67,6 @@ nosetests.xml
 .project
 .pydevproject
 html/
+
+# rope completion
+.ropeproject
