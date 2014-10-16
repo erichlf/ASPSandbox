@@ -6,7 +6,8 @@ __license__ = "GNU GPL version 3 or any later version"
 #   by Kent-Andre Mardal <kent-and@simula.no>
 #
 
-from problembase import *
+from AFES import *
+from AFES import Problem as ProblemBase
 
 # domain dimensions
 x0 = 0.
@@ -67,13 +68,13 @@ class Problem(ProblemBase):
 
         self.t0 = 0.
         self.T = options['T']
-        self.k = options['dt']
+        self.k = options['k']
 
         self.rho = rho  # density
         self.c = c  # speed of sound
 
-        self.Ug = Expression(('sin(2*pi*f*t)', '0'), f=f, t=self.t0)
-        self.Ud = Ud
+        self.Ug = Expression(('sin(2*pi*f*t)', '0'), f=f, t=self.t0)  # BC
+        self.Ud = Ud  # domain velocity
 
     def initial_conditions(self, W):
         w0 = InitialConditions()
@@ -94,6 +95,10 @@ class Problem(ProblemBase):
         bcs = [noNormal, inflow, outflow]
 
         return bcs
+
+    def update(self, W, t):
+
+        return self.boundary_conditions(W, t)
 
     def F(self, t):  # forcing function for the momentum equation
         return Constant((0, 0))
