@@ -1,6 +1,6 @@
 #!/usr/bin/python
 __author__ = "Erich L Foster <erichlf@gmail.com>"
-__date__ = "2013-08-27"
+__date__ = "2014-10-16"
 __license__ = "GNU GPL version 3 or any later version"
 #
 #   adapted from ns in nsbench originally developed by
@@ -8,10 +8,10 @@ __license__ = "GNU GPL version 3 or any later version"
 #
 
 import sys
-import time
+from time import time
 import re
 
-from dolfin import set_log_active, parameters, NewtonSolver
+from AFES import *
 from problems import Problem, problems
 from solvers import Solver, solvers
 
@@ -124,16 +124,6 @@ def main(args):
     m = pattern.match(str(options['F1']))
     options['F1'] = [m.group(1), m.group(2)]
 
-    # Set global DOLFIN parameters
-    parameters['form_compiler']['cpp_optimize'] = True
-    parameters['allow_extrapolation'] = True
-    nonLinearSolver = NewtonSolver()
-    prm = nonLinearSolver.parameters
-    prm['convergence_criterion'] = 'incremental'
-    prm['absolute_tolerance'] = options["absolute_tolerance"]
-    prm['relative_tolerance'] = options["relative_tolerance"]
-    prm['report'] = options["monitor_convergence"]
-
     # Set debug level
     set_log_active(options["debug"])
 
@@ -143,11 +133,11 @@ def main(args):
     problem = Problem(problem_name, options)
 
     # Solve problem with solver
-    wct = time.time()
+    wct = time()
     w = solver.solve(problem)
 
     # Compute elapsed time
-    wct = time.time() - wct
+    wct = time() - wct
 
     sys.stdout.flush()
     sys.stdout.write('\033[K')

@@ -21,7 +21,7 @@ maxiter = default_maxiter = 200
 tolerance = default_tolerance = 1e-4
 
 
-class Solver:
+class SolverBase:
 
     '''
         SolverBase provides a general solver class for the various Solvers. Its

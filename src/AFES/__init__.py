@@ -3,8 +3,8 @@ __date__ = "2013-08-27"
 __license__ = "GNU GPL version 3 or any later version"
 
 from dolfin import *
-from AFES.solverbase import Solver
-from AFES.problembase import Problem
+from AFES.solverbase import SolverBase as Solver
+from AFES.problembase import ProblemBase as Problem
 
 # Default options
 OPTIONS = {
@@ -34,14 +34,3 @@ OPTIONS = {
     'stabilize': False,  # stabilize?
     'initialMesh': None  # to use for initial computation
 }
-
-
-# Set global DOLFIN parameters
-parameters['form_compiler']['cpp_optimize'] = True
-parameters['allow_extrapolation'] = True
-nonLinearSolver = NewtonSolver()
-prm = nonLinearSolver.parameters
-prm['convergence_criterion'] = 'incremental'
-prm['absolute_tolerance'] = OPTIONS["absolute_tolerance"]
-prm['relative_tolerance'] = OPTIONS["relative_tolerance"]
-prm['report'] = OPTIONS["monitor_convergence"]
