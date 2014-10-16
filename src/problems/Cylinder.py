@@ -135,6 +135,11 @@ class Problem(ProblemBase):
         options['Nz'] = None
         self.cube = cube
 
+        try:
+            nu = 1/options['Re']
+        except:
+            nu = 1E-3
+
         self.t0 = 0.
         self.T = options['T']
 
@@ -175,7 +180,7 @@ class Problem(ProblemBase):
             self.mesh = Mesh(options['initialMesh'])
 
         # rescale Reynolds number to the problem
-        options['Re'] = self.Ubar * Diameter * options['Re']
+        options['Re'] = self.Ubar * Diameter * nu
 
         self.k = self.time_step(self.Ubar, self.mesh)  # mesh size
 

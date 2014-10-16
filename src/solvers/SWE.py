@@ -2,7 +2,8 @@ __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 __license__ = "GNU GPL version 3 or any later version"
 
-from solverbase import *
+from AFES import *
+from AFES import Solver as SolverBase
 
 
 def f(f0, beta):  # Coriolis parameter
@@ -17,20 +18,43 @@ class Solver(SolverBase):
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
-        self.Re = options['Re']
-        self.H = options['H']
-        self.Ro = options['Ro']
-        self.Fr = options['Fr']
-        self.Th = options['Theta']
+        try:
+            self.Re = options['Re']
+        except:
+            self.Re = 1000
+        try:
+            self.H = options['H']
+        except:
+            self.H = 1
+        try:
+            self.Ro = options['Ro']
+        except:
+            self.Ro = 1
+        try:
+            self.Fr = options['Fr']
+        except:
+            self.Fr = 1
+        try:
+            self.Th = options['Theta']
+        except:
+            self.Th = 1
+        try:
+            linear = options['linear']
+        except:
+            linear = False
+        try:
+            inviscid = options['inviscid']
+        except:
+            inviscid = False
 
         # if we want a linear version then make a coefficient zero for the
         # terms which only occur in the non-linear from of SWE
-        if(self.options['linear']):
+        if(linear):
             self.NonLinear = 0
         else:
             self.NonLinear = 1
 
-        if(self.options['inviscid']):
+        if(inviscid):
             self.inviscid = 0
         else:
             self.inviscid = 1
@@ -69,10 +93,6 @@ class Solver(SolverBase):
         d1, d2 = self.stabilization_parameters(
             U_, Eta_, k, h)  # stabilization parameters
 
-        # set up error indicators
-        Z = FunctionSpace(W.mesh(), "DG", 0)
-        z = TestFunction(Z)
-
         # get problem parameters
         Re = self.Re  # Reynolds number
         H = self.H  # Fluid depth
@@ -81,10 +101,7 @@ class Solver(SolverBase):
         Fr = self.Fr  # Froude number
 
         NonLinear = self.NonLinear
-        if self.options['inviscid']:
-            inviscid = 0
-        else:
-            inviscid = 1.
+        inviscid = self.inviscid
 
         t0 = problem.t0
 
@@ -94,29 +111,27 @@ class Solver(SolverBase):
         F2 = problem.F2(t)
 
         # least squares stabilization
-        if(not self.options["stabilize"] or ei_mode):
+        if(ei_mode):
             d1 = 0
             d2 = 0
-        if(not ei_mode):
-            z = 1.
 
         # weak form of the equations
         # momentum equation
-        r = z * ((1. / k) * inner(U - U_, v)
+        r = ((1. / k) * inner(U - U_, v)
                  + 1 / Ro * (u[0] * v[1] - u[1] * v[0])
                  - Fr ** (-2) * Th * eta * div(v)) * dx
-        r += z * inviscid / Re * inner(grad(u), grad(v)) * dx
+        r += inviscid / Re * inner(grad(u), grad(v)) * dx
         # add the terms for the non-linear SWE
-        r += z * NonLinear * inner(grad(u) * u, v) * dx
+        r += NonLinear * inner(grad(u) * u, v) * dx
         # continuity equation
-        r += z * ((1. / k) * (Eta - Eta_) * chi
+        r += ((1. / k) * (Eta - Eta_) * chi
                   + H / Th * div(u) * chi) * dx
 
-        r -= z * (inner(F1, v) + F2 * chi) * dx
+        r -= (inner(F1, v) + F2 * chi) * dx
 
         R1, R2 = self.strong_residual(w, w)
         Rv1, Rv2 = self.strong_residual(wt, w)
-        r += z * (d1 * inner(R1 - F1, Rv1) + d2 * (R2 - F2) * Rv2) * dx
+        r += (d1 * inner(R1 - F1, Rv1) + d2 * (R2 - F2) * Rv2) * dx
 
         return r
 
@@ -148,13 +163,9 @@ class Solver(SolverBase):
         p = w.split()[1]
 
         if self.vizU is None:
-            regex = re.compile('NSE')
             # Plot velocity and pressure
             self.vizU = plot(u, title='Velocity', rescale=True)
-            if regex.search(self.prefix(problem)) is None:
-                self.vizP = plot(p, title='Height', rescale=True)
-            else:
-                self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
+            self.vizP = plot(p, title='Height', rescale=True)
         else:
             self.vizU.plot(u)
             self.vizP.plot(p)
