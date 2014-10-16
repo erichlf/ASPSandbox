@@ -212,10 +212,6 @@ class Problem(ProblemBase):
 
         return bcs
 
-    def marker(self):
-        # provide a marker to indicate if we are on the object
-        return PsiMarker(self.dim, self.cube)
-
     def F1(self, t):
         # forcing function for the momentum equation
         if self.dim == 2:
@@ -228,6 +224,15 @@ class Problem(ProblemBase):
     def F2(self, t):
         # mass source for the continuity equation
         return Constant(0)
+
+    def update(W, t):
+        # update the bc for each time step
+
+        return self.boundary_conditions(W, t)
+
+    def marker(self):
+        # provide a marker to indicate if we are on the object
+        return PsiMarker(self.dim, self.cube)
 
     def functional(self, mesh, w):
         '''
