@@ -11,7 +11,8 @@ This is an extremely boring problem with no forcing and on a square.
 This is basically a blank problem that we can adapt with optional inputs.
 '''
 
-from problembase import *
+from AFES import *
+from AFES import Problem as ProblemBase
 
 d = 1.
 eta = 0.1
@@ -57,18 +58,36 @@ class Problem(ProblemBase):
         self.Nx = options['Nx']
         self.Ny = options['Ny']
         self.mesh = RectangleMesh(x0, y0, x1, y1, self.Nx, self.Ny)
-        self.Fr = options['Fr']
 
         self.t0 = 0.
         self.T = options['T']
-        self.k = options['dt']
+        self.k = options['k']
 
     # get the initial condition and project it
     def initial_conditions(self, W):
+
+        # artificial viscosity for stabilization
+        self.artificial_viscosity(W)
+
         w0 = InitialConditions()
         w0 = project(w0, W)
 
         return w0
+
+    def artificial_viscosity(self, W):
+        V = FunctionSpace(W.mesh(), 'CG', 1)
+
+        bc0 = DirichletBC(V, Constant(1.0), NoslipBoundary())
+
+        h = CellSize(V.mesh())
+
+        wb = Function(V)
+        wt = TestFunction(V)
+
+        F = wb*wt*dx + h*inner(grad(wb), grad(wt))*dx
+
+        solve(F == 0, wb, bc0)
+        self.wb = wb
 
     def boundary_conditions(self, W, t):
         # Create no-slip boundary condition for velocity
