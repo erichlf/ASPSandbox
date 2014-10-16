@@ -7,7 +7,8 @@ __license__ = "GNU GPL version 3 or any later version"
 #   Anders Logg <logg@simula.no>
 #
 
-from problembase import *
+from AFES import *
+from AFES import Problem as ProblemBase
 
 # Constants related to the geometry
 bmarg = 1.e-3 + DOLFIN_EPS
@@ -225,7 +226,7 @@ class Problem(ProblemBase):
         # mass source for the continuity equation
         return Constant(0)
 
-    def update(W, t):
+    def update(self, W, t):
         # update the bc for each time step
 
         return self.boundary_conditions(W, t)

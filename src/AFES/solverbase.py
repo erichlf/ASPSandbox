@@ -77,6 +77,10 @@ class SolverBase:
         else:
             self.adaptTOL = 1E-15
 
+        # set the velocity and pressure element orders
+        self.Pu = options['velocity_order']
+        self.Pp = options['pressure_order']
+
         # Reset files for storing solution
         self.s = None
         self._ufile = None

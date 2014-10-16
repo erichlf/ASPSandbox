@@ -30,7 +30,7 @@ OPTIONS = {
     'relative_tolerance': 1e-12,
     'monitor_convergence': False,
     'velocity_order': 1,  # order of velocity element
-    'height_order': 1,  # order of height/pressure element
+    'pressure_order': 1,  # order of height/pressure element
     'stabilize': False,  # stabilize?
     'initialMesh': None  # to use for initial computation
 }

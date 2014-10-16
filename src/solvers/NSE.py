@@ -2,7 +2,8 @@ __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 __license__ = "GNU GPL version 3 or any later version"
 
-from solverbase import *
+from AFES import *
+from AFES import Solver as SolverBase
 
 
 class Solver(SolverBase):
@@ -47,42 +48,31 @@ class Solver(SolverBase):
         d1, d2 = self.stabilization_parameters(
             U_, P_, k, h)  # stabilization parameters
 
-        # set up error indicators
-        Z = FunctionSpace(W.mesh(), "DG", 0)
-        z = TestFunction(Z)
-
         nu = self.nu  # Reynolds Number
 
         t0 = problem.t0
-
-        if self.options['inviscid']:
-            inviscid = 0
-        else:
-            inviscid = 1.
 
         t = t0 + k
         # forcing and mass source/sink
         F = problem.F1(t)
 
         # least squares stabilization
-        if(not self.options["stabilize"] or ei_mode):
+        if(ei_mode):
             d1 = 0
             d2 = 0
-        if(not ei_mode):
-            z = 1.
 
         # weak form of the equations
-        r = z * (1. / k) * inner(U - U_, v) * dx \
-            + z * inner(grad(p) + grad(u) * u, v) * dx
-        r += z * inviscid * nu * inner(grad(u), grad(v)) * dx
-        r += z * div(u) * q * dx
+        r = (1. / k) * inner(U - U_, v) * dx \
+            + inner(grad(p) + grad(u) * u, v) * dx
+        r += nu * inner(grad(u), grad(v)) * dx
+        r += div(u) * q * dx
 
         # forcing function
-        r -= z * inner(F, v) * dx
+        r -= inner(F, v) * dx
 
         R1, R2 = self.strong_residual(W, w, w)
         Rv1, Rv2 = self.strong_residual(W, wt, w)
-        r += z * (d1 * inner(R1 - F, Rv1) + d2 * R2 * Rv2) * dx
+        r += (d1 * inner(R1 - F, Rv1) + d2 * R2 * Rv2) * dx
 
         return r
 
