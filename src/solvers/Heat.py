@@ -1,7 +1,8 @@
 __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2013-08-27"
 
-from solverbase import *
+from AFES import *
+from AFES import Solver as SolverBase
 
 
 class Solver(SolverBase):
@@ -21,10 +22,6 @@ class Solver(SolverBase):
 
     def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
 
-        # set up error indicators
-        Z = FunctionSpace(V.mesh(), "DG", 0)
-        z = TestFunction(Z)
-
         t0 = problem.t0
 
         kappa = problem.kappa
@@ -33,18 +30,15 @@ class Solver(SolverBase):
 
         t = t0 + k
         # forcing and mass source/sink
-        self.f_ = problem.F1(t)
-        self.f = problem.F1(t)
-
-        if(not ei_mode):
-            z = 1.
+        self.f_ = problem.F(t - k)
+        self.f = problem.F(t)
 
         # weak form of the equations
-        r = z * rho * c * (1. / k) * (U - U_) * v * dx
+        r = rho * c * (1. / k) * (U - U_) * v * dx
         if kappa.rank() == 0:
-            r += z * kappa * inner(grad(u), grad(v)) * dx
+            r += kappa * inner(grad(u), grad(v)) * dx
         else:  # anisotropic case
-            r += z * inner(dot(kappa, grad(u)), grad(v)) * dx
+            r += inner(dot(kappa, grad(u)), grad(v)) * dx
 
         return r
 

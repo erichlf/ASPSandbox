@@ -2,7 +2,8 @@ __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 __license__ = "GNU GPL version 3 or any later version"
 
-from problembase import *
+from AFES import *
+from AFES import Problem as ProblemBase
 import numpy as np
 
 # outer square dimensions
@@ -62,7 +63,7 @@ class Problem(ProblemBase):
 
         self.t0 = 0.
         self.T = options['T']
-        self.k = options['dt']
+        self.k = options['k']
 
         K = np.array([[kappa1, 0], [0, kappa2]])
         Theta = np.array([[cos(theta), -sin(theta)], [sin(theta), cos(theta)]])
@@ -87,13 +88,13 @@ class Problem(ProblemBase):
 
         return [bc0, bc1]
 
-    def F1(self, t):
+    def F(self, t):
         # forcing function for the momentum equation
-        return Expression(self.options['F1'], t=t)
+        return Constant(0)
 
-    def F2(self, t):
-        # mass source for the continuity equation
-        return Expression(self.options['F2'], t=t)
+    def update(self, W, t):
+
+        return self.boundary_conditions(W, t)
 
     def functional(self, mesh, u):
 
