@@ -2,7 +2,8 @@ __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 __license__ = "GNU GPL version 3 or any later version"
 
-from solverbase import *
+from AFES import *
+from AFES import Solver as SolverBase
 
 
 class Solver(SolverBase):
@@ -12,14 +13,24 @@ class Solver(SolverBase):
     '''
 
     def __init__(self, options):
+
+        try:
+            self.epsilon = options['epsilon']
+        except:
+            self.epsilon = 1.
+        try:
+            self.a = options['a']
+        except:
+            self.a = 1
+        try:
+            self.beta = options['beta']
+        except:
+            self.beta = 1
+
         SolverBase.__init__(self, options)
-        self.epsilon = options['epsilon']
-        self.a = options['a']
-        self.beta = options['beta']
 
     # strong residual for cG(1)cG(1)
     def strong_residual(self, u):
-        epsilon = self.epsilon  # diffusion coefficient
         a = self.a  # reaction coefficient
         beta = self.beta  # velocity
 
@@ -32,10 +43,6 @@ class Solver(SolverBase):
         h = CellSize(W.mesh())  # mesh size
         d = self.stabilization_parameters(U_, k, h)  # stabilization parameters
 
-        # set up error indicators
-        Z = FunctionSpace(V.mesh(), "DG", 0)
-        z = TestFunction(Z)
-
         a = self.a  # reaction coefficient
         epsilon = self.epsilon  # diffusion coefficient
         beta = self.beta  # velocity
@@ -47,23 +54,21 @@ class Solver(SolverBase):
         F = problem.F(t)
 
         # least squares stabilization
-        if(not self.options["stabilize"] or ei_mode):
+        if ei_mode:
             d = 0
-        if(not ei_mode):
-            z = 1.
 
         # weak form of the equations
-        r = z * ((1. / k) * inner(U - U_, v)
-                 + inner(u, v)
-                 + epsilon * inner(grad(u), grad(v))
-                 + inner(dot(beta, grad(u)), v)) * dx
+        r = ((1. / k) * inner(U - U_, v)
+             + a * inner(u, v)
+             + epsilon * inner(grad(u), grad(v))
+             + inner(dot(beta, grad(u)), v)) * dx
 
         # forcing function
-        r -= z * inner(F, v) * dx
+        r -= inner(F, v) * dx
 
         R = self.strong_residual(u)
         Rv = self.strong_residual(v)
-        r += z * d1 * inner(R - F, Rv) * dx
+        r += d * inner(R - F, Rv) * dx
 
         return r
 
@@ -75,12 +80,6 @@ class Solver(SolverBase):
             d = K * (k ** (-2) + inner(u, u) * h ** (-2)) ** (-0.5)
 
         return d
-
-    # this is the functional used for adaptivity
-    def functional(self, mesh, u):
-        M = u[0] * dx  # Mean of the x-velocity in the whole domain
-
-        return M
 
     def __str__(self):
         return 'ADR'
