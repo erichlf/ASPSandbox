@@ -14,8 +14,13 @@ class Solver(SolverBase):
     '''
 
     def __init__(self, options):
+        try:
+            self.nu = 1. / options['Re']
+        except:
+            self.nu = 1E-3
+            options['Re'] = 1000
+
         SolverBase.__init__(self, options)
-        self.nu = 1. / options['Re']
 
     # strong residual for cG(1)cG(1)
     def strong_residual(self, W, w, w2):
