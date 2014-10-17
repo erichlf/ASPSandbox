@@ -2,7 +2,8 @@ __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 __license__ = "GNU GPL version 3 or any later version"
 
-from solverbase import *
+from AFES import *
+from AFES import Solver as SolverBase
 
 
 class Solver(SolverBase):
@@ -79,10 +80,6 @@ class Solver(SolverBase):
         d1, d2 = self.stabilization_parameters(
             U_, Eta_, k, h)  # stabilization parameters
 
-        # set up error indicators
-        Z = FunctionSpace(W.mesh(), "DG", 0)
-        z = TestFunction(Z)
-
         theta = self.theta  # time stepping method
 
         # Parameters
@@ -91,7 +88,6 @@ class Solver(SolverBase):
 
         t0 = problem.t0  # initial time
         self.t0 = t0
-        T = problem.T  # Final time
 
         # set up our wave object
         self.wave_object(problem, self.Q, t0, k)
@@ -105,31 +101,29 @@ class Solver(SolverBase):
 
         t = t0 + k
 
-        if(not self.options["stabilize"] or ei_mode):
+        if ei_mode:
             d = 0
             d1 = 0
             d2 = 0
-        if(not ei_mode):
-            z = 1.
 
         # weak form of the equations
-        r = z * (1. / k * inner(U - U_, v) + epsilon * inner(grad(u) * u, v)
+        r = (1. / k * inner(U - U_, v) + epsilon * inner(grad(u) * u, v)
                  - div(v) * eta) * dx
 
-        r += z * (sigma ** 2 * 1. / k * div(H_theta * (U - U_)) *
+        r += (sigma ** 2 * 1. / k * div(H_theta * (U - U_)) *
                   div(H_theta * v / 2.) - sigma ** 2 * 1. / k * div(U - U_) *
                   div(H_theta ** 2 * v / 6.)) * dx
-        r += z * sigma ** 2 * zeta_tt * div(H_theta * v / 2.) * dx
+        r += sigma ** 2 * zeta_tt * div(H_theta * v / 2.) * dx
 
-        r += z * (1. / k * (Eta - Eta_) * chi + zeta_t * chi) * dx
-        r -= z * inner(u, grad(chi)) * (epsilon * eta + H_theta) * dx
+        r += (1. / k * (Eta - Eta_) * chi + zeta_t * chi) * dx
+        r -= inner(u, grad(chi)) * (epsilon * eta + H_theta) * dx
 
-        r += z * d * \
+        r += d * \
             (inner(grad(u), grad(v)) + inner(grad(eta), grad(chi))) * dx
 
         R1, R2, z1, z2 = self.strong_residual(problem, H_theta, w, w)
         Rv1, Rv2, z1, z2 = self.strong_residual(problem, H_theta, w, wt)
-        r += z * (d1 * inner(R1 + z1, Rv1) + d2 * (R2 + z2) * Rv2) * dx
+        r += (d1 * inner(R1 + z1, Rv1) + d2 * (R2 + z2) * Rv2) * dx
 
         return r
 

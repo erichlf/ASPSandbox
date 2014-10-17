@@ -34,5 +34,8 @@ class ProblemBase:  # Base class for all problems.
         self.solver = None
         self.output_location = ''
 
-    def update(self, W, t):
+    def initial_conditions(self, W, t):
+        pass
+
+    def boundary_conditions(self, W, t):
         pass

@@ -10,7 +10,10 @@ __license__ = "GNU GPL version 3 or any later version"
     creates a disturbance producing a wave.
 '''
 
-from problembase import *
+from AFES import *
+from AFES import Problem as ProblemBase
+from dolfin_adjoint import *
+from math import factorial
 
 x0 = -6.
 x1 = 60.
@@ -268,7 +271,7 @@ class Problem(ProblemBase):
         # Scaled Parameters
         self.t0 = 0.
         self.T = options['T'] * c0 / lambda0  # Final time
-        self.k = options['dt'] * c0 / lambda0  # time step
+        self.k = options['k'] * c0 / lambda0  # time step
 
         # set up the CST shape parameterization
         ObjH = Constant(ad, name='ObjHeight')

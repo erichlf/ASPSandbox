@@ -7,14 +7,21 @@ __license__ = "GNU GPL version 3 or any later version"
 #
 
 from dolfin import *
-from dolfin_adjoint import *
+try:
+    from dolfin_adjoint import *
+
+    dolfin.parameters["adjoint"]["record_all"] = True
+    adjointer = True
+except:
+    print "WARNING: Could not import DOLFIN-Adjoint. " \
+        + "Adjointing will not be available."
+    adjointer = False
+
 
 from time import time
 from os import getpid
 from commands import getoutput
 import sys
-
-dolfin.parameters["adjoint"]["record_all"] = True
 
 # Common solver parameters
 maxiter = default_maxiter = 200
@@ -69,9 +76,9 @@ class SolverBase:
             self.Th = None
 
         # initialize the time stepping method parameters
-        if 'theta' in self.options:
+        try:
             self.theta = self.options['theta']  # time stepping method
-        else:
+        except:
             self.theta = 0.5
 
         # Reset some solver variables
@@ -79,17 +86,17 @@ class SolverBase:
         self._cputime = 0.0
         self._timestep = 0
 
-        if 'adapt_ratio' in self.options:
+        try:
             self.adapt_ratio = self.options['adapt_ratio']
-        else:
+        except:
             self.adapt_ratio = 0.1
-        if 'max_adaptations' in self.options:
+        try:
             self.maxadapts = self.options['max_adaptations']
-        else:
+        except:
             self.maxadapts = 30
-        if 'adaptive_TOL' in self.options:
+        try:
             self.adaptTOL = self.options['adaptive_TOL']
-        else:
+        except:
             self.adaptTOL = 1E-15
 
         # set the velocity and pressure element orders
@@ -128,16 +135,23 @@ class SolverBase:
         self.s = 'results/' + self.prefix(problem) + self.suffix(problem)
 
         if self.options['adaptive']:  # solve with adaptivity
-            mesh, k = self.adaptivity(problem, mesh,
-                                      T, t0, k)
+            if adjointer:
+                mesh, k = self.adaptivity(problem, mesh, T, t0, k)
+            else:
+                print "WARNING: You have requested adaptivity, but DOLFIN-Adjoint" \
+                    + " doesn't appear to be installed."
+                print "Solving without adaptivity."
 
         print 'Solving the primal problem.'
         self.file_naming(n=-1, dual=False)
 
         # record so that we can evaluate our functional
-        parameters["adjoint"]["stop_annotating"] = \
-            not (self.options['adaptive'] or (self.options['optimize']
-                 and 'Optimize' in dir(problem)))
+        if adjointer:
+            parameters["adjoint"]["stop_annotating"] = \
+                not (self.options['adaptive']
+                     or (self.options['optimize']
+                         and 'Optimize' in dir(problem)))
+
         func = 'functional' in dir(problem)
         W, w, m = self.forward_solve(problem, mesh, t0, T, k, func=func)
         if m is not None:
@@ -146,7 +160,12 @@ class SolverBase:
 
         # solve the optimization problem
         if(self.options['optimize'] and 'Optimize' in dir(problem)):
-            problem.Optimize(self, W, w)
+            if adjointer:
+                problem.Optimize(self, W, w)
+            else:
+                print "WARNING: You have requested Optimization, but" \
+                    + " DOLFIN-Adjoint doesn't appear to be installed."
+                print "Not running optimization."
 
         return w
 
@@ -295,8 +314,12 @@ class SolverBase:
 
         # define trial and test function
         wt = TestFunction(W)
-        w = Function(W, name='w')
-        w_ = Function(ic, name='w_')
+        if adjointer:  # only use annotation if DOLFIN-Adjoint was imported
+            w = Function(W, name='w')
+            w_ = Function(ic, name='w_')
+        else:
+            w = Function(W)
+            w_ = Function(ic)
 
         theta = self.theta
         w_theta = (1. - theta) * w_ + theta * w
@@ -320,6 +343,12 @@ class SolverBase:
         W = MixedFunctionSpace([V, Q])
 
         return W
+
+    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
+
+        print "NO WEAK RESIDUAL PROVIDED: You must define a weak_residual for" \
+            + " this code to work."
+        sys.exit(1)
 
     # Refine the mesh based on error indicators
     def adaptive_refine(self, mesh, ei):
@@ -367,7 +396,8 @@ class SolverBase:
         # plot and save initial condition
         self.update(problem, t, W, w_)
 
-        adj_start_timestep(t)
+        if adjointer:  # only needed if DOLFIN-Adjoint has been imported
+            adj_start_timestep(t)
         while t < (T - k / 2.):
             t += k
 
@@ -378,9 +408,14 @@ class SolverBase:
 
             w_.assign(w)
             if func:
-                m += k * assemble(problem.functional(W.mesh(), w_),
-                                  annotate=False)
-            adj_inc_timestep(t, finished=t >= (T - k / 2.))
+                if adjointer:  # annotation only works with DOLFIN-Adjoint
+                    m += k * assemble(problem.functional(W.mesh(), w_),
+                                      annotate=False)
+                else:
+                    m += k * assemble(problem.functional(W.mesh(), w_))
+
+            if adjointer:  # only needed if DOLFIN-Adjoint has been imported
+                adj_inc_timestep(t, finished=t >= (T - k / 2.))
 
             # Update
             self.update(problem, t, W, w_)

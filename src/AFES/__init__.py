@@ -1,6 +1,7 @@
 __author__ = "Erich L Foster <erichlf@gmail.com>"
-__date__ = "2013-08-27"
+__date__ = "2014-10-27"
 __license__ = "GNU GPL version 3 or any later version"
+__version__ = "0.1"
 
 from dolfin import *
 from AFES.solverbase import SolverBase as Solver
