@@ -4,22 +4,23 @@ __license__ = "GNU GPL version 3 or any later version"
 
 # List of problems
 problems = [
-    'Channel',
-    'Drop',
     'Cavity',
+    'Channel',
+    'Cube',
     'Cylinder',
-    'Square',
+    'Dam',
+    'DensityCylinder',
+    'DoubleGyre',
+    'Drop',
+    'Duct',
+    'Ground',
+    'Hole',
     'PeregrineSoliton',
+    'Plate',
     'Point',
     'Pool',
-    'DoubleGyre',
-    'DensityCylinder',
+    'Square',
     'TwoFluid',
-    'Ground',
-    'Plate',
-    'Hole',
-    'Cube',
-    'Duct'
 ]
 
 

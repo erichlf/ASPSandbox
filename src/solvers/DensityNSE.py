@@ -64,8 +64,7 @@ class Solver(SolverBase):
 
         h = CellSize(W.mesh())  # mesh size
         # stabilization parameters
-        d1, d2, d3 = self.stabilization_parameters(problem.wb, U_, Rho_, P_,
-                                                   k, h)
+        d1, d2, d3 = self.stabilization_parameters(U_, Rho_, P_, k, h)
 
         nu = self.nu  # Reynolds Number
 
@@ -96,13 +95,13 @@ class Solver(SolverBase):
         r += d3 * ((inner(grad(p), grad(q))) + p * q) * dx
         return r
 
-    def stabilization_parameters(self, wb, u, rho, p, k, h):
+    def stabilization_parameters(self, u, rho, p, k, h):
         K1 = 1000
         K2 = 1
         K3 = 1E-4
-        d1 = K1 * (h ** (2.) + wb * h ** (3. / 2.))
-        d2 = K2 * (h ** (2.) + wb * h ** (3. / 2.))
-        d3 = K3 * (h ** (2.) + wb * h ** (3. / 2.))
+        d1 = K1 * h ** (2.)
+        d2 = K2 * h ** (2.)
+        d3 = K3 * h ** (2.)
 
         return d1, d2, d3
 
