@@ -106,7 +106,7 @@ H^1(\Omega)$ gives the following weak residual
     r(\bar{U}^n; V) &= \left(\mathbf{u}^n - \mathbf{u}^{n-1}, v\right)\,k^{-1}
         + (\left( \bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n, v) \\
         &\quad+ \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
-        - (p^n, \nabla \cdot v) - (\mathbf{f}, v)
+        + (\nabla p^n, v) - (\mathbf{f}, v)
         + (\nabla \cdot \bar{\mathbf{u}}^n, v) = 0
   \end{split}
   \label{eqn:WeakNSE}
@@ -215,15 +215,15 @@ $V = (v, q, \chi) \in X = \left[ H^1_0(\Omega) \right]^2 \times H^1(\Omega)
 \times H^1(\Omega)$ results in the following weak residual
 \begin{equation}
     \begin{split}
-        r(\bar{U}^n; V) &= (\rho^n - \rho^{n-1}, \chi) + (\nabla \cdot \left(
-            \rho \mathbf{u} \right), \chi) \\
-        &+  \rho\, \left(\left(\mathbf{u}^n
+        r(\bar{U}^n; V) &= (\rho^n - \rho^{n-1}, \chi)
+            + (\nabla \cdot \left( \bar{\rho}^n \bar{\mathbf{u}}^n \right), \chi) \\
+        &\qquad+  \rho\, \left(\left(\mathbf{u}^n
                 - \mathbf{u}^{n-1}, v\right)\,k^{-1}
             + (\left( \bar{\mathbf{u}}^n \cdot \nabla \right)
-                \bar{\mathbf{u}}^n, v)\right)
-            + \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
-            - (p^n, \nabla \cdot v) - \rho\, (\mathbf{f}, v) \\
-        &+ (\nabla \cdot \bar{\mathbf{u}}^n, v) = 0
+                \bar{\mathbf{u}}^n, v)\right) \\
+        &\qquad+ \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
+            + (\nabla p^n, v) - \rho\, (\mathbf{f}, v) \\
+        &\qquad+ (\nabla \cdot \bar{\mathbf{u}}^n, v) = 0
     \end{split}
     \label{eq:WeakRhoNSE}
 \end{equation}
