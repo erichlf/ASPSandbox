@@ -6,13 +6,13 @@ orthogonal due to Galerkin orthogonality. Namely, we demonstrate the
 effectiveness of \autoref{alg:Adaptivity} on the heat equation. Next we
 demonstrate the effectiveness of \autoref{alg:Adaptivity} on non-linear
 problems, where the error representation is no longer orthogonal. To this end,
-we apply the algorithm to the benchmark problems presented in Sch\"afer et
-al.\cite{Schaefer1996}, \autoref{tst:Cylinder2D}, \autoref{tst:Rectangle2D}, and
-\autoref{tst:Rectangle3D}, where the equation of interest is the Icompressible
-Navier-Stokes equation and our particular focus is on flow around bluff bodies.
-Finally, in \autoref{tst:rhoNSE}, we apply our algorithm to the ever more
-complex problem of Variable Density Incompressible Navier-Stokes equation, where
-we focus on the solution to Rayleigh-Taylor instability.
+we apply the algorithm to a benchmark problem presented in Sch\"afer et
+al.\cite{Schaefer1996}, \autoref{tst:Cylinder2D}, where the equation of interest
+is the Icompressible Navier-Stokes equation and our particular focus is on flow
+around a bluff body.  Finally, in \autoref{tst:rhoNSE}, we apply our algorithm
+to the ever more complex problem of Variable Density Incompressible
+Navier-Stokes equation, where we focus on the solution to Rayleigh-Taylor
+instability.
 
 For each test below we set the max iteration to $20$ and set the $TOL=0$. In
 this way we will treat the solution obtained from the final adaptive mesh as the
@@ -68,11 +68,10 @@ error.
   discretization, i.e. piecewise linear test and trial functions, with implicit
   Euler time-stepping to \eqref{eqn:Heat} results in the following weak residual
   \begin{equation}
-    r(u^n, v) = (u^n - u^{n-1})\, k^{-1} + (\kappa \nabla u^n, \nabla v) 
+    r(u^n, v) = (u^n - u^{n-1})\, k^{-1} + (\kappa \nabla u^n, \nabla v)
       - (f, v) = 0, \quad \forall v \in H^1_0(\Omega)
     \label{eqn:HeatWeak}
   \end{equation}
-  \textcolor{red}{There should be a boundary integral on the RHS.}
 \end{test}
 
 \subsection{Non-Orthogonal Error Representation}
@@ -87,11 +86,10 @@ linear, while the second cG(1) indicates that the test piecewise constants and
 the trial functions are continuous piecewise linear.
 
 \subsubsection{Incompressible Navier-Stokes}
-For test problems \ref{tst:Cylinder2D}, \ref{tst:Rectangle2D}, and
-\ref{tst:Rectangle3D} we are concerned with the Incompressible Navier-Stokes
-with constant kinematic viscosity, $\nu>0$, in a domain $\Omega\subset \R^d$,
-with boundary $\partial \Omega$, i.e.
-where the strong residual is given by
+For the test problem \ref{tst:Cylinder2D} we are concerned with the
+Incompressible Navier-Stokes with constant kinematic viscosity, $\nu>0$, in a
+domain $\Omega\subset \R^d$, with boundary $\partial \Omega$, i.e.  where the
+strong residual is given by
 \begin{equation}
     \begin{split}
       \mathbf{u}_t + \left( \mathbf{u} \cdot \nabla \right) \mathbf{u} - \nu\,
@@ -101,11 +99,11 @@ where the strong residual is given by
   \label{eqn:NSE}
 \end{equation}
 Given a step size $k$ and applying the cG(1)cG(1) finite element discretization
-to \eqref{eqn:NSE} with $V = (v, q) \in X \subset [H^1_0(\Omega)]^d \times
+to \autoref{eqn:NSE} with $V = (v, q) \in X \subset [H^1_0(\Omega)]^d \times
 H^1(\Omega)$ gives the following weak residual
 \begin{equation}
   \begin{split}
-    r(\bar{U}^n; V) &= \left(\mathbf{u}^n - \mathbf{u}^{n-1}\right)\,k^{-1}
+    r(\bar{U}^n; V) &= \left(\mathbf{u}^n - \mathbf{u}^{n-1}, v\right)\,k^{-1}
         + (\left( \bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n, v) \\
         &\quad+ \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
         - (p^n, \nabla \cdot v) - (\mathbf{f}, v)
@@ -126,7 +124,6 @@ residual is given by
     \end{cases}
   \label{eqn:StrongNSE}
 \end{equation}
-\textcolor{red}{Should $\mathbf{f}$ be an average between time steps?}
 Finally, the GLS-cG(1)cG(1) discretization of \eqref{eqn:NSE} is given by
 \begin{equation}
   r(\bar{U}^n,V) + SD_{\delta}^n(\bar{U}^n,V) = 0, \quad \forall V=(v,q) \in X.
@@ -143,17 +140,17 @@ Here $SD_{\delta}^n$ is the GLS and is given by
 \end{equation}
 where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}|^2\, h^{-2})^{-1/2}$, and
 $\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem independent
-constants of unit size. For each test case below we take the time-step to be 
+constants of unit size. For each test case below we take the time-step to be
 \begin{equation*}
   k = C_{CFL}\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
 \end{equation*}
-where $C_{CFL}=10$.
+where $C_{CFL}=100$.
 
 \begin{test}[Flow Around a Cylinder] \label{tst:Cylinder2D}
   This test case is based on a benchmark problem from Sch\"afer and Turek
   \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
   rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For
-  the inlet boundary condition we take 
+  the inlet boundary condition we take
   \begin{equation}
     u(0,y,t) = (4\, U_m\,y\, (H - y)/H^2, 0),
     \label{eqn:2DInlet}
@@ -190,43 +187,46 @@ where $C_{CFL}=10$.
   \end{figure}
 \end{test}
 
-\begin{test}[2D Flow Around a Square] \label{tst:Rectangle2D}
-  For this test case we repeat \autoref{tst:Cylinder2D}, but we replace the
-  circle with a square (see \autoref{fig:2DRectangle}). All other problem
-  definitions remain the same.
-
-  \begin{figure}[h]
-    \centering
-    \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
-    \begin{tikzpicture}[scale=6]
-        \draw (0,0) node[below left] {$(0,0)$} -- (2.2,0) -- (2.2,0.41) --
-            (0,0.41) node[above left] {$(0,H)$} -- cycle;
-        \draw (0.15,0.15) -- (0.25,0.15) -- (0.25,0.25) -- (0.15,0.25) -- cycle;
-        \draw[<->] (0,-0.05) -- (2.2,-0.05);
-        \draw (1.1,-0.1) node {2.2 m};
-        \draw[<->] (0,0.2) -- (0.15,0.2);
-        \draw (0.075,0.25) node {\footnotesize 0.15 m};
-        \draw[<->] (0.2,0) -- (0.2,0.15);
-        \draw (0.3,0.075) node {\footnotesize 0.15 m};
-        \draw[<->] (0.2,0.25) -- (0.2,0.41);
-        \draw (0.3,0.31) node {\footnotesize 0.16 m};
-        \draw[<->] (0.3,0.15) -- (0.3,0.25);
-        \draw (0.4,0.2) node {\footnotesize 0.1 m};
-        \node[rotate=90] (outflow) at (2.25, 0.2) {Outlet};
-        \node[rotate=90] (inflow) at (-0.05, 0.2) {Inlet};
-        \node (NoFlow) at (1.1,0.5) {$u=v=0$};
-        \draw[next] (NoFlow) to (1.1,0.41);
-        \draw[next] (NoFlow) to [out=-45,in=45] (1.1,0);
-        \draw[next] (NoFlow) to [out=-135,in=-35] (0.25,0.15);
-    \end{tikzpicture}
-    \caption{Geometry of \autoref{tst:Rectangle2D}}
-    \label{fig:2DRectangle}
-  \end{figure}
-\end{test}
-
-\begin{test}[3D Flow Around a Rectangular-Cylinder] \label{tst:Rectangle3D}
-\end{test}
-
 \subsubsection{Variable Density Incompressible Navier-Stokes}
+In this subsection we again will demonstrate the effectiveness of
+\autoref{alg:Adaptivity}, but this time we apply the algorithm to a density
+dependent problem. More specifically, in \autoref{tst:rhoNSE} we look at the
+effectiveness of \autoref{alg:Adaptivity} applied to Rayleigh-Taylor instability
+modelled by the variable density incompressible Navier-Stokes equations, i.e.
+\begin{equation}
+    \begin{split}
+        &\rho_t + \nabla \cdot \left( \rho \mathbf{u} \right) = 0 \\
+        &\rho \left( \mathbf{u}_t
+            + \left( \mathbf{u}\cdot \nabla \right) \mathbf{u} \right)
+            - \nu \Delta \mathbf{u} + \nabla p = \rho\, \mathbf{f} \\
+        &\nabla \cdot \mathbf{u} = 0,
+    \end{split}
+    \label{eq:DensityNSE}
+\end{equation}
+where $\rho$ is the fluid density, $\mathbf{u} = \left[ u, v \right]^T$ is the
+fluid velocity in 2D, $p$ is the fluid pressure, $\mathbf{f}$ is the
+external forcing, and $\nu$ is the kinematic viscosity.
+
+Again, we take a step size of $k$ and apply the cG(1)cG(1) finite
+element to \autoref{eq:DensityNSE}, however this time we use a different
+stabilization scheme. For the variable density Navier-Stokes equations we
+choose to use artificial viscosity as our stabilization scheme. Thus, taking
+$V = (v, q, \chi) \in X = \left[ H^1_0(\Omega) \right]^2 \times H^1(\Omega)
+\times H^1(\Omega)$ results in the following weak residual
+\begin{equation}
+    \begin{split}
+        r(\bar{U}^n; V) &= (\rho^n - \rho^{n-1}, \chi) + (\nabla \cdot \left(
+            \rho \mathbf{u} \right), \chi) \\
+        &+  \rho\, \left(\left(\mathbf{u}^n
+                - \mathbf{u}^{n-1}, v\right)\,k^{-1}
+            + (\left( \bar{\mathbf{u}}^n \cdot \nabla \right)
+                \bar{\mathbf{u}}^n, v)\right)
+            + \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
+            - (p^n, \nabla \cdot v) - \rho\, (\mathbf{f}, v) \\
+        &+ (\nabla \cdot \bar{\mathbf{u}}^n, v) = 0
+    \end{split}
+    \label{eq:WeakRhoNSE}
+\end{equation}
+
 \begin{test}[Variable Density Navier-Stokes] \label{tst:rhoNSE}
 \end{test}
