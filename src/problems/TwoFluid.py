@@ -107,7 +107,7 @@ class Problem(ProblemBase):
 
         (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
 
-        M = rho * dx  # Mean of the x-velocity in the whole domain
+        M = (u[0] + u[1]) * dx
 
         return M
 
