@@ -23,10 +23,6 @@ class Solver(SolverBase):
         except:
             self.nu = 1E-3
             options['Re'] = 1000
-        try:
-            self.Fr = options['Fr']
-        except:
-            self.Fr = 1
 
         SolverBase.__init__(self, options)
 

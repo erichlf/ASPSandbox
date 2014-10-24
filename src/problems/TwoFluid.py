@@ -15,7 +15,7 @@ from AFES import *
 from AFES import Problem as ProblemBase
 
 d = 1.
-eta = 0.1
+eta = 0.01
 g = 10
 
 x0 = -d / 2.
