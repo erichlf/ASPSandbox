@@ -127,6 +127,8 @@ class Problem(ProblemBase):
 
         global xmax, xcenter, ycenter
 
+        ProblemBase.__init__(self, options)
+
         # Load mesh
         self.dim = int(options['dim'])
         self.Nx = options['Nx']
@@ -182,8 +184,6 @@ class Problem(ProblemBase):
 
         # since Cube relies on this code we need a lot of selfs
         self.channel = channel
-
-        ProblemBase.__init__(self, options)
 
     def initial_conditions(self, W):
         if self.dim == 2:

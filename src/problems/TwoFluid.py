@@ -53,6 +53,15 @@ class Problem(ProblemBase):
 
     def __init__(self, options):
 
+        try:
+            nu = 1./options['Re']
+        except:
+            nu = 1E-3
+
+        options['Re'] = d**1.5*g/nu
+
+        ProblemBase.__init__(self, options)
+
         # Create mesh
         self.Nx = options['Nx']
         self.Ny = options['Ny']
@@ -62,14 +71,6 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['k']
 
-        try:
-            nu = 1./options['Re']
-        except:
-            nu = 1E-3
-
-        options['Re'] = d**1.5*g/nu
-
-        ProblemBase.__init__(self, options)
 
     # get the initial condition and project it
     def initial_conditions(self, W):
