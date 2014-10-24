@@ -66,13 +66,13 @@ class Solver(SolverBase):
         # stabilization parameters
         d1, d2, d3 = self.stabilization_parameters(U_, Rho_, P_, k, h)
 
-        nu = self.nu  # Reynolds Number
+        nu = self.nu  # kinematic viscosity
 
         t0 = problem.t0
 
         t = t0 + k
         # forcing and mass source/sink
-        f = problem.F1(t)
+        f = problem.F(t)
 
         # least squares stabilization
         if ei_mode:

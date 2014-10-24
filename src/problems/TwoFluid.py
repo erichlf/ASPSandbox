@@ -16,7 +16,7 @@ from AFES import Problem as ProblemBase
 
 d = 1.
 eta = 0.1
-g = 9.8
+g = 10
 
 x0 = -d / 2.
 x1 = d / 2.
@@ -52,7 +52,6 @@ class Problem(ProblemBase):
     # Problem definition
 
     def __init__(self, options):
-        ProblemBase.__init__(self, options)
 
         # Create mesh
         self.Nx = options['Nx']
@@ -62,6 +61,15 @@ class Problem(ProblemBase):
         self.t0 = 0.
         self.T = options['T']
         self.k = options['k']
+
+        try:
+            nu = 1/options['Re']
+        except:
+            nu = 1E-3
+
+        options['Re'] = d**1.5*g/nu
+
+        ProblemBase.__init__(self, options)
 
     # get the initial condition and project it
     def initial_conditions(self, W):
@@ -95,13 +103,9 @@ class Problem(ProblemBase):
 
         return bcs
 
-    def F1(self, t):
+    def F(self, t):
         # forcing function for the momentum equation
         return Expression(('0.', '1./g'), g=g, t=t)
-
-    def F2(self, t):
-        # mass source for the continuity equation
-        return Expression('0.0', t=t)
 
     def functional(self, mesh, w):
 

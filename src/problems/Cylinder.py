@@ -124,7 +124,6 @@ class Problem(ProblemBase):
     '''
 
     def __init__(self, options, cube=False):
-        ProblemBase.__init__(self, options)
 
         global xmax, xcenter, ycenter
 
@@ -179,13 +178,12 @@ class Problem(ProblemBase):
         else:
             self.mesh = Mesh(options['initialMesh'])
 
-        # rescale Reynolds number to the problem
-        options['Re'] = self.Ubar * Diameter * nu
-
         self.k = self.time_step(self.Ubar, self.mesh)  # mesh size
 
         # since Cube relies on this code we need a lot of selfs
         self.channel = channel
+
+        ProblemBase.__init__(self, options)
 
     def initial_conditions(self, W):
         if self.dim == 2:

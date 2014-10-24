@@ -14,12 +14,13 @@ to the ever more complex problem of Variable Density Incompressible
 Navier-Stokes equation, where we focus on the solution to Rayleigh-Taylor
 instability.
 
-For each test below we set the max iteration to $20$ and set the $TOL=0$. In
-this way we will treat the solution obtained from the final adaptive mesh as the
-so-called 'true solution' and use this solution to determine the effectivity of
-the adaptive algorithm.
+For each test below we set the max number of iterations to $30$ and set the
+$TOL=0$. In this way we will treat the solution obtained from the final adaptive
+mesh as the so-called 'true solution' and use this solution to determine the
+effectivity of the adaptive algorithm.
 
 \subsection{Orthogonal Error Representation}
+
 In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
 for problems where the global error representation is orthogonal. In these types
 of problems the traditional thought is that the error representation doesn't
@@ -29,6 +30,7 @@ information about the error and thus is an effective way of controlling the
 error.
 
 \begin{test}[Anisotropic Heat Equation] \label{tst:Heat}
+
   The heat equation is a purely parabolic linear partial differential equation
   and therefore the global error representation is zero due to Galerkin
   Orthogonality.  Thus it is an excellent choice to demonstrate the
@@ -72,20 +74,23 @@ error.
       - (f, v) = 0, \quad \forall v \in H^1_0(\Omega)
     \label{eqn:HeatWeak}
   \end{equation}
+
 \end{test}
 
 \subsection{Non-Orthogonal Error Representation}
+
 In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
 applied to problems where the global error representation is no longer
 orthogonal. In particular, we look at applying \autoref{alg:Adaptivity} to the
-Incompressible Navier-Stokes and the Variable Density Incompressible Navier
-Stokes. In both cases, we solve each test case using a
+Incompressible Navier-Stokes and the Variable Density Incompressible
+Navier-Stokes. In both cases, we solve each test case using a
 Galerkin\slash~Least-Squares (GLS) stabilized cG(1)cG(1) finite element, where
 the first cG(1) indicates that the test and trial functions are both piecewise
 linear, while the second cG(1) indicates that the test piecewise constants and
 the trial functions are continuous piecewise linear.
 
 \subsubsection{Incompressible Navier-Stokes}
+
 For the test problem \ref{tst:Cylinder2D} we are concerned with the
 Incompressible Navier-Stokes with constant kinematic viscosity, $\nu>0$, in a
 domain $\Omega\subset \R^d$, with boundary $\partial \Omega$, i.e.  where the
@@ -147,6 +152,7 @@ constants of unit size. For each test case below we take the time-step to be
 where $C_{CFL}=100$.
 
 \begin{test}[Flow Around a Cylinder] \label{tst:Cylinder2D}
+
   This test case is based on a benchmark problem from Sch\"afer and Turek
   \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
   rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For
@@ -185,9 +191,17 @@ where $C_{CFL}=100$.
     \caption{Geometry of \autoref{tst:Cylinder2D}}
     \label{fig:2DCylinder}
   \end{figure}
+
+  In this test we choose the functional
+  \begin{equation}
+      M(\bar{U}^n) := \int_I\! \int_{\Omega}\! u\, d\mathbf{x}\, dt.
+      \label{eq:NSEFunctional}
+  \end{equation}
+
 \end{test}
 
 \subsubsection{Variable Density Incompressible Navier-Stokes}
+
 In this subsection we again will demonstrate the effectiveness of
 \autoref{alg:Adaptivity}, but this time we apply the algorithm to a density
 dependent problem. More specifically, in \autoref{tst:rhoNSE} we look at the
@@ -205,7 +219,8 @@ modelled by the variable density incompressible Navier-Stokes equations, i.e.
 \end{equation}
 where $\rho$ is the fluid density, $\mathbf{u} = \left[ u, v \right]^T$ is the
 fluid velocity in 2D, $p$ is the fluid pressure, $\mathbf{f}$ is the
-external forcing, and $\nu$ is the kinematic viscosity.
+external forcing, and $\nu := \nicefrac{\mu}{\rho}$ is the kinematic viscosity,
+which we will assume to be constant for these tests.
 
 Again, we take a step size of $k$ and apply the cG(1)cG(1) finite
 element to \autoref{eq:DensityNSE}, however this time we use a different
@@ -228,5 +243,45 @@ $V = (v, q, \chi) \in X = \left[ H^1_0(\Omega) \right]^2 \times H^1(\Omega)
     \label{eq:WeakRhoNSE}
 \end{equation}
 
-\begin{test}[Variable Density Navier-Stokes] \label{tst:rhoNSE}
+\begin{test}[Rayleigh-Taylor Instability] \label{tst:rhoNSE}
+
+    Variable density flows are valid for a wide range of natural phenomena such
+    as, but not limited to: astrophysical flows, oceanic flows, atmospheric
+    flows, and combustion. When the fluid is accelerated against the density
+    gradient fluid instability is generated and small perturbations in the fluid
+    interface grow and interact non-linearly resulting in turbulence.  This
+    process is known as Rayleigh-Taylor (RT) instability and will be the focus of
+    this particular test.
+
+    For RT flows the primary non-dimensional parameter characterizing
+    differential acceleration effects is the Atwood number:
+    \begin{equation}
+        A := \frac{\rho_2 - \rho_1}{\rho_2 + \rho_1}.
+        \label{eq:Atwood}
+    \end{equation}
+    Thus for $\rho_1 = 1$ and $\rho_2 = 3$ the corresponding Atwood number would
+    be $A = 0.5$. In addition to the Atwood number we can define two additional
+    non-dimensional parameters, such as the Reynolds number, $Re$, and the
+    Froude number, $Fr$:
+    \begin{equation}
+        Re = \frac{L U}{\nu}, \qquad Fr = \frac{U}{\sqrt{g\, L}},
+        \label{eq:Re+Fr}
+    \end{equation}
+    where $g$ is the acceleration due to gravity, $L$ is the characteristic
+    wavelength, $U$ is the reference velocity, $\nu$ again is the kinematic
+    viscosity. With these scales defined as above we can then define the
+    characteristic time scale, $\tau = \sqrt{\nicefrac{L}{(A\, g)}}$.
+
+    For this test we must be careful when choosing our goal functional. Certain
+    functionals may provide no useful information. For this reason we choose the
+    following functional
+    \begin{equation}
+        M(\bar{U}^n) := \int_I\! \int_{\Omega}\! u + v\, d\mathbf{x}\, dt,
+        \label{eq:FunctionalRhoNSE}
+    \end{equation}
+    which was shown to be as effective as $\int_I \int_{\Omega} \rho\,
+    d\mathbf{x}\, dt$ in \cite{Izarra2014}. This is important since the scheme
+    above is mass preserving and thus no information is gained from the density
+    functional.
+
 \end{test}

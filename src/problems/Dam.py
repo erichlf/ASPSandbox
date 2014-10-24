@@ -26,9 +26,9 @@ x1 = 2 * d
 y0 = -d
 y1 = d
 
-At = 999 / 1001  # Atwood number
 rhoMin = 1.
 rhoMax = 1000
+At = (rhoMax - rhoMin) / (rhoMin + rhoMax)  # Atwood number
 
 
 class InitialConditions(Expression):
@@ -122,14 +122,10 @@ class Problem(ProblemBase):
 
         return bc
 
-    def F1(self, t):
+    def F(self, t):
         # forcing function for the momentum equation
 
         return Expression(('0.0', '-g'), g=g, t=t)
-
-    def F2(self, t):
-        # mass source for the continuity equation
-        return Expression('0.0', t=t)
 
     def __str__(self):
         return 'Dam'
