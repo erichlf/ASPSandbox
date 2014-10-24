@@ -63,7 +63,7 @@ class Problem(ProblemBase):
         self.k = options['k']
 
         try:
-            nu = 1/options['Re']
+            nu = 1./options['Re']
         except:
             nu = 1E-3
 

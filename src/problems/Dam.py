@@ -93,11 +93,6 @@ class Problem(ProblemBase):
             print "ERROR: This problem requires a mesh. Please provide a mesh."
             sys.exit(1)
 
-        try:
-            self.Fr = options['Fr']
-        except:
-            self.Fr = 1
-
         self.psimarker = PsiMarker()
 
         self.t0 = 0.
