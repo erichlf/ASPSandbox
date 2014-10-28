@@ -259,7 +259,7 @@ class SolverBase:
         LR1 = 0.
 
         # Generate the dual problem
-        J = Functional(problem.functional(mesh, w) * dt, name='DualArgument')
+        J = Functional(problem.functional(W, w) * dt, name='DualArgument')
         timestep = None
         wtape = []
         phi = []
@@ -409,10 +409,10 @@ class SolverBase:
             w_.assign(w)
             if func:
                 if adjointer:  # annotation only works with DOLFIN-Adjoint
-                    m += k * assemble(problem.functional(W.mesh(), w_),
+                    m += k * assemble(problem.functional(W, w_),
                                       annotate=False)
                 else:
-                    m += k * assemble(problem.functional(W.mesh(), w_))
+                    m += k * assemble(problem.functional(W, w_))
 
             if adjointer:  # only needed if DOLFIN-Adjoint has been imported
                 adj_inc_timestep(t, finished=t >= (T - k / 2.))

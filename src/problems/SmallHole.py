@@ -81,29 +81,30 @@ class Problem(ProblemBase):
         self.rho = rho  # density
         self.c = c
 
-    def initial_conditions(self, W):
-        w0 = InitialConditions()
-        w0 = project(w0, W)
+    def initial_conditions(self, V):
+        u0 = InitialConditions()
+        u0 = project(u0, V)
 
-        return w0
+        return u0
 
-    def boundary_conditions(self, W, t):
+    def boundary_conditions(self, V, t):
         g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
-        bc0 = DirichletBC(W, Constant(0.0), OuterBoundary())
-        bc1 = DirichletBC(W, g, InnerBoundary())
+        bc0 = DirichletBC(V, Constant(0.0), OuterBoundary())
+        bc1 = DirichletBC(V, g, InnerBoundary())
 
         return [bc0, bc1]
 
     def F(self, t):
         return Constant(0)
 
-    def update(self, W, t):
+    def update(self, V, t):
 
-        return self.boundary_conditions(W, t)
+        return self.boundary_conditions(V, t)
 
-    def functional(self, mesh, u):
+    def functional(self, V, u):
 
-        psi = Expression('exp(-20 * (x - {0.25, 0.25}) * (x - {0.25, 0.25}))')
+        psi = project(Expression('exp(-20 * (pow(x[0] - 0.25, 2) '
+                         + ' + pow(x[1] - 0.25, 2)))'))
         M = psi * dx
 
         return M
