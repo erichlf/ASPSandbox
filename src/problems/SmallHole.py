@@ -104,7 +104,7 @@ class Problem(ProblemBase):
     def functional(self, V, u):
 
         psi = project(Expression('exp(-20 * (pow(x[0] - 0.25, 2) '
-                         + ' + pow(x[1] - 0.25, 2)))'))
+                                 + ' + pow(x[1] - 0.25, 2)))'), V)
         M = psi * dx
 
         return M
