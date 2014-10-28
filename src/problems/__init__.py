@@ -19,6 +19,7 @@ problems = [
     'Plate',
     'Point',
     'Pool',
+    'SmallHole',
     'Square',
     'TwoFluid',
 ]

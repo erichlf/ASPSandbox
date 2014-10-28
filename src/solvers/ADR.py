@@ -13,26 +13,16 @@ class Solver(SolverBase):
     '''
 
     def __init__(self, options):
-
-        try:
-            self.epsilon = options['epsilon']
-        except:
-            self.epsilon = 1.
-        try:
-            self.a = options['a']
-        except:
-            self.a = 1
-        try:
-            self.beta = options['beta']
-        except:
-            self.beta = 1
-
         SolverBase.__init__(self, options)
 
+    def function_space(self, mesh):
+        # Define function spaces
+        V = FunctionSpace(mesh, 'CG', self.Pu)
+
+        return V
+
     # strong residual for cG(1)cG(1)
-    def strong_residual(self, u):
-        a = self.a  # reaction coefficient
-        beta = self.beta  # velocity
+    def strong_residual(self, a, beta, u):
 
         R = a * u + dot(beta, grad(u))
 
@@ -40,12 +30,12 @@ class Solver(SolverBase):
 
     # weak residual for cG(1)cG(1)
     def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
-        h = CellSize(W.mesh())  # mesh size
+        h = CellSize(V.mesh())  # mesh size
         d = self.stabilization_parameters(U_, k, h)  # stabilization parameters
 
-        a = self.a  # reaction coefficient
-        epsilon = self.epsilon  # diffusion coefficient
-        beta = self.beta  # velocity
+        a = problem.a  # reaction coefficient
+        kappa = problem.kappa
+        beta = problem.beta  # velocity
 
         t0 = problem.t0
 
@@ -59,27 +49,55 @@ class Solver(SolverBase):
 
         # weak form of the equations
         r = ((1. / k) * inner(U - U_, v)
-             + a * inner(u, v)
-             + epsilon * inner(grad(u), grad(v))
-             + inner(dot(beta, grad(u)), v)) * dx
+             + a * inner(u, v)) * dx
+
+        if kappa.rank() == 0:
+            r += kappa * inner(grad(u), grad(v)) * dx
+        else:  # anisotropic case
+            r += inner(dot(kappa, grad(u)), grad(v)) * dx
+
+        r += inner(dot(beta, grad(u)), v) * dx
 
         # forcing function
         r -= inner(F, v) * dx
 
-        R = self.strong_residual(u)
-        Rv = self.strong_residual(v)
-        r += d * inner(R - F, Rv) * dx
+        r += d * inner(self.strong_residual(a, beta, u) - F,
+                       self.strong_residual(a, beta, v)) * dx
 
         return r
 
     def stabilization_parameters(self, u, k, h):
         K = 1.
-        if(h > self.epsilon):
-            d = K * (k ** (-2) + inner(u, u) * h ** (-4)) ** (-0.5)
-        else:
-            d = K * (k ** (-2) + inner(u, u) * h ** (-2)) ** (-0.5)
+        d = K * (k ** (-2) + inner(u, u) * h ** (-2)) ** (-0.5)
 
         return d
+
+    def Save(self, problem, u, dual=False):
+        if self.options['save_frequency'] != 0 \
+                and (self._timestep - 1) % self.options['save_frequency'] == 0:
+            if not dual:
+                self._ufile << u
+            else:
+                self._uDualfile << u
+
+    def file_naming(self, n=-1, dual=False):
+        if n == -1:
+            self._ufile = File(self.s + '_u.pvd', 'compressed')
+            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
+            self.meshfile = File(self.s + '_mesh.xml')
+        else:
+            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
+            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(self.s + '_mesh%d.xml' % n)
+
+    def Plot(self, problem, V, u):
+
+        # Plot velocity and height and wave object
+        if self.vizU is None:
+            self.vizU = plot(u, title='Concentration', rescale=True,
+                             elevate=0.0)
+        else:
+            self.vizU.plot(u)
 
     def __str__(self):
         return 'ADR'

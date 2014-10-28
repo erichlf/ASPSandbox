@@ -4,7 +4,6 @@ __license__ = "GNU GPL version 3 or any later version"
 
 from AFES import *
 from AFES import Problem as ProblemBase
-import numpy as np
 
 # outer square dimensions
 Xmin = 0.
@@ -12,16 +11,17 @@ Xmax = 1.
 Ymin = 0.
 Ymax = 1.
 # inner square dimensions
-xmin = 4. / 9.
-xmax = 5. / 9.
-ymin = 4. / 9.
-ymax = 5. / 9.
+xmin = 0.48
+xmax = 0.52
+ymin = 0.48
+ymax = 0.52
 
-kappa1 = 1000.
-kappa2 = 1.
-theta = pi / 4.
+kappa = Constant(1E-5)
+a = Constant(1.)
+beta = Constant((-1, -0.61))
 rho = 1.
 c = 1.
+
 TR = 0.5
 TA = 0.5
 omega = 2. * pi
@@ -65,21 +65,18 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['k']
 
-        # set up heat coefficient
-        try:
+        try:  # set up heat coefficient
             self.kappa = Expression('kappa', kappa=options['kappa'])
         except:
-            K = np.array([[kappa1, 0], [0, kappa2]])
-            Theta = np.array([[cos(theta), -sin(theta)], [sin(theta),
-                                                          cos(theta)]])
-            kappa = np.dot(Theta, np.dot(K, np.transpose(Theta)))
-            self.kappa = Expression((('k1', 'k2'), ('k3', 'k4')),
-                                    k1=kappa[0, 0], k2=kappa[0, 1],
-                                    k3=kappa[1, 0], k4=kappa[1, 1])
-
-        self.beta = Constant((-1, -0.61))  # velocity for adr
-
-        self.a = 1  # reaction coefficient for adr
+            self.kappa = kappa
+        try:  # velocity for adr
+            self.beta = Expression('beta', beta=options['beta'])
+        except:
+            self.beta = beta
+        try:  # reaction coefficient for adr
+            self.a = Expression('a', a=options['a'])
+        except:
+            self.a = a
 
         self.rho = rho  # density
         self.c = c
@@ -106,7 +103,8 @@ class Problem(ProblemBase):
 
     def functional(self, mesh, u):
 
-        M = u * dx
+        psi = Expression('exp(-20 * (x - {0.25, 0.25}) * (x - {0.25, 0.25}))')
+        M = psi * dx
 
         return M
 
