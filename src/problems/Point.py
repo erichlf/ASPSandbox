@@ -100,7 +100,7 @@ class Problem(ProblemBase):
 
         return F
 
-    def functional(self, mesh, w):
+    def functional(self, W, w):
 
         u, eta = (as_vector((w[0], w[1])), w[2])
 

@@ -238,12 +238,12 @@ class Problem(ProblemBase):
         # provide a marker to indicate if we are on the object
         return PsiMarker(self.dim, self.cube)
 
-    def functional(self, mesh, w):
+    def functional(self, W, w):
         '''
             This is the functional used for adaptivity.
             We assume the problem is much like NSE.
         '''
-        if mesh.topology().dim() == 2:
+        if W.mesh().topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])

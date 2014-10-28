@@ -71,8 +71,6 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['k']
 
-
-    # get the initial condition and project it
     def initial_conditions(self, W):
 
         # artificial viscosity for stabilization
@@ -108,7 +106,7 @@ class Problem(ProblemBase):
         # forcing function for the momentum equation
         return Expression(('0.', '1./g'), g=g, t=t)
 
-    def functional(self, mesh, w):
+    def functional(self, W, w):
 
         (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
 

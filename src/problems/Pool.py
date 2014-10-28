@@ -359,7 +359,7 @@ class Problem(ProblemBase):
 
         return bcs
 
-    def functional(self, mesh, w):
+    def functional(self, W, w):
         '''
             Functional for mesh adaptivity
         '''

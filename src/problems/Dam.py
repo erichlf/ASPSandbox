@@ -122,5 +122,16 @@ class Problem(ProblemBase):
 
         return Expression(('0.0', '-g'), g=g, t=t)
 
+    def functional(self, W, w):
+        (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
+        # beta = Expression("1.0")
+        # beta = Expression(('50.0*exp(-50.0*(pow(x[0] - 1.0, 2) '
+        #                   + ' + pow(x[1] - -0.5, 2)))'))
+        n = FacetNormal(W.mesh())
+        # M = rho*beta*dx  # Mean of the x-velocity in the whole domain
+        M = problem.psimarker*p*n[0]*ds  # Drag (only pressure)
+
+        return M
+
     def __str__(self):
         return 'Dam'

@@ -107,7 +107,7 @@ class Problem(ProblemBase):
 
         return self.boundary_conditions(W, t)
 
-    def functional(self, mesh, u):
+    def functional(self, V, u):
 
         M = u * dx
 
