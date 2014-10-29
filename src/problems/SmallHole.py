@@ -17,7 +17,7 @@ ymin = 0.48
 ymax = 0.52
 
 kappa = Constant(1E-5)
-a = Constant(1.)
+alpha = Constant(1.)
 beta = Constant((-1, -0.61))
 rho = 1.
 c = 1.
@@ -74,9 +74,9 @@ class Problem(ProblemBase):
         except:
             self.beta = beta
         try:  # reaction coefficient for adr
-            self.a = Expression('a', a=options['a'])
+            self.alpha = Expression('a', a=options['alpha'])
         except:
-            self.a = a
+            self.alpha = alpha
 
         self.rho = rho  # density
         self.c = c
@@ -103,9 +103,9 @@ class Problem(ProblemBase):
 
     def functional(self, V, u):
 
-        psi = project(Expression('exp(-20 * (pow(x[0] - 0.25, 2) '
-                                 + ' + pow(x[1] - 0.25, 2)))'), V)
-        M = psi * dx
+        psi = Expression('exp(-20 * (pow(x[0] - 0.25, 2) '
+                                 + ' + pow(x[1] - 0.25, 2)))')
+        M = psi * u * dx
 
         return M
 

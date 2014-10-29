@@ -22,9 +22,9 @@ class Solver(SolverBase):
         return V
 
     # strong residual for cG(1)cG(1)
-    def strong_residual(self, a, beta, u):
+    def strong_residual(self, alpha, beta, u):
 
-        R = a * u + dot(beta, grad(u))
+        R = alpha * u + dot(beta, grad(u))
 
         return R
 
@@ -33,7 +33,7 @@ class Solver(SolverBase):
         h = CellSize(V.mesh())  # mesh size
         d = self.stabilization_parameters(U_, k, h)  # stabilization parameters
 
-        a = problem.a  # reaction coefficient
+        alpha = problem.alpha  # reaction coefficient
         kappa = problem.kappa
         beta = problem.beta  # velocity
 
@@ -49,7 +49,7 @@ class Solver(SolverBase):
 
         # weak form of the equations
         r = ((1. / k) * inner(U - U_, v)
-             + a * inner(u, v)) * dx
+             + alpha * inner(u, v)) * dx
 
         if kappa.rank() == 0:
             r += kappa * inner(grad(u), grad(v)) * dx
@@ -61,14 +61,14 @@ class Solver(SolverBase):
         # forcing function
         r -= inner(F, v) * dx
 
-        r += d * inner(self.strong_residual(a, beta, u) - F,
-                       self.strong_residual(a, beta, v)) * dx
+        r += d * inner(self.strong_residual(alpha, beta, u) - F,
+                       self.strong_residual(alpha, beta, v)) * dx
 
         return r
 
     def stabilization_parameters(self, u, k, h):
         K = 1.
-        d = K * (k ** (-2) + inner(u, u) * h ** (-2)) ** (-0.5)
+        d = K * h
 
         return d
 

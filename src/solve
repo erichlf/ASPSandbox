@@ -9,7 +9,6 @@ __license__ = "GNU GPL version 3 or any later version"
 
 import sys
 from time import time
-import re
 
 from AFES import *
 from problems import Problem, problems
@@ -18,8 +17,8 @@ from solvers import Solver, solvers
 Default_Solver = 'NSE'
 Default_Problem = 'Cylinder'
 
-#  Print usage
-def usage():
+
+def usage():  # Print usage
     print """\
 Usage: solve solver problem (run solver for given problem)
 solve solver (run solver for """ + Default_Problem + """.)
@@ -80,8 +79,8 @@ def main(args):
 
     print 'Solving %s for the %s problem.' % (solver_name, problem_name)
     # Create problem and solver
-    solver = Solver(solver_name, options)
     problem = Problem(problem_name, options)
+    solver = Solver(solver_name, options)
 
     # Solve problem with solver
     wct = time()
