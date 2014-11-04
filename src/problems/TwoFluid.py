@@ -104,7 +104,7 @@ class Problem(ProblemBase):
 
     def F(self, t):
         # forcing function for the momentum equation
-        return Expression(('0.', '1./g'), g=g, t=t)
+        return Expression(('0.', '-g'), g=g, t=t)
 
     def functional(self, W, w):
 

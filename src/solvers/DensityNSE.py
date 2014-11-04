@@ -83,7 +83,7 @@ class Solver(SolverBase):
                      + inner(grad(u) * u, v))
               + inner(grad(p), v)
               + nu * inner(grad(u), grad(v))
-              + rho * dot(f, v)) * dx  # momentum equation
+              - rho * dot(f, v)) * dx  # momentum equation
         r += div(u) * q * dx  # continuity equation
 
         r += d1 * (inner(grad(u), grad(v))) * dx
