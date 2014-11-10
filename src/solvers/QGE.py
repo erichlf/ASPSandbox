@@ -62,14 +62,6 @@ class Solver(SolverBase):
     def Jac(self, psi, q):
         return psi.dx(1) * q.dx(0) - psi.dx(0) * q.dx(1)
 
-    def functional(self, mesh, w):
-
-        (q, psi) = (w[0], w[1])
-
-        M = q * dx  # Mean of the vorticity in the whole domain
-
-        return M
-
     def file_naming(self, n=-1, dual=False):
         if n == -1:
             self._ufile = File(self.s + '_q.pvd', 'compressed')
