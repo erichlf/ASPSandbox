@@ -110,7 +110,7 @@ class Problem(ProblemBase):
 
         (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
 
-        M = dot(grad(rho), grad(rho)) * dx
+        M = (u[1].dx(0) - u[0].dx(1)) * dx
 
         return M
 
