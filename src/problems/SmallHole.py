@@ -16,7 +16,7 @@ xmax = 0.52
 ymin = 0.48
 ymax = 0.52
 
-kappa = Constant(1E-5)
+kappa = Constant(1E-1)
 alpha = Constant(1.)
 beta = Constant((-1, -0.61))
 rho = 1.
@@ -56,14 +56,17 @@ class Problem(ProblemBase):
         # Create mesh
         self.Nx = options["Nx"]
 
-        outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
-        innerRect = Rectangle(xmin, ymin, xmax, ymax)
-        domain = outerRect - innerRect
-        self.mesh = Mesh(domain, self.Nx)
+        #outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
+        #innerRect = Rectangle(xmin, ymin, xmax, ymax)
+        #domain = outerRect - innerRect
+        #self.mesh = Mesh(domain, self.Nx)
+        self.mesh = Mesh("mesh.xml")
 
         self.t0 = 0.
         self.T = options['T']
-        self.k = options['k']
+        #self.k = options['k']
+        self.Ubar = 1.0
+        self.k = self.time_step(self.Ubar, self.mesh)
 
         try:  # set up heat coefficient
             self.kappa = Expression('kappa', kappa=options['kappa'])
@@ -88,7 +91,8 @@ class Problem(ProblemBase):
         return u0
 
     def boundary_conditions(self, V, t):
-        g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
+        #g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
+        g = Expression('1.0')
         bc0 = DirichletBC(V, Constant(0.0), OuterBoundary())
         bc1 = DirichletBC(V, g, InnerBoundary())
 
@@ -108,6 +112,12 @@ class Problem(ProblemBase):
         M = psi * u * dx
 
         return M
+
+    def time_step(self, Ubar, mesh):
+
+        k = 2*mesh.hmin()
+        print "k: ", k
+        return k
 
     def __str__(self):
         return 'Hole'

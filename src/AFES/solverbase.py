@@ -279,14 +279,21 @@ class SolverBase:
 
         print 'Building error indicators.'
 
-        for i in range(0, len(wtape) - 1):
+        primal_file = File("primal.pvd")
+        dual_file = File("dual.pvd")
+        for i in range(0, len(wtape) - 2):
             # the tape is backwards so i+1 is the previous time step
             wtape_theta = self.theta * \
                 wtape[i] + (1. - self.theta) * wtape[i + 1]
-            LR1 = k * self.weak_residual(problem, k, W, wtape_theta, wtape[i],
+            k_ = Constant(k)
+            LR1 = k_ * self.weak_residual(problem, k, W, wtape_theta, wtape[i],
                                          wtape[i + 1], z*phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1, annotate=False).array()
-
+            #print "sanity: ", sum(assemble(LR1, annotate=False).array())
+            wtape[i].rename("primal", "foo")
+            phi[i].rename("dual", "foo")
+            #primal_file << wtape[i]
+            #dual_file << phi[i]
         return W, w, m, ei
 
     def condition(self, ei, m, m_):
@@ -413,6 +420,8 @@ class SolverBase:
                                       annotate=False)
                 else:
                     m += k * assemble(problem.functional(W, w_))
+
+                #print "sanity: ", k * assemble(problem.functional(W, w_), annotate=False)
 
             if adjointer:  # only needed if DOLFIN-Adjoint has been imported
                 adj_inc_timestep(t, finished=t >= (T - k / 2.))

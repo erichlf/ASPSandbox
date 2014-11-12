@@ -47,6 +47,9 @@ class Solver(SolverBase):
         if ei_mode:
             d = 0
 
+        #k = Expression("kk", kk=k)
+        k = Constant(k)
+
         # weak form of the equations
         r = ((1. / k) * inner(U - U_, v)
              + alpha * inner(u, v)) * dx
@@ -76,8 +79,10 @@ class Solver(SolverBase):
         if self.options['save_frequency'] != 0 \
                 and (self._timestep - 1) % self.options['save_frequency'] == 0:
             if not dual:
+                u.rename("primal", "ADR")
                 self._ufile << u
             else:
+                u.rename("dual", "ADR")
                 self._uDualfile << u
 
     def file_naming(self, n=-1, dual=False):
