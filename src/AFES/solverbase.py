@@ -47,6 +47,8 @@ class SolverBase:
         prm['relative_tolerance'] = options["relative_tolerance"]
         prm['report'] = options["monitor_convergence"]
 
+        self.k_ = Constant(1.0)
+
         # Set debug level
         set_log_active(options["debug"])
 
@@ -93,7 +95,7 @@ class SolverBase:
         try:
             self.maxadapts = self.options['max_adaptations']
         except:
-            self.maxadapts = 30
+            self.maxadapts = 50
         try:
             self.adaptTOL = self.options['adaptive_TOL']
         except:
@@ -199,7 +201,11 @@ class SolverBase:
             #ref = 0.023084
             #ref = 0.022914
             #ref = 0.023063
-            ref = 0.023191
+            #ref = 0.023191
+            #ref = 2.88
+
+            # 6000 vertices, kappa=1e-1
+            ref = 0.28514
             print 'DOFs=%d functional=%0.5G err_est=%0.5G err=%0.5G' \
                 % (mesh.num_vertices(), m, COND, abs(m - ref))
 
@@ -289,9 +295,9 @@ class SolverBase:
             # the tape is backwards so i+1 is the previous time step
             wtape_theta = self.theta * \
                 wtape[i] + (1. - self.theta) * wtape[i + 1]
-            k_ = Constant(k)
-            LR1 = k_ * self.weak_residual(problem, k, W, wtape_theta, wtape[i],
-                                         wtape[i + 1], z*phi[i], ei_mode=True)
+            #k_ = Constant(k)
+            LR1 = self.weak_residual(problem, self.k_, W, wtape_theta, wtape[i],
+                                     wtape[i + 1], z*phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1, annotate=False).array()
             #print "sanity: ", sum(assemble(LR1, annotate=False).array())
             wtape[i].rename("primal", "foo")

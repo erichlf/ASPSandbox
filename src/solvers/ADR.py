@@ -30,11 +30,13 @@ class Solver(SolverBase):
 
     # weak residual for cG(1)cG(1)
     def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
-        h = CellSize(V.mesh())  # mesh size
-        d = self.stabilization_parameters(U_, k, h)  # stabilization parameters
+        self.k_.assign(Constant(k))
 
-        #K = 0.5 / sqrt(1.0**2 + 1.61**2)
-        #d = conditional(le(h, problem.kappa), K*h**2, K*h)
+        h = CellSize(V.mesh())  # mesh size
+        #d = self.stabilization_parameters(U_, k, h)  # stabilization parameters
+
+        K = 0.5 / sqrt(1.0**2 + 1.61**2)
+        d = conditional(le(h, problem.kappa), K*h**2, K*h)
 
         alpha = problem.alpha  # reaction coefficient
         kappa = problem.kappa
@@ -51,10 +53,10 @@ class Solver(SolverBase):
             d = 0
 
         #k = Expression("kk", kk=k)
-        k = Constant(k)
+        #k_ = Constant(k)
 
         # weak form of the equations
-        r = ((1. / k) * inner(U - U_, v)
+        r = ((1. / self.k_) * inner(U - U_, v)
              + alpha * inner(u, v)) * dx
 
         if kappa.rank() == 0:

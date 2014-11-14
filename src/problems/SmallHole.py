@@ -63,8 +63,9 @@ class Problem(ProblemBase):
         self.mesh = Mesh("mesh.xml")
 
         self.t0 = 0.
-        self.T = options['T']
+        #self.T = options['T']
         #self.k = options['k']
+        self.T = 10.0
         self.Ubar = 1.0
         self.k = self.time_step(self.Ubar, self.mesh)
 
@@ -115,8 +116,8 @@ class Problem(ProblemBase):
 
     def time_step(self, Ubar, mesh):
 
-        #k = 10*mesh.hmin()
-        k = 0.1
+        k = 100*mesh.hmin()
+        #k = 10.0
         print "k: ", k
         return k
 
