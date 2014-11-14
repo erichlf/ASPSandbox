@@ -115,7 +115,8 @@ class Problem(ProblemBase):
 
     def time_step(self, Ubar, mesh):
 
-        k = 2*mesh.hmin()
+        #k = 10*mesh.hmin()
+        k = 0.1
         print "k: ", k
         return k
 

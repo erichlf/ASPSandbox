@@ -196,8 +196,12 @@ class SolverBase:
             m_ = m  # save the previous functional value
             W, w, m, ei = self.adaptive_solve(problem, mesh, t0, T, k)
             COND = self.condition(ei, m, m_)
-            print 'DOFs=%d functional=%0.5G err_est=%0.5G' \
-                % (mesh.num_vertices(), m, COND)
+            #ref = 0.023084
+            #ref = 0.022914
+            #ref = 0.023063
+            ref = 0.023191
+            print 'DOFs=%d functional=%0.5G err_est=%0.5G err=%0.5G' \
+                % (mesh.num_vertices(), m, COND, abs(m - ref))
 
             if i == 0 and self.options['plot_solution']:
                 plot(ei, title="Error Indicators.", elevate=0.0)
