@@ -2,3 +2,6 @@
 	path = html
 	url = git@github.com:erichlf/AFESpage.git
 	branch = gh-pages
+[submodule "src/AFES"]
+	path = src/AFES
+	url = git@github.com:erichlf/AFES.git
