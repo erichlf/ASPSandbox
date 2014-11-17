@@ -205,7 +205,9 @@ class SolverBase:
             #ref = 2.88
 
             # 6000 vertices, kappa=1e-1
-            ref = 0.28514
+            #ref = 0.28514
+            # 2500 vertices, kappa=1e-5
+            ref = 0.13004
             print 'DOFs=%d functional=%0.5G err_est=%0.5G err=%0.5G' \
                 % (mesh.num_vertices(), m, COND, abs(m - ref))
 

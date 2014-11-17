@@ -77,8 +77,8 @@ class Solver(SolverBase):
 
         R1, R2 = self.strong_residual(W, w, w)
         Rv1, Rv2 = self.strong_residual(W, wt, w)
-        r += (d1 * inner(R1 - F, Rv1) + d2 * R2 * Rv2) * dx
-
+        #r += (d1 * inner(R1 - F, Rv1) + d2 * R2 * Rv2) * dx
+        r += h**2*inner(w, wt)*dx
         return r
 
     def stabilization_parameters(self, u, p, k, h):

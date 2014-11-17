@@ -65,7 +65,7 @@ class Problem(ProblemBase):
         self.t0 = 0.
         #self.T = options['T']
         #self.k = options['k']
-        self.T = 10.0
+        self.T = 100.0
         self.Ubar = 1.0
         self.k = self.time_step(self.Ubar, self.mesh)
 
@@ -92,8 +92,9 @@ class Problem(ProblemBase):
         return u0
 
     def boundary_conditions(self, V, t):
+        g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
         #g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
-        g = Expression('1.0')
+        #g = Expression('1.0')
         bc0 = DirichletBC(V, Constant(0.0), OuterBoundary())
         bc1 = DirichletBC(V, g, InnerBoundary())
 
