@@ -22,8 +22,8 @@ beta = Constant((-1, -0.61))
 rho = 1.
 c = 1.
 
-TR = 0.5
-TA = 0.5
+TR = 10.
+TA = 10.
 omega = 2. * pi
 
 

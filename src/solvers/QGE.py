@@ -62,26 +62,18 @@ class Solver(SolverBase):
     def Jac(self, psi, q):
         return psi.dx(1) * q.dx(0) - psi.dx(0) * q.dx(1)
 
-    def functional(self, mesh, w):
-
-        (q, psi) = (w[0], w[1])
-
-        M = q * dx  # Mean of the vorticity in the whole domain
-
-        return M
-
     def file_naming(self, n=-1, dual=False):
         if n == -1:
-            self._ufile = File(self.s + '_psi.pvd', 'compressed')
-            self._pfile = File(self.s + '_q.pvd', 'compressed')
-            self._uDualfile = File(self.s + '_psiDual.pvd', 'compressed')
-            self._pDualfile = File(self.s + '_qDual.pvd', 'compressed')
+            self._ufile = File(self.s + '_q.pvd', 'compressed')
+            self._pfile = File(self.s + '_psi.pvd', 'compressed')
+            self._uDualfile = File(self.s + '_qDual.pvd', 'compressed')
+            self._pDualfile = File(self.s + '_psiDual.pvd', 'compressed')
             self.meshfile = File(self.s + '_mesh.xml')
         else:
-            self._ufile = File(self.s + '_psi%d.pvd' % n, 'compressed')
-            self._pfile = File(self.s + '_q%d.pvd' % n, 'compressed')
-            self._uDualfile = File(self.s + '_psiDual%d.pvd' % n, 'compressed')
-            self._pDualfile = File(self.s + '_qDual%d.pvd' % n, 'compressed')
+            self._ufile = File(self.s + '_q%d.pvd' % n, 'compressed')
+            self._pfile = File(self.s + '_psi%d.pvd' % n, 'compressed')
+            self._uDualfile = File(self.s + '_qDual%d.pvd' % n, 'compressed')
+            self._pDualfile = File(self.s + '_psiDual%d.pvd' % n, 'compressed')
             self.meshfile = File(self.s + '_mesh%d.xml' % n)
 
     def __str__(self):

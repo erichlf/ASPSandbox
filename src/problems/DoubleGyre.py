@@ -62,5 +62,13 @@ class Problem(ProblemBase):
     def F(self, t):
         return Expression('sin(pi*x[1])', t=t)  # Forcing function
 
+    def functional(self, W, w):
+
+        (q, psi) = (w[0], w[1])
+
+        M = q * dx  # Mean of the vorticity in the whole domain
+
+        return M
+
     def __str__(self):
         return 'DoubleGyre'
