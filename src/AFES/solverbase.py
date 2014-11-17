@@ -47,8 +47,6 @@ class SolverBase:
         prm['relative_tolerance'] = options["relative_tolerance"]
         prm['report'] = options["monitor_convergence"]
 
-        self.k_ = Constant(1.0)
-
         # Set debug level
         set_log_active(options["debug"])
 
@@ -95,7 +93,7 @@ class SolverBase:
         try:
             self.maxadapts = self.options['max_adaptations']
         except:
-            self.maxadapts = 50
+            self.maxadapts = 30
         try:
             self.adaptTOL = self.options['adaptive_TOL']
         except:
@@ -198,18 +196,8 @@ class SolverBase:
             m_ = m  # save the previous functional value
             W, w, m, ei = self.adaptive_solve(problem, mesh, t0, T, k)
             COND = self.condition(ei, m, m_)
-            #ref = 0.023084
-            #ref = 0.022914
-            #ref = 0.023063
-            #ref = 0.023191
-            #ref = 2.88
-
-            # 6000 vertices, kappa=1e-1
-            #ref = 0.28514
-            # 2500 vertices, kappa=1e-5
-            ref = 0.13004
-            print 'DOFs=%d functional=%0.5G err_est=%0.5G err=%0.5G' \
-                % (mesh.num_vertices(), m, COND, abs(m - ref))
+            print 'DOFs=%d functional=%0.5G err_est=%0.5G' \
+                % (mesh.num_vertices(), m, COND)
 
             if i == 0 and self.options['plot_solution']:
                 plot(ei, title="Error Indicators.", elevate=0.0)
@@ -291,21 +279,13 @@ class SolverBase:
 
         print 'Building error indicators.'
 
-        primal_file = File("primal.pvd")
-        dual_file = File("dual.pvd")
         for i in range(0, len(wtape) - 2):
             # the tape is backwards so i+1 is the previous time step
             wtape_theta = self.theta * \
                 wtape[i] + (1. - self.theta) * wtape[i + 1]
-            #k_ = Constant(k)
-            LR1 = self.weak_residual(problem, self.k_, W, wtape_theta, wtape[i],
-                                     wtape[i + 1], z*phi[i], ei_mode=True)
+            LR1 = self.weak_residual(problem, k, W, wtape_theta, wtape[i],
+                                     wtape[i + 1], z * phi[i], ei_mode=True)
             ei.vector()[:] += assemble(LR1, annotate=False).array()
-            #print "sanity: ", sum(assemble(LR1, annotate=False).array())
-            wtape[i].rename("primal", "foo")
-            phi[i].rename("dual", "foo")
-            #primal_file << wtape[i]
-            #dual_file << phi[i]
         return W, w, m, ei
 
     def condition(self, ei, m, m_):
@@ -433,8 +413,6 @@ class SolverBase:
                 else:
                     m += k * assemble(problem.functional(W, w_))
 
-                #print "sanity: ", k * assemble(problem.functional(W, w_), annotate=False)
-
             if adjointer:  # only needed if DOLFIN-Adjoint has been imported
                 adj_inc_timestep(t, finished=t >= (T - k / 2.))
 
@@ -559,7 +537,7 @@ class SolverBase:
         if 'stabilize' in self.options \
                 and self.options['stabilize'] \
                 and 'stabilization_parameters' in dir(self):
-                s += 'Stabilized'
+            s += 'Stabilized'
 
         return problem.output_location + s + p
 

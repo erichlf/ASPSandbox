@@ -63,8 +63,6 @@ class Problem(ProblemBase):
         self.mesh = Mesh("mesh.xml")
 
         self.t0 = 0.
-        #self.T = options['T']
-        #self.k = options['k']
         self.T = 100.0
         self.Ubar = 1.0
         self.k = self.time_step(self.Ubar, self.mesh)
@@ -93,8 +91,6 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, V, t):
         g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
-        #g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
-        #g = Expression('1.0')
         bc0 = DirichletBC(V, Constant(0.0), OuterBoundary())
         bc1 = DirichletBC(V, g, InnerBoundary())
 
@@ -110,7 +106,7 @@ class Problem(ProblemBase):
     def functional(self, V, u):
 
         psi = Expression('exp(-20 * (pow(x[0] - 0.25, 2) '
-                                 + ' + pow(x[1] - 0.25, 2)))')
+                         + ' + pow(x[1] - 0.25, 2)))')
         M = psi * u * dx
 
         return M
@@ -118,7 +114,6 @@ class Problem(ProblemBase):
     def time_step(self, Ubar, mesh):
 
         k = 100*mesh.hmin()
-        #k = 10.0
         print "k: ", k
         return k
 
