@@ -142,7 +142,10 @@ class Problem(ProblemBase):
             nu = 1E-3
 
         self.t0 = 0.
-        self.T = options['T']
+        try:
+            self.T = options['T']
+        except:
+            self.T = 10
 
         H = ymax
         # setup our domain and conditions
