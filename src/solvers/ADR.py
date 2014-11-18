@@ -30,8 +30,6 @@ class Solver(SolverBase):
 
     # weak residual for cG(1)cG(1)
     def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
-        self.k_.assign(Constant(k))
-
         h = CellSize(V.mesh())  # mesh size
         d = self.stabilization_parameters(U_, k, h)  # stabilization parameters
 
