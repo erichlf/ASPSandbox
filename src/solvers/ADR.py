@@ -33,10 +33,7 @@ class Solver(SolverBase):
         self.k_.assign(Constant(k))
 
         h = CellSize(V.mesh())  # mesh size
-        #d = self.stabilization_parameters(U_, k, h)  # stabilization parameters
-
-        K = 0.5 / sqrt(1.0**2 + 1.61**2)
-        d = conditional(le(h, problem.kappa), K*h**2, K*h)
+        d = self.stabilization_parameters(U_, k, h)  # stabilization parameters
 
         alpha = problem.alpha  # reaction coefficient
         kappa = problem.kappa
@@ -52,11 +49,8 @@ class Solver(SolverBase):
         if ei_mode:
             d = 0
 
-        #k = Expression("kk", kk=k)
-        #k_ = Constant(k)
-
         # weak form of the equations
-        r = ((1. / self.k_) * inner(U - U_, v)
+        r = ((1. / k) * inner(U - U_, v)
              + alpha * inner(u, v)) * dx
 
         if kappa.rank() == 0:
@@ -76,7 +70,7 @@ class Solver(SolverBase):
 
     def stabilization_parameters(self, u, k, h):
         K = 0.5 / sqrt(1.0**2 + 1.61**2)
-        #d = conditional(le(h, problem.kappa), K*h**2, K*h)
+        d = conditional(le(h, problem.kappa), K*h**2, K*h)
 
         d = K * h
 
