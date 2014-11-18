@@ -66,9 +66,9 @@ class Solver(SolverBase):
 
         return r
 
-    def stabilization_parameters(self, u, k, h):
+    def stabilization_parameters(self, u, k, h, kappa):
         K = 0.5 / sqrt(1.0**2 + 1.61**2)
-        d = conditional(le(h, problem.kappa), K*h**2, K*h)
+        d = conditional(le(h, kappa), K*h**2, K*h)
 
         d = K * h
 
