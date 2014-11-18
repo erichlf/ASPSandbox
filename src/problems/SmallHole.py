@@ -54,18 +54,18 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        self.Nx = options["Nx"]
+        Nx = options["Nx"]
 
-        #outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
-        #innerRect = Rectangle(xmin, ymin, xmax, ymax)
-        #domain = outerRect - innerRect
-        #self.mesh = Mesh(domain, self.Nx)
-        self.mesh = Mesh("mesh.xml")
+        outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
+        innerRect = Rectangle(xmin, ymin, xmax, ymax)
+        domain = outerRect - innerRect
+        mesh = Mesh(domain, Nx)
+        # mesh = Mesh("mesh.xml")
 
         self.t0 = 0.
         self.T = 100.0
         self.Ubar = 1.0
-        self.k = self.time_step(self.Ubar, self.mesh)
+        self.k = self.time_step(self.Ubar, mesh)
 
         try:  # set up heat coefficient
             self.kappa = Expression('kappa', kappa=options['kappa'])
@@ -114,7 +114,7 @@ class Problem(ProblemBase):
     def time_step(self, Ubar, mesh):
 
         k = 100*mesh.hmin()
-        print "k: ", k
+
         return k
 
     def __str__(self):
