@@ -59,13 +59,13 @@ class Problem(ProblemBase):
         outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
         innerRect = Rectangle(xmin, ymin, xmax, ymax)
         domain = outerRect - innerRect
-        mesh = Mesh(domain, Nx)
+        self.mesh = Mesh(domain, Nx)
         # mesh = Mesh("mesh.xml")
 
         self.t0 = 0.
         self.T = 100.0
         self.Ubar = 1.0
-        self.k = self.time_step(self.Ubar, mesh)
+        self.k = self.time_step(self.Ubar, self.mesh)
 
         try:  # set up heat coefficient
             self.kappa = Expression('kappa', kappa=options['kappa'])
