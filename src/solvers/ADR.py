@@ -31,11 +31,12 @@ class Solver(SolverBase):
     # weak residual for cG(1)cG(1)
     def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
         h = CellSize(V.mesh())  # mesh size
-        d = self.stabilization_parameters(U_, k, h, kappa)
 
         alpha = problem.alpha  # reaction coefficient
         kappa = problem.kappa
         beta = problem.beta  # velocity
+
+        d = self.stabilization_parameters(U_, k, h, kappa)
 
         t0 = problem.t0
 
