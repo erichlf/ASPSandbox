@@ -135,7 +135,7 @@ class Solver(SolverBase):
         '''
             update the solver at the end of a time step.
         '''
-        self.wave_object(problem, W.sub(1), t, k)
+        self.wave_object(problem, self.Q, t, k)
 
     def wave_object(self, problem, Q, t, k):
         '''

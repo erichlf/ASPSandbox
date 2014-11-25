@@ -258,8 +258,8 @@ class Problem(ProblemBase):
         self.options = options
 
         # Scaling Parameters
-        self.sigma = h0 / lambda0
-        self.epsilon = a0 / h0
+        self.sigma = Constant(h0 / lambda0)
+        self.epsilon = Constant(a0 / h0)
 
         # Create mesh
         self.Nx = options["Nx"]
@@ -320,8 +320,8 @@ class Problem(ProblemBase):
         self.zeta0.t = max(t - 2 * self.k, self.t0)
         zeta__ = project(self.zeta0, Q, annotate=annotate)
 
-        H = project(D + self.epsilon * zeta, Q)
-        H_ = project(D + self.epsilon * zeta_, Q)
+        H = project(D + self.epsilon * zeta, Q, annotate=annotate)
+        H_ = project(D + self.epsilon * zeta_, Q, annotate=annotate)
 
         return H, H_, zeta, zeta_, zeta__
 
