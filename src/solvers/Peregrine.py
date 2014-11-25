@@ -96,10 +96,7 @@ class Solver(SolverBase):
         zeta_t = 1. / k * (self.Zeta - self.Zeta_)
 
         # Time stepping method
-        zeta_theta = (1. - theta) * self.Zeta_ + theta * self.Zeta
         H_theta = (1. - theta) * self.H_ + theta * self.H
-
-        t = t0 + k
 
         if ei_mode:
             d = 0
@@ -108,18 +105,17 @@ class Solver(SolverBase):
 
         # weak form of the equations
         r = (1. / k * inner(U - U_, v) + epsilon * inner(grad(u) * u, v)
-                 - div(v) * eta) * dx
+             - div(v) * eta) * dx
 
         r += (sigma ** 2 * 1. / k * div(H_theta * (U - U_)) *
-                  div(H_theta * v / 2.) - sigma ** 2 * 1. / k * div(U - U_) *
-                  div(H_theta ** 2 * v / 6.)) * dx
+              div(H_theta * v / 2.) - sigma ** 2 * 1. / k * div(U - U_) *
+              div(H_theta ** 2 * v / 6.)) * dx
         r += sigma ** 2 * zeta_tt * div(H_theta * v / 2.) * dx
 
         r += (1. / k * (Eta - Eta_) * chi + zeta_t * chi) * dx
         r -= inner(u, grad(chi)) * (epsilon * eta + H_theta) * dx
 
-        r += d * \
-            (inner(grad(u), grad(v)) + inner(grad(eta), grad(chi))) * dx
+        r += d * (inner(grad(u), grad(v)) + inner(grad(eta), grad(chi))) * dx
 
         R1, R2, z1, z2 = self.strong_residual(problem, H_theta, w, w)
         Rv1, Rv2, z1, z2 = self.strong_residual(problem, H_theta, w, wt)
@@ -134,6 +130,12 @@ class Solver(SolverBase):
         d2 = K2 * (k ** (-2) + eta * eta * h ** (-2)) ** (-0.5)
 
         return d1, d2
+
+    def post_step(self, problem, t, k, W, w):
+        '''
+            update the solver at the end of a time step.
+        '''
+        self.wave_object(problem, W.sub(1), t, k)
 
     def wave_object(self, problem, Q, t, k):
         '''
@@ -158,7 +160,8 @@ class Solver(SolverBase):
         u = w.split()[0]
         eta = w.split()[1]
 
-        if self.options['save_frequency'] != 0 and (self._timestep - 1) % self.options['save_frequency'] == 0:
+        if self.options['save_frequency'] != 0 and (self._timestep - 1) \
+                % self.options['save_frequency'] == 0:
             if not dual:
                 self._ufile << u
                 self._pfile << eta
