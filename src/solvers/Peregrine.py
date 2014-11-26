@@ -141,7 +141,7 @@ class Solver(SolverBase):
         '''
             Update for wave object at each time step.
         '''
-        annotate = self.options['adaptive'] or self.options['optimize']
+        annotate = self.adaptivity or self.optimize
         H, H_, zeta, zeta_, zeta__ = problem.update_bathymetry(
             Q, t, annotate=annotate)
 
