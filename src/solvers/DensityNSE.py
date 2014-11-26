@@ -106,8 +106,8 @@ class Solver(SolverBase):
         rho = w.split()[1]
         p = w.split()[2]
 
-        if self.options['save_frequency'] != 0 \
-                and (self._timestep - 1) % self.options['save_frequency'] == 0:
+        if self.saveFrequency != 0 \
+                and (self._timestep - 1) % self.saveFrequency == 0:
             if not dual:
                 self._ufile << u
                 self._pfile << p

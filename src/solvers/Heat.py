@@ -52,8 +52,8 @@ class Solver(SolverBase):
         return abs(m - m_)
 
     def Save(self, problem, u, dual=False):
-        if self.options['save_frequency'] != 0 \
-                and (self._timestep - 1) % self.options['save_frequency'] == 0:
+        if self.saveFrequency != 0 \
+                and (self._timestep - 1) % self.saveFrequency == 0:
             if not dual:
                 self._ufile << u
             else:

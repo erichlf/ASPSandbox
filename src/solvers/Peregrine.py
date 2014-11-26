@@ -160,8 +160,8 @@ class Solver(SolverBase):
         u = w.split()[0]
         eta = w.split()[1]
 
-        if self.options['save_frequency'] != 0 and (self._timestep - 1) \
-                % self.options['save_frequency'] == 0:
+        if self.saveFrequency != 0 and (self._timestep - 1) \
+                % self.saveFrequency == 0:
             if not dual:
                 self._ufile << u
                 self._pfile << eta
