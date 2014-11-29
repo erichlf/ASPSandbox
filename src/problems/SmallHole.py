@@ -63,7 +63,7 @@ class Problem(ProblemBase):
         # mesh = Mesh("mesh.xml")
 
         self.t0 = 0.
-        self.T = 100.0
+        self.T = options['T']
         self.Ubar = 1.0
         self.k = self.time_step(self.Ubar, self.mesh)
 
