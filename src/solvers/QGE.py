@@ -13,17 +13,6 @@ class Solver(SolverBase):
     '''
 
     def __init__(self, options):
-        try:
-            self.Re = options['Re']
-        except:
-            self.Re = 200
-            options['Re'] = self.Re
-        try:
-            self.Ro = options['Ro']
-        except:
-            self.Ro = 0.0016
-            options['Ro'] = self.Ro
-
         SolverBase.__init__(self, options)
 
     def function_space(self, mesh):
@@ -40,8 +29,8 @@ class Solver(SolverBase):
         (Q_, Psi_) = (w_[0], w_[1])
         (p, chi) = (wt[0], wt[1])
 
-        Re = self.Re  # Reynolds Number
-        Ro = self.Ro  # Rossby Number
+        Re = problem.Re  # Reynolds Number
+        Ro = problem.Ro  # Rossby Number
 
         t0 = problem.t0
 

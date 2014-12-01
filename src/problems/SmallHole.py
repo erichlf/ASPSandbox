@@ -92,7 +92,7 @@ class Problem(ProblemBase):
     def boundary_conditions(self, V, t):
         g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
         bc0 = DirichletBC(V, Constant(0.0), OuterBoundary())
-        bc1 = DirichletBC(V, g, InnerBoundary())
+        bc1 = DirichletBC(V, Constant(TR), InnerBoundary())
 
         return [bc0, bc1]
 

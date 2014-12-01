@@ -266,7 +266,13 @@ class Problem(ProblemBase):
         self.Ny = options["Ny"]
         self.mesh = RectangleMesh(x0, y0, x1, y1, self.Nx, self.Ny)
 
-        self.mesh = self.Refine(self.mesh)
+        try:
+            refine = options['Refine']
+        except:
+            refine = False
+
+        if refine:
+            self.mesh = self.Refine(self.mesh)
 
         # Scaled Parameters
         self.t0 = 0.

@@ -40,6 +40,17 @@ class Problem(ProblemBase):
         Ny = options['Ny']
         self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
 
+        try:
+            self.Re = options['Re']
+        except:
+            self.Re = 200
+            options['Re'] = self.Re
+        try:
+            self.Ro = options['Ro']
+        except:
+            self.Ro = 1.6E-3
+            options['Ro'] = self.Ro
+
         self.t0 = 0.
         self.T = options['T']
         self.k = options['k']
