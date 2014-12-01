@@ -131,7 +131,7 @@ class Solver(SolverBase):
 
         return d1, d2
 
-    def post_step(self, problem, t, k, W, w):
+    def pre_step(self, problem, t, k, W, w):
         '''
             update the solver at the end of a time step.
         '''
