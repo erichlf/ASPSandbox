@@ -22,8 +22,8 @@ beta = Constant((-1, -0.61))
 rho = 1.
 c = 1.
 
-TR = 10.
-TA = 10.
+TR = 0.5
+TA = 0.5
 omega = 2. * pi
 
 
@@ -54,13 +54,13 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        Nx = options["Nx"]
+        # self.Nx = options["Nx"]
 
-        outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
-        innerRect = Rectangle(xmin, ymin, xmax, ymax)
-        domain = outerRect - innerRect
-        self.mesh = Mesh(domain, Nx)
-        # mesh = Mesh("mesh.xml")
+        # outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
+        # innerRect = Rectangle(xmin, ymin, xmax, ymax)
+        # domain = outerRect - innerRect
+        # self.mesh = Mesh(domain, Nx)
+        self.mesh = Mesh("data/adr-mesh.xml.gz")
 
         self.t0 = 0.
         self.T = options['T']
@@ -92,7 +92,7 @@ class Problem(ProblemBase):
     def boundary_conditions(self, V, t):
         g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
         bc0 = DirichletBC(V, Constant(0.0), OuterBoundary())
-        bc1 = DirichletBC(V, Constant(TR), InnerBoundary())
+        bc1 = DirichletBC(V, Constant(10.0), InnerBoundary())
 
         return [bc0, bc1]
 

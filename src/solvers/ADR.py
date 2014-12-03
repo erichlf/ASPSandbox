@@ -68,10 +68,8 @@ class Solver(SolverBase):
         return r
 
     def stabilization_parameters(self, u, k, h, kappa):
-        K = 0.5 / sqrt(1.0**2 + 1.61**2)
-        d = conditional(le(h, kappa), K*h**2, K*h)
-
-        d = K * h
+        K = 0.5 / sqrt(1.0 ** 2 + 1.61 ** 2)
+        d = conditional(le(h, kappa), K * h ** 2, K * h)
 
         return d
 
@@ -94,6 +92,42 @@ class Solver(SolverBase):
             self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
             self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
             self.meshfile = File(self.s + '_mesh%d.xml' % n)
+
+    def suffix(self, problem):
+        '''
+            Obtains the run specific data for file naming, e.g. Nx, k, etc.
+        '''
+        s = ''
+
+        alpha = problem.alpha
+        beta = problem.beta
+        kappa = problem.kappa
+
+        # Return file suffix for output files
+        if kappa.rank() == 0:
+            s = 'alpha%Gbeta%Gkappa%G' % (alpha, beta, kappa)
+        else:
+            s = 'alpha%Gbeta%Gkappa%G' % (alpha, beta, norm(kappa))
+
+        s += 'T%G' % (problem.T)
+        if problem.Nx is not None:
+            s += 'Nx' + str(problem.Nx)
+        if problem.Ny is not None:
+            s += 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
+            s += 'Nz' + str(problem.Nz)
+
+        s += 'K' + str(int(1. / problem.k))
+
+        return s
+
+    def getMyMemoryUsage(self):
+        '''
+            Determines how much memory we are using.
+        '''
+        mypid = getpid()
+        mymemory = getoutput('ps -o rss %s' % mypid).split()[1]
+        return mymemory
 
     def Plot(self, problem, V, u):
 
