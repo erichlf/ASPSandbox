@@ -94,20 +94,25 @@ class Solver(SolverBase):
             self.meshfile = File(self.s + '_mesh%d.xml' % n)
 
     def suffix(self, problem):
+        import numpy as np
         '''
             Obtains the run specific data for file naming, e.g. Nx, k, etc.
         '''
         s = ''
 
-        alpha = problem.alpha
-        beta = problem.beta
-        kappa = problem.kappa
+        alpha = float(problem.alpha)
+        beta = np.zeros(2)
+        problem.beta.eval(beta, np.zeros(3))
+        beta = np.dot(beta, beta)**0.5
+        if problem.kappa.rank() == 0:
+            kappa = float(problem.kappa)
+        else:
+            kappa = np.zeros(2)
+            problem.kappa.eval(kappa, np.zeros(3))
+            kappa = np.dot(kappa, kappa)**0.5
 
         # Return file suffix for output files
-        if kappa.rank() == 0:
-            s = 'alpha%Gbeta%Gkappa%G' % (alpha, beta, kappa)
-        else:
-            s = 'alpha%Gbeta%Gkappa%G' % (alpha, beta, norm(kappa))
+        s = 'alpha%Gbeta%Gkappa%G' % (alpha, beta, kappa)
 
         s += 'T%G' % (problem.T)
         if problem.Nx is not None:

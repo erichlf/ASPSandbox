@@ -68,15 +68,15 @@ class Problem(ProblemBase):
         self.k = self.time_step(self.Ubar, self.mesh)
 
         try:  # set up heat coefficient
-            self.kappa = Expression('kappa', kappa=options['kappa'])
+            self.kappa = Constant(options['kappa'])
         except:
             self.kappa = kappa
         try:  # velocity for adr
-            self.beta = Expression('beta', beta=options['beta'])
+            self.beta = Constant(options['beta'])
         except:
             self.beta = beta
         try:  # reaction coefficient for adr
-            self.alpha = Expression('a', a=options['alpha'])
+            self.alpha = Constant(options['alpha'])
         except:
             self.alpha = alpha
 
