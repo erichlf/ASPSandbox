@@ -22,8 +22,8 @@ beta = Constant((-1, -0.61))
 rho = 1.
 c = 1.
 
-TR = 0.5
-TA = 0.5
+TR = 10.
+TA = 10.
 omega = 2. * pi
 
 
@@ -90,9 +90,8 @@ class Problem(ProblemBase):
         return u0
 
     def boundary_conditions(self, V, t):
-        g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
         bc0 = DirichletBC(V, Constant(0.0), OuterBoundary())
-        bc1 = DirichletBC(V, Constant(10.0), InnerBoundary())
+        bc1 = DirichletBC(V, Constant(TA), InnerBoundary())
 
         return [bc0, bc1]
 
