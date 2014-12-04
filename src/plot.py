@@ -5,10 +5,10 @@ if len(sys.argv) < 3:
     print("Usage: python plot.py <adaptive data> title")
     exit(0)
 elif len(sys.argv) < 4:
-    titlestr = sys.argv[2].format()
+    titlestr = str(sys.argv[2])
     sys.argv[2] = None
 else:
-    titlestr = sys.argv[3].format()
+    titlestr = str(sys.argv[3])
 
 adaptfile = sys.argv[1]
 uniformfile = sys.argv[2]
