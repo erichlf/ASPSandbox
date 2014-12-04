@@ -210,6 +210,49 @@ entering the details for the domain, boundary conditions, and the weak form.
     \end{remark}
 
 \subsubsection{Advection-Reaction-Diffusion Equation} \label{sss:ADR}
+    In this subsection we extend what was done for the Heat Equation,
+    \autoref{sss:Heat}, to that of the Advection-Reaction-Diffusion equation
+    (ADR). The ADR is a simple linear model of a reactive and diffusive flow. In
+    what follows the parameters $\alpha,\,\beta$, and $\kappa$ represent the
+    reactivity, convective velocity vector, and diffusivity tensor,
+    respectively. Thus, for $t\in [0,T]$ and a domain $\Omega$ with boundary
+    $\partial \Omega$, the ADR is given by
+    \begin{equation}
+        \begin{split}
+            u_t + \nabla \left(\kappa\cdot \nabla u \right) + \beta \cdot \nabla
+                u + \alpha u = f,& \quad \mathbf{x} \in \Omega, \\
+            u = g,& \quad \mathbf{x} \in \partial \Omega, \\
+            u = 0,& \quad t = 0,
+        \end{split}
+        \label{eq:ADR}
+    \end{equation}
+    where $f$ is the external forcing.
+
+    For this particular example we take the domain to be a square domain with a
+    center square removed. That is we take the outer square to be $\Omega_1 =
+    [0,1]^2$ and the inner square to be $\Omega_2 = [0.48,0.52]^2$ and the
+    resulting domain $\Omega$ is given by
+    \begin{equation}
+        \Omega = \Omega_1\setminus \Omega_2,
+        \label{eq:ADRDomain}
+    \end{equation}
+    and then the boundary $\partial \Omega$ is defined as
+    \begin{equation}
+        \partial \Omega = \partial \Omega_1 + \partial \Omega_2,
+        \label{eq:ADRBoundary}
+    \end{equation}
+    where $\partial \Omega_1$ is the boundary of $\Omega_1$ and $\partial
+    \Omega_2$ is the boundary of $\Omega_2$.
+
+    With the domain, $\Omega$, and its boundary, $\partial \Omega$, given we
+    define the boundary condition as
+    \begin{equation}
+        g = \begin{cases}
+            0   &\mathbf{x} \in \partial \Omega_1 \\
+            10  &\mathbf{x} \in \partial \Omega_2
+        \end{cases}.
+        \label{eq:ADRBCs}
+    \end{equation}
 
 %\begin{figure}[H]
 %    \centering
