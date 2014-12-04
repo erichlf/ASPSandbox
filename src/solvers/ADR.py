@@ -112,7 +112,7 @@ class Solver(SolverBase):
             kappa = np.dot(kappa, kappa)**0.5
 
         # Return file suffix for output files
-        s = 'alpha%Gbeta%Gkappa%G' % (alpha, beta, kappa)
+        s = 'alpha%.3Gbeta%.3Gkappa%.3G' % (alpha, beta, kappa)
 
         s += 'T%G' % (problem.T)
         if problem.Nx is not None:
