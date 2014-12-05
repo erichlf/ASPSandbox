@@ -187,11 +187,21 @@ entering the details for the domain, boundary conditions, and the weak form.
     any solver and problem combination we will present the above example using
     subclasses instead of pure function definitions. We will not change any of
     the above functionality, except for placing functions in an appropriate
-    subclass. To this end we first present the problem which is a subclass of
-    ProblemBase, where problem base is a class provided by AFES.
+    subclass. To this end we first present the \texttt{problem} which is a
+    subclass of \texttt{ProblemBase}, where \texttt{ProblemBase} is the
+    \texttt{Problem} class provided by AFES.
     \lstinputlisting[firstline=5,caption={Square \texttt{Problem} subclass.}]{
         ../../src/problems/Square.py
     }
+    Now we define the \texttt{solver} which will be a subclass of
+    \text{SolverBase}, which is the \texttt{Solver} class provided by AFES.
+    \lstinputlisting[firstline=4,caption={Heat \texttt{Solver} subclass.}]{
+        ../../src/solvers/Heat.py
+    }
+
+    Finally, one can then solve a particular problem using a script like the
+    following.
+    \lstinputlisting[caption={Solver Script}]{solve.py}
 
 \subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
 
