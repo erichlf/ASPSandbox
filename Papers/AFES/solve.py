@@ -5,6 +5,9 @@ from AFES import *
 import Heat as Solver
 import Square as Problem
 
+solver_name = 'Heat'
+problem_name = 'Square'
+
 
 def main(args):
     # Get options
@@ -25,8 +28,8 @@ def main(args):
     # Compute elapsed time
     wct = time() - wct
 
-    print 'Solved %s for the %s problem in %g seconds.' % (solver.__str__,
-                                                           problem.__str__, wct)
+    print 'Solved %s for the %s problem in %g seconds.' % (solver_name,
+                                                           problem_name, wct)
 
     return 0
 
