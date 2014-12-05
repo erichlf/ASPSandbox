@@ -29,7 +29,7 @@ class Problem(ProblemBase):
         self.k = options['k']
 
     def initial_conditions(self, V):
-        u0 = project(Expression('sin(pi*x[0])*sin(pi*x[1])'), W)
+        u0 = project(Expression('sin(pi*x[0])*sin(pi*x[1])'), V)
 
         return u0
 
