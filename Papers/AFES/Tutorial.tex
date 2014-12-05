@@ -191,17 +191,26 @@ entering the details for the domain, boundary conditions, and the weak form.
     subclass of \texttt{ProblemBase}, where \texttt{ProblemBase} is the
     \texttt{Problem} class provided by AFES.
     \lstinputlisting[firstline=5,caption={Square \texttt{Problem} subclass.}]{
-        ../../src/problems/Square.py
+        Square.py
     }
     Now we define the \texttt{solver} which will be a subclass of
     \text{SolverBase}, which is the \texttt{Solver} class provided by AFES.
-    \lstinputlisting[firstline=4,caption={Heat \texttt{Solver} subclass.}]{
-        ../../src/solvers/Heat.py
+    \lstinputlisting[firstline=4,caption={Heat \texttt{Solver} subclass.},
+                    label={lst:HeatClass}]{
+        HeatClass.py
     }
 
     Finally, one can then solve a particular problem using a script like the
     following.
-    \lstinputlisting[caption={Solver Script}]{solve.py}
+    \lstinputlisting[caption={Solver Script}, label={lst:Script}]{solve.py}
+
+    With the above method one can write a general script to run a variety of
+    problem/solver combinations, thus allow for a very easy method to test
+    hypothesis without changing much in the way of one's code. This is where the
+    main power/attraction lies in using an API such as AFES. Thus, all code
+    which follows will be presented in this form and the script use to run the
+    various problem will be assumed to be quite similar to the script presented
+    in \autoref{lst:Script}.
 
 \subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
 
@@ -298,6 +307,14 @@ entering the details for the domain, boundary conditions, and the weak form.
     that the test piecewise constants and the trial functions are continuous
     piecewise linear (see \cite{Hoffman2006a} for more details).
 
+    \lstinputlisting[firstline=5,caption={ADR Domain \texttt{Problem} subclass.},
+                    label={lst:ADRDomain}]{
+        Hole.py
+    }
+    \lstinputlisting[firstline=5,caption={ADR \texttt{Solver} subclass.},
+                    label={lst:ADR}]{
+        ADR.py
+    }
 %\begin{figure}[H]
 %    \centering
 %    \includegraphics{figures/ADR.png}
@@ -498,6 +515,10 @@ entering the details for the domain, boundary conditions, and the weak form.
     in the Navier-Stokes equation. Most applications of the goal oriented
     adaptivity will be quite similar and won't need any real changes.
 
+    \lstinputlisting[firstline=6,label={lst:NSEClass},
+        caption={Cylinder \texttt{Problem} subclass.}
+    ]{Cylinder.py}
+
     Now that the problem has been defined we then proceed by defining the
     solver. Again the steps here are quite similar to before, except with the
     addition of the stabilization terms. Here the stabilization is given by the
@@ -506,21 +527,8 @@ entering the details for the domain, boundary conditions, and the weak form.
     \texttt{Solver}. This can be seen in the following lines, including the
     passing of the functions \texttt{function\_space}, \texttt{weak\_residual},
     and \texttt{strong\_residual} to the \texttt{Solver} class.
-    \lstinputlisting[firstline=120,lastline=187,
-        label={lst:AdaptiveWeakFormNSE},
-        caption={Function space, weak residual with the \texttt{ei\_mode} used
-            to turn off the stabilization and stabilization for the
-            Navier-Stokes equation.}
-    ]{AdaptiveNSE.py}
-    \lstinputlisting[firstline=220,lastline=221, label={lst:Weak2SolverNSE},
-        caption={Passing the function space, weak residual, and
-            stabilization to \texttt{Solver}.}
+    \lstinputlisting[firstline=5,label={lst:CylinderClass},
+        caption={NSE \texttt{Solver} subclass.}
     ]{NSE.py}
-
-    The entire code can be viewed below
-    \lstinputlisting[label={lst:NSE},
-        caption={Complete code for Navier-Stokes flow around a cylinder using
-        goal oriented adaptivity.}
-    ]{AdaptiveNSE.py}
 
 %\subsection{Optimization} \label{sse:Optimization}

@@ -28,6 +28,8 @@ def main(args):
     # Compute elapsed time
     wct = time() - wct
 
+    sys.stdout.flush()
+    sys.stdout.write('\033[K')
     print 'Solved %s for the %s problem in %g seconds.' % (solver_name,
                                                            problem_name, wct)
 
