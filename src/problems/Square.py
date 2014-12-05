@@ -28,6 +28,20 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['k']
 
+        try:
+            self.kappa = Constant(options['kappa'])
+        except:
+            self.kappa = Constant(1E-2)  # heat Coefficient
+        try:
+            self.rho = Constant(options['rho'])
+        except:
+            self.rho = Constant(1.)  # density
+
+        try:
+            self.c = Constant(options['c'])
+        except:
+            self.c = Constant(1.)  # heat Coefficient
+
     def initial_conditions(self, V):
         u0 = project(Expression('sin(pi*x[0])*sin(pi*x[1])'), V)
 
