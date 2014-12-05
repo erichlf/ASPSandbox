@@ -2,8 +2,8 @@ import sys
 from time import time
 
 from AFES import *
-import Heat as Solver
-import Square as Problem
+import Heat
+import Square
 
 solver_name = 'Heat'
 problem_name = 'Square'
@@ -18,8 +18,8 @@ def main(args):
 
     print 'Solving %s for the %s problem.' % (solver_name, problem_name)
     # Create problem and solver
-    problem = Problem(options)
-    solver = Solver(options)
+    problem = Square.Problem(options)
+    solver = Heat.Solver(options)
 
     # Solve problem with solver
     wct = time()
