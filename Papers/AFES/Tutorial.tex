@@ -222,16 +222,16 @@ entering the details for the domain, boundary conditions, and the weak form.
             u_t + \nabla \left(\kappa\cdot \nabla u \right) + \beta \cdot \nabla
                 u + \alpha u = f,& \quad \mathbf{x} \in \Omega, \\
             u = g,& \quad \mathbf{x} \in \partial \Omega, \\
-            u = 0,& \quad t = 0,
+            u = 0,& \quad t = 0,\, \mathbf{x} \in \partial \Omega,
         \end{split}
         \label{eq:ADR}
     \end{equation}
     where $f$ is the external forcing.
 
     For this particular example we take the domain to be a square domain with a
-    center square removed. That is we take the outer square to be $\Omega_1 =
-    [0,1]^2$ and the inner square to be $\Omega_2 = [0.48,0.52]^2$ and the
-    resulting domain $\Omega$ is given by
+    center square removed. That is we take the outer square to be $\Omega_1$ and
+    the inner square to be $\Omega_2$ and the resulting domain $\Omega$ is given
+    by
     \begin{equation}
         \Omega = \Omega_1\setminus \Omega_2,
         \label{eq:ADRDomain}
@@ -242,10 +242,26 @@ entering the details for the domain, boundary conditions, and the weak form.
         \label{eq:ADRBoundary}
     \end{equation}
     where $\partial \Omega_1$ is the boundary of $\Omega_1$ and $\partial
-    \Omega_2$ is the boundary of $\Omega_2$.
+    \Omega_2$ is the boundary of $\Omega_2$ (see \autoref{fig:ADRDomain}.
 
-    With the domain, $\Omega$, and its boundary, $\partial \Omega$, given we
-    define the boundary condition as
+    \begin{figure}[h]
+        \centering
+        \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
+        \begin{tikzpicture}[scale=6]
+            \draw (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+            \draw (0.4,0.4) -- (0.6,0.4) -- (0.6,0.6) -- (0.4,0.6) -- cycle;
+            \node (Omega_2) at (0.5,0.5) {$\Omega_2$};
+            \node (dOmega_2) at (0.5,0.65) {$\partial\Omega_2$};
+            \node (Omega_1) at (0.25,0.25) {$\Omega_1$};
+            \node (dOmega_1) at (0.5,0.05) {$\partial\Omega_1$};
+        \end{tikzpicture}
+        \caption{Problem Geometry for ADR, $\Omega$}
+        \label{fig:ADRDomain}
+    \end{figure}
+
+    For this particular example we will take the subdomains to be $\Omega_1 =
+    [0,1]^2$ and $\Omega_2 = [0.48,0.52]^2$. With these subdomains defined we
+    take the boundary condition to be
     \begin{equation}
         g = \begin{cases}
             0   &\mathbf{x} \in \partial \Omega_1 \\
@@ -368,7 +384,7 @@ entering the details for the domain, boundary conditions, and the weak form.
             \draw[next] (NoFlow) to [out=-45,in=45] (1.1,0);
             \draw[next] (NoFlow) to [out=-135,in=-35] (0.25,0.15);
         \end{tikzpicture}
-        \caption{Problem Geometry, $\Omega$}
+        \caption{Problem Geometry for NSE flow around a cylinder, $\Omega$}
         \label{fig:2DCylinder}
     \end{figure}
 
