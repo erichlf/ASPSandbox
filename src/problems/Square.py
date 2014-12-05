@@ -1,35 +1,9 @@
 __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 __license__ = "GNU GPL version 3 or any later version"
-#
-#   adapted from channel.py in nsbench originally developed
-#   by Kent-Andre Mardal <kent-and@simula.no>
-#
-
-'''
-This is an extremely boring problem with no forcing and on a square.
-This is basically a blank problem that we can adapt with optional inputs.
-'''
 
 from AFES import *
 from AFES import Problem as ProblemBase
-
-
-class InitialConditions(Expression):
-
-    def eval(self, values, x):
-        values[0] = 0.
-        values[1] = 0.
-        values[2] = 0.
-
-    def value_shape(self):
-        return (3,)
-
-
-class NoslipBoundary(SubDomain):
-
-    def inside(self, x, on_boundary):
-        return on_boundary
 
 
 class Problem(ProblemBase):
@@ -54,24 +28,19 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['k']
 
-    def initial_conditions(self, W):
-        w0 = InitialConditions()
-        w0 = project(w0, W)
+    def initial_conditions(self, V):
+        u0 = project(Expression('sin(pi*x[0])*sin(pi*x[1])'), W)
 
-        return w0
+        return u0
 
-    def boundary_conditions(self, W, t):
+    def boundary_conditions(self, V, t):
         # Create no-slip boundary condition for velocity
-        bcs = DirichletBC(W.sub(0), Constant((0.0, 0.0)), NoslipBoundary())
+        bcs = DirichletBC(W, Constant(0.0), on_boundary)
 
         return bcs
 
-    def F1(self, t):
+    def F(self, t):
         # forcing function for the momentum equation
-        return Constant((0, 0))
-
-    def F2(self, t):
-        # mass source for the continuity equation
         return Constant(0)
 
     def __str__(self):

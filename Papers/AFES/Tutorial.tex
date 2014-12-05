@@ -177,11 +177,21 @@ entering the details for the domain, boundary conditions, and the weak form.
     While from a coders point of view this looks more complicated than the
     standard heat equation solver in the FEniCS demos, the beauty of this code
     is that the main() portion of the script remains mostly unchanged from
-    problem to problem. The power of this approach can be seen in the
-    code snippets \autoref{lst:FS+WR2Solver} and \autoref{lst:IC+BC2Problem}.
-    With this approach we can easily mix and match problems and solvers. Thus,
-    we can use the same main() to run, say, the heat equation or even the
-    Navier-Stokes equations (on a simple domain).
+    problem to problem and from solver to solver. The power of this approach can
+    be seen in the code snippets \autoref{lst:FS+WR2Solver} and
+    \autoref{lst:IC+BC2Problem}.  With this approach we can easily mix and match
+    problems and solvers. Thus, we can use the same main() to run, say, the heat
+    equation or even the Navier-Stokes equations (on a simple domain).
+
+    To demonstrate a very straight forward way to simplify such a script to use
+    any solver and problem combination we will present the above example using
+    subclasses instead of pure function definitions. We will not change any of
+    the above functionality, except for placing functions in an appropriate
+    subclass. To this end we first present the problem which is a subclass of
+    ProblemBase, where problem base is a class provided by AFES.
+    \lstinputlisting[firstline=5,caption={Square \texttt{Problem} subclass.}]{
+        ../../src/problems/Square.py
+    }
 
 \subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
 
@@ -269,6 +279,14 @@ entering the details for the domain, boundary conditions, and the weak form.
         \end{cases}.
         \label{eq:ADRBCs}
     \end{equation}
+    Finally we take the final time $T=10,\, \alpha=1,\, \beta = \left[ -1,
+    -0.61 \right]$, and $\kappa = 0.1$.
+
+    We will discretize ADR using a Galerkin\slash Least-Squares (GLS) stabilized
+    cG(1)cG(1) finite element, where the first cG(1) indicates that the test and
+    trial functions are both piecewise linear, while the second cG(1) indicates
+    that the test piecewise constants and the trial functions are continuous
+    piecewise linear (see \cite{Hoffman2006a} for more details).
 
 %\begin{figure}[H]
 %    \centering
@@ -281,16 +299,13 @@ entering the details for the domain, boundary conditions, and the weak form.
 
     In this subsection we demonstrate the use of AFES on a more complicated
     example, one that includes a non-linear term, namely the Navier-Stokes
-    equations for flow around a cylinder.  We discretize the Navier-Stokes
-    equations using a Galerkin\slash Least-Squares (GLS) stabilized cG(1)cG(1)
-    finite element, where the first cG(1) indicates that the test and trial
-    functions are both piecewise linear, while the second cG(1) indicates that
-    the test piecewise constants and the trial functions are continuous
-    piecewise linear (see \cite{Hoffman2006a} for more details).
+    equations for flow around a cylinder.  Again, we will discretize the
+    Navier-Stokes equations using a Galerkin\slash Least-Squares (GLS)
+    stabilized cG(1)cG(1) finite element.
 
     For this problem we are concerned with modelling the incompressible
-    Navier-Stokes equations with constant kinematic viscosity, $\nu>0$, in a
-    domain $\Omega\subset \R^d$, with boundary $\partial \Omega$, i.e.  where
+    Navier-Stokes equations (NSE) with constant kinematic viscosity, $\nu>0$, in
+    a domain $\Omega\subset \R^d$, with boundary $\partial \Omega$, i.e.  where
     the strong residual is given by
     \begin{equation}
         \begin{split}
