@@ -20,8 +20,8 @@ class Solver(SolverBase):
         (u, p) = (as_vector((w[0], w[1])), w[2])
         (U, P) = (as_vector((w2[0], w2[1])), w2[2])
 
-        R1 = grad(U) * u + grad(p)
-        R2 = div(u)
+        R1 = grad(U) * u + grad(p)  # momentum equation
+        R2 = div(u)  # conservation equation
 
         return R1, R2
 
@@ -41,23 +41,20 @@ class Solver(SolverBase):
         t0 = problem.t0
 
         t = t0 + k
-        # forcing and mass source/sink
-        F = problem.F1(t)
+        F = problem.F1(t)  # forcing and mass source/sink
 
-        # least squares stabilization
+        # turn of least squares stabilization when ei_mode
         if(ei_mode):
-            d1 = 0
-            d2 = 0
+            d1 = 0; d2 = 0
 
         # weak form of the equations
         r = (1. / k) * inner(U - U_, v) * dx \
-            + inner(grad(p) + grad(u) * u, v) * dx
-        r += nu * inner(grad(u), grad(v)) * dx
-        r += div(u) * q * dx
+            + inner(grad(p) + grad(u) * u, v) * dx \
+            + nu * inner(grad(u), grad(v)) * dx  # momentum equation
+        r -= inner(F, v) * dx  # forcing of momentum equation
+        r += div(u) * q * dx  # continuity
 
-        # forcing function
-        r -= inner(F, v) * dx
-
+        # Galerkin Least-Squares stabilization
         R1, R2 = self.strong_residual(W, w, w)
         Rv1, Rv2 = self.strong_residual(W, wt, w)
         r += (d1 * inner(R1 - F, Rv1) + d2 * R2 * Rv2) * dx
@@ -65,8 +62,7 @@ class Solver(SolverBase):
         return r
 
     def stabilization_parameters(self, u, p, k, h):
-        K1 = 1.
-        K2 = 1.
+        K1 = 1.; K2 = 1.
         d1 = K1 * h
         d2 = K2 * h
 

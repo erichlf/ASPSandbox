@@ -1,7 +1,7 @@
-In this section we introduce the usage of AFES by the use of examples. The AFES
+In this section we introduce the usage of \texttt{AFES} by the use of examples. The AFES
 api is written solely in Python (with the exception of UFL for the weak form)
 and thus the user is expected to have a basic knowledge of Python programming.
-However, since AFES is based on the FEniCS/DOLFIN Python interface it does not
+However, since \texttt{AFES} is based on the FEniCS/DOLFIN Python interface it does not
 compromise on performance\cite{Alnae2011}. The use of DOLFIN's Python interface
 allows for greater ease of use, as compared to the C++ interface. Eventually, we
 intend to offer a GUI which would require the use of no programming and only
@@ -10,7 +10,7 @@ entering the details for the domain, boundary conditions, and the weak form.
 \subsection{Solving a PDE} \label{sse:Solver}
 
     In this subsection we explain how to solve a basic time dependent PDE using
-    the AFES API. We choose to explain the API by example; we choose to
+    the \texttt{AFES} API. We choose to explain the API by example; we choose to
     make things quite simple at first and so the first example is the Heat
     equation.  Since, the FEM requires the weak form of any PDE we assume
     the user understands how to determine the weak form for a given PDE and thus
@@ -19,7 +19,7 @@ entering the details for the domain, boundary conditions, and the weak form.
 
     Of course to be able to solve any PDE certain assumptions must be made. AFES
     makes the assumption that an $H^1$ FE is appropriate for solving the given
-    PDE, i.e. the FE discretization is stable. Additionally, AFES assumes the
+    PDE, i.e. the FE discretization is stable. Additionally, \texttt{AFES} assumes the
     PDE has the following form
     \begin{equation}
         R(u) = u_t - F(u;t) = 0,
@@ -106,7 +106,7 @@ entering the details for the domain, boundary conditions, and the weak form.
         \label{eq:HeatBC}
     \end{equation}
 
-    Just as in the definition of the PDE AFES requires certain things to be
+    Just as in the definition of the PDE \texttt{AFES} requires certain things to be
     defined. First, we can define the mesh (we will use a
     \texttt{UnitSquareMesh} as our domain), and then the mesh must be passed to
     the \texttt{Problem} class. This can be done in the following way
@@ -120,7 +120,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     \lstinputlisting[firstline=10,lastline=20,
         caption={Create the initial conditions and boundary conditions.}
     ]{Heat.py}
-    To be able to access these functions AFES needs them define. To do this we
+    To be able to access these functions \texttt{AFES} needs them define. To do this we
     must pass the functions to AFES' \texttt{Problem} class. This is done quite
     easily in the following way
     \lstinputlisting[firstline=73,lastline=74,
@@ -156,7 +156,7 @@ entering the details for the domain, boundary conditions, and the weak form.
 
     In addition to the standard functions above, we can define some auxiliary
     functions. Some examples are \texttt{Plot}, \texttt{Name}, and \texttt{Save}
-    functions; AFES assumes the equation given is similar to the Navier-Stokes
+    functions; \texttt{AFES} assumes the equation given is similar to the Navier-Stokes
     equation, i.e. the first variable is a vector function and the second
     variable is a scalar function, thus it may be necessary to override the
     built in functionality so as to fit your own specifics. For this example we
@@ -308,23 +308,22 @@ entering the details for the domain, boundary conditions, and the weak form.
     piecewise linear (see \cite{Hoffman2006a} for more details).
 
     \lstinputlisting[firstline=5,caption={ADR Domain \texttt{Problem} subclass.},
-                    label={lst:ADRDomain}]{
-        Hole.py
-    }
+                    label={lst:ADRDomain}
+    ]{Hole.py}
     \lstinputlisting[firstline=5,caption={ADR \texttt{Solver} subclass.},
-                    label={lst:ADR}]{
-        ADR.py
-    }
-%\begin{figure}[H]
-%    \centering
-%    \includegraphics{figures/ADR.png}
-%    \caption{Solution of the Advection-Reaction-Diffusion equation at time
-%    $t=5$.}
-%    \label{fig:ADR}
-%\end{figure}
+                    label={lst:ADR}
+    ]{ADR.py}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
+        \caption{Adaptive error estimate versus ``true'' error versus a ``true''
+            error obtained from a uniform refinement for the Solution of the
+            ADR equation.}
+        \label{fig:ADR_EI}
+    \end{figure}
 \subsubsection{Navier-Stokes Equations} \label{sss:NSE}
 
-    In this subsection we demonstrate the use of AFES on a more complicated
+    In this subsection we demonstrate the use of \texttt{AFES} on a more complicated
     example, one that includes a non-linear term, namely the Navier-Stokes
     equations for flow around a cylinder.  Again, we will discretize the
     Navier-Stokes equations using a Galerkin\slash Least-Squares (GLS)
@@ -441,92 +440,136 @@ entering the details for the domain, boundary conditions, and the weak form.
     \autoref{lst:Heat}.  Some differences come from the more complex geometry,
     time dependent boundary conditions, and stabilization. One additional
     complexity is the non-linearity inherent to the Navier-Stokes equations
-    which does not exist in the Heat equation. AFES assumes all problems are
+    which does not exist in the Heat equation. \texttt{AFES} assumes all problems are
     non-linear, and therefore no changes must be made to take into account a
     non-linear problem.  It should, however, be mentioned that this assumption
-    by AFES does tend to slow the calculations down for linear problem. As for
-    the other complexity added by flow around a cylinder, AFES handles the
+    by \texttt{AFES} does tend to slow the calculations down for linear problem. As for
+    the other complexity added by flow around a cylinder, \texttt{AFES} handles the
     additionally complexity in a straight forward manner that is similar to what
     one would expect in the standard Python interface of FEniCS/DOLFIN.
 
     The first step we take is setting up problem specific parameters, including
     definition of geometric extent, maximum velocity, etc.
-    \lstinputlisting[firstline=6,lastline=15,
-        caption={Problem specific parameter definitions for Navier-Stokes
-        equation}
-    ]{NSE.py}
+    \lstinputlisting[firstline=6,lastline=16,
+        caption={Importing \texttt{AFES} and problem specific parameter definitions for
+                flow around a cylinder.}
+    ]{Cylinder.py}
+    \lstinputlisting[firstline=52, lastline=93, caption={Initialization of
+        problem, which includes settings parameters and mesh creation.}
+    ]{Cylinder.py}
     Then in the same way we did in the previous example we setup the initial
     conditions and send them to \texttt{Problem}
-    \lstinputlisting[firstline=22,lastline=30, label={lst:ICExpNSE},
+    \lstinputlisting[firstline=18,lastline=28, label={lst:ICExpNSE},
         caption={Expression for the initial conditions for Navier-Stokes
-        equations}
-    ]{NSE.py}
-    \lstinputlisting[firstline=70,lastline=72, label={lst:ICNSE},
+                equations}
+    ]{Cylinder.py}
+    \lstinputlisting[firstline=95,lastline=100, label={lst:ICNSE},
         caption={Initial conditions for Navier-Stokes equations}
-    ]{NSE.py}
-    \lstinputlisting[firstline=210,lastline=210,
-        caption={Passing the initial conditions for Navier-Stokes to
-            \texttt{Problem}}
-    ]{NSE.py}
+    ]{Cylinder.py}
 
     Next we define the various boundaries, which include the inflow, outflow,
     and no-slip boundaries (the cylinder is considered a no-slip boundary), then
-    we define the boundary conditions and send this to \texttt{Problem}
-    \lstinputlisting[firstline=33,lastline=67, label={lst:SubDomainsNSE},
+    we define the boundary conditions
+    \lstinputlisting[firstline=29,lastline=50, label={lst:SubDomainsNSE},
         caption={Defining problem specific boundaries for flow around a
             cylinder.}
-    ]{NSE.py}
-    \lstinputlisting[firstline=80,lastline=94, label={lst:BCsNSE},
-        caption={Defining boundary conditions for Navier-Stokes equations}
-    ]{NSE.py}
-    \lstinputlisting[firstline=187,lastline=198, label={lst:DomainNSE},
-        caption={Definition of domain and mesh for flow around a cylinder.}
-    ]{NSE.py}
-    \lstinputlisting[firstline=210,lastline=210, label={lst:BC2ProblemNSE},
-        caption={Passing boundary conditions to \texttt{Problem} for
-            Navier-Stokes equations flow around a cylinder.}
-    ]{NSE.py}
+    ]{Cylinder.py}
+    \lstinputlisting[firstline=106,lastline=120, label={lst:BCsNSE},
+        caption={Defining boundary conditions for Cylinder problem}
+    ]{Cylinder.py}
 
-    With the domain and boundary conditions in place we must allow for the
+    Since our boundary conditions are not constant we must allow for the
     boundary conditions to be updated. To do this we add the update function to
     \texttt{Problem}, which is done in much the same way as the other functions
     we have added up until now
-    \lstinputlisting[firstline=101,lastline=105, label={lst:UpdateBCs},
-        caption={Update boundary conditions.}
-    ]{NSE.py}
-    \lstinputlisting[firstline=214,lastline=214, label={lst:Update2Problem},
-        caption={Passing the update function to \texttt{Problem}.}
-    ]{NSE.py}
+    \lstinputlisting[firstline=130, lastline=132, caption={Update boundary
+        conditions for the Cylinder problem.}
+    ]{Cylinder.py}
+
+    \begin{remark}
+        We note that the update function is called at the beginning
+        of each time step.
+    \end{remark}
+
+    We must also define the forcing functions, which is simply done by defining
+    functions with the names corresponding to the names used in the solver
+    definition (used later), i.e.
+    \lstinputlisting[firstline=122,lastline=128, caption={Forcing functions for
+        the Cylinder problem}
+    ]{Cylinder.py}
 
     Next we define the goal functional, \eqref{eq:NSEGoal}, to be used for goal
     oriented adaptivity.
-    \lstinputlisting[firstline=108,lastline=113, label={lst:Functional},
-        caption={Goal functional.}
-    ]{AdaptiveNSE.py}
-    And then we send the goal functional to the AFES API and tell AFES to use
-    adaptivity.
-    \lstinputlisting[firstline=192,lastline=192, label={lst:AdaptiveBool},
-        caption={Setting the the adaptive boolean to true.},
-    ]{AdaptiveNSE.py}
-    \lstinputlisting[firstline=228,lastline=228, label={lst:Goal2Problem},
-        caption={Passing the goal functional to the \texttt{Problem} class}
-    ]{AdaptiveNSE.py}
-    These are the only necessary additions needed for goal oriented adaptivity
-    in the Navier-Stokes equation. Most applications of the goal oriented
-    adaptivity will be quite similar and won't need any real changes.
+    \lstinputlisting[firstline=137,lastline=147, label={lst:Functional},
+        caption={Goal functional for the Cylinder problem.}
+    ]{Cylinder.py}
 
+    Now that the problem has been defined we then proceed by defining the
+    solver. Again, the steps here are quite similar to how we did things in the
+    Heat equation, except that we do things by a subclass.  To do this we define
+    a \texttt{Solver} subclass which must contain, at least, the function
+    \texttt{weak\_residual} and the function \texttt{function\_space}. For our
+    implementation of NSE we must include stabilization terms, here we choose to
+    do so by defining a function \texttt{strong\_residual}.  This can be seen in
+    the following lines, since things are done through a \texttt{Solver}
+    subclass passing of the functions \texttt{function\_space},
+    \texttt{weak\_residual}, and \texttt{strong\_residual} to the
+    \texttt{Solver} class is no longer needed.
+
+    \begin{remark}
+        \texttt{AFES} assumes the solver is a \texttt{MixedFunctionSpace}, $W =
+        V \times Q$, where $V$ is a \texttt{VectorFunctionSpace} and $Q$ is a
+        \texttt{FunctionSpace}. Thus, if the \texttt{Solver} uses this type of
+        function space the user need not redefine he function space. Thus, in
+        the implementation of this NSE, the reader should note that the function
+        space does not appear in the \texttt{Solver} subclass, because it has
+        already been defined by the \texttt{Solver} class.
+    \end{remark}
+
+    First, we define initialize the \texttt{Solver} subclass
+    \lstinputlisting[firstline=5,lastline=17,
+        caption={Importing \texttt{AFES} and initializing the NSE
+                \texttt{Solver} subclass}
+    ]{NSE.py}
+
+    Next, we will define our \texttt{strong\_residual},
+    \texttt{stabilization\_parameters}, and \texttt{weak\_residual} functions.
+    \lstinputlisting[firstline=19,lastline=69,
+        caption={Defining the \texttt{strong\_residual},
+                \texttt{stabilization\_parameters}, and
+                \texttt{weak\_residual}.}
+    ]{NSE.py}
+
+    \begin{remark}
+        \texttt{AFES} assumes the user is solving a system like NSE and thus,
+        the naming scheme of any resulting files includes the Reynolds number,
+        defined as $Re=1/\nu$. Additionally, \texttt{AFES} will assume the
+        solution is made up of a vector field, the velocity field, and a
+        scalar field, the pressure field. Thus, the solution is saved in two
+        separate sets of files: one set describing the velocity field, and the
+        other describing the pressure field.
+    \end{remark}
+
+    Now, to set \texttt{AFES} to use adaptivity we must set the option for
+    adaptivity to true. This is easily done before initilizing the
+    \texttt{Solver} in one's script using the following code
+    \begin{lstlisting}[label={lst:AdaptiveBool},
+                       caption={Setting the the adaptive boolean to true.}]
+        options['adaptive'] = True
+    \end{lstlisting}
+
+    The addition of the functional, \autoref{lst:Functional}, and setting the
+    adaptive option to true, \autoref{lst:AdaptiveBool}, are the only necessary
+    additions needed for goal oriented adaptivity in the Navier-Stokes equation.
+    Most applications of the goal oriented adaptivity will be quite similar and
+    won't need any real changes.
+
+    Below are the complete codes for the definition of the \texttt{Problem}
+    subclass and the \texttt{Sovler} subclass.
     \lstinputlisting[firstline=6,label={lst:NSEClass},
         caption={Cylinder \texttt{Problem} subclass.}
     ]{Cylinder.py}
 
-    Now that the problem has been defined we then proceed by defining the
-    solver. Again the steps here are quite similar to before, except with the
-    addition of the stabilization terms. Here the stabilization is given by the
-    function \texttt{strong\_residual}, and so this function, in addition to
-    \texttt{function\_space} and \texttt{weak\_residual}, must be sent to the
-    \texttt{Solver}. This can be seen in the following lines, including the
-    passing of the functions \texttt{function\_space}, \texttt{weak\_residual},
-    and \texttt{strong\_residual} to the \texttt{Solver} class.
     \lstinputlisting[firstline=5,label={lst:CylinderClass},
         caption={NSE \texttt{Solver} subclass.}
     ]{NSE.py}
