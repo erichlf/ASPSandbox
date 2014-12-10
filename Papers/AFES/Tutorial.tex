@@ -307,9 +307,9 @@ entering the details for the domain, boundary conditions, and the weak form.
     that the test piecewise constants and the trial functions are continuous
     piecewise linear (see \cite{Hoffman2006a} for more details).
 
-    Given a step size $k$ and applying the cG(1)cG(1) finite element discretization
-    to \eqref{eq:ADR} with $v \in X \subset H^1_0(\Omega)$
-    gives the following weak residual
+    Given a step size $k$ and applying the cG(1)cG(1) finite element
+    discretization to \eqref{eq:ADR} with $v \in X \subset H^1_0(\Omega)$ gives
+    the following weak residual
     \begin{equation}
     \begin{split}
         r(\bar{u}^n; v) &= \left(u^n - u^{n-1}\right)\,k^{-1}
@@ -362,11 +362,11 @@ entering the details for the domain, boundary conditions, and the weak form.
     \begin{figure}[H]
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
-        \caption{Adaptive error estimate versus ``true'' error versus a ``true''
-            error obtained from a uniform refinement for the Solution of the
-            ADR equation.}
-        \label{fig:ADR_EI}
+        \caption{Adaptive error estimate versus ``true'' error for the Solution
+            for the ADR equation.}
+        \label{fig:ADR_err}
     \end{figure}
+
 \subsubsection{Navier-Stokes Equations} \label{sss:NSE}
 
     In this subsection we demonstrate the use of \texttt{AFES} on a more complicated
@@ -618,5 +618,13 @@ entering the details for the domain, boundary conditions, and the weak form.
     \lstinputlisting[firstline=5,label={lst:CylinderClass},
         caption={NSE \texttt{Solver} subclass.}
     ]{NSE.py}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.5]{Figures/AdaptiveCylinder.png}
+        \caption{Adaptive error estimate versus ``true'' error for the Solution
+            of the NSE.}
+        \label{fig:NSE_err}
+    \end{figure}
 
 %\subsection{Optimization} \label{sse:Optimization}

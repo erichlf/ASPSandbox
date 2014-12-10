@@ -1,4 +1,5 @@
 from pylab import *
+import os
 
 if len(sys.argv) < 3:
     print("Usage: python plot.py <adaptive data> <uniform data> title")
@@ -33,17 +34,23 @@ if uniformfile is not None:
                      - adapt_data[-1, 1])
 
 hold(True)
-title(titlestr, va='baseline', ha='center', multialignment='center')
+title(titlestr, va='baseline', ha='center', loc='center')
+
 plot(log10(adaptdofs), log10(adapterr), 'k')
+
 if uniformfile is not None:
     plot(log10(uniformdofs), log10(uniformerr), 'r')
+
 plot(log10(adaptdofs), log10(adapterr_est), 'k--')
+
 if uniformfile is not None:
-    legend(["Goal Oriented Error", "Uniform Error", "Error est."], loc='best')
+    legend(["Goal Oriented Error", "Uniform Error", "``True'' Error"],
+           loc='best')
 else:
-    legend(["Goal Oriented Error", "Error est."], loc='best')
+    legend(["Goal Oriented Error", "``True'' Error"], loc='best')
+
 ylabel('log10(error)')
 xlabel('log10(dofs)')
 grid(True)
-savefig('plot.png', bbox_inches='tight')
+savefig(os.path.splitext(os.path.basename(adaptfile))[0], bbox_inches='tight')
 show()
