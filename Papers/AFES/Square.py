@@ -15,23 +15,13 @@ class Problem(ProblemBase):
         Nx = options["Nx"]
         Ny = options["Ny"]
 
-        try:
-            x0 = float(options["x0"])
-            x1 = float(options["x1"])
-            y0 = float(options["y0"])
-            y1 = float(options["y1"])
-            self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
-        except:
-            self.mesh = UnitSquareMesh(Nx, Ny)
+        self.mesh = UnitSquareMesh(Nx, Ny)
 
-        self.t0 = 0.
-        self.T = options['T']
-        self.k = options['k']
+        self.t0 = 0.  # initial time
+        self.T = options['T']  # final time
+        self.k = options['k']  # time step
 
-        try:
-            self.kappa = Constant(options['kappa'])
-        except:
-            self.kappa = Constant(1E-2)  # heat Coefficient
+        self.kappa = Constant(1E-2)  # heat Coefficient
 
     def initial_conditions(self, V):
         u0 = project(Expression('sin(pi*x[0])*sin(pi*x[1])'), V)

@@ -126,14 +126,6 @@ class Solver(SolverBase):
 
         return s
 
-    def getMyMemoryUsage(self):
-        '''
-            Determines how much memory we are using.
-        '''
-        mypid = getpid()
-        mymemory = getoutput('ps -o rss %s' % mypid).split()[1]
-        return mymemory
-
     def Plot(self, problem, V, u):
 
         # Plot velocity and height and wave object

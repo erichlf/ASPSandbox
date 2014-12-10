@@ -21,51 +21,24 @@ class Solver(SolverBase):
         return V
 
     def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
+        t = problem.t0
 
-        t0 = problem.t0
+        # problem parameters
+        kappa = problem.kappa  # heat coefficient
+        rho = problem.rho  # density
+        c = problem.c
 
-        kappa = problem.kappa
-
-        t = t0 + k
-        # forcing and mass source/sink
-        self.f_ = problem.F(t - k)
-        self.f = problem.F(t)
+        f = problem.F(t)  # forcing and mass source/sink
 
         # weak form of the equations
-        r = (1. / k) * (U - U_) * v * dx
+        r = rho * c * (1. / k) * (U - U_) * v * dx
         if kappa.rank() == 0:
             r += kappa * inner(grad(u), grad(v)) * dx
         else:  # anisotropic case
             r += inner(dot(kappa, grad(u)), grad(v)) * dx
+        r -= f * v * dx
 
         return r
-
-    def condition(self, ei, m, m_):
-        '''
-            Adaptive stopping criterion for Galerkin-orthogonal problem (Heat).
-            ei - error indicators (non-Galerkin-orthogonal problems)
-            m - current functional size (Galerkin-orthogonal problems)
-            m_ - previous functional size (Galerkin-orthogonal problems)
-        '''
-        return abs(m - m_)
-
-    def Save(self, problem, u, dual=False):
-        if self.saveFrequency != 0 \
-                and (self._timestep - 1) % self.saveFrequency == 0:
-            if not dual:
-                self._ufile << u
-            else:
-                self._uDualfile << u
-
-    def file_naming(self, n=-1, dual=False):
-        if n == -1:
-            self._ufile = File(self.s + '_u.pvd', 'compressed')
-            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
-            self.meshfile = File(self.s + '_mesh.xml')
-        else:
-            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
-            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
-            self.meshfile = File(self.s + '_mesh%d.xml' % n)
 
     def Plot(self, problem, V, u):
 
