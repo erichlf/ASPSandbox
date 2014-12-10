@@ -21,17 +21,14 @@ class Solver(SolverBase):
         return V
 
     def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
+        t = problem.t0
 
-        t0 = problem.t0
-
+        # problem parameters
         kappa = problem.kappa
         rho = problem.rho
         c = problem.rho
 
-        t = t0 + k
-        # forcing and mass source/sink
-        self.f_ = problem.F(t - k)
-        self.f = problem.F(t)
+        self.f = problem.F(t)  # forcing and mass source/sink
 
         # weak form of the equations
         r = rho * c * (1. / k) * (U - U_) * v * dx
@@ -39,6 +36,8 @@ class Solver(SolverBase):
             r += kappa * inner(grad(u), grad(v)) * dx
         else:  # anisotropic case
             r += inner(dot(kappa, grad(u)), grad(v)) * dx
+
+        r -= f * v * dx
 
         return r
 
