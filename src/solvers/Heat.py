@@ -26,7 +26,7 @@ class Solver(SolverBase):
         # problem parameters
         kappa = problem.kappa
         rho = problem.rho
-        c = problem.rho
+        c = problem.c
 
         self.f = problem.F(t)  # forcing and mass source/sink
 
