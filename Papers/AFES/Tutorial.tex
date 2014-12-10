@@ -7,7 +7,7 @@ allows for greater ease of use, as compared to the C++ interface. Eventually, we
 intend to offer a GUI which would require the use of no programming and only
 entering the details for the domain, boundary conditions, and the weak form.
 
-\subsection{Solving a PDE} \label{sse:Solver}
+\section{Solving a PDE} \label{sec:Solver}
 
     In this subsection we explain how to solve a basic time dependent PDE using
     the \texttt{AFES} API. We choose to explain the API by example; we choose to
@@ -54,12 +54,24 @@ entering the details for the domain, boundary conditions, and the weak form.
     \texttt{DirichletBC} objects. Then the function
     \texttt{Solver.function\_space} returns either a \texttt{FunctionSpace}
     object or a \texttt{MixedFunctionSpace} object. The user need not worry too
-    much about the definition these FEniCS objects, but one must know to return
-    these types when writing their functions. These details will become much
-    clearer in the following subsections, where we will focus on the definition
-    of these objects\slash functions and their use.
+    much about the definition of these FEniCS objects, but one must know to
+    return these types when writing one's functions. These details will become
+    much clearer in the following subsection, where we will focus on the
+    definition of these objects\slash functions and their use.
 
-\subsubsection{Heat Equation} \label{sss:Heat}
+    In the example that follows we will demonstrate the use of AFES through two
+    different programming styles: the first method will be by passing function
+    handles to the \texttt{Problem} and \texttt{Solver} classes,
+    \autoref{sss:FunctionHandles}. This method can be a bit long-winded and thus
+    a second method will be demonstrated, which we believe demonstrates the true
+    strength of AFES. This method uses the definition of subclasses to define
+    both the \texttt{problem} and the \texttt{solver}, \autoref{sss:Subclasses}.
+    With a short script one can easily mix and match problems and solvers. In
+    the later sections this method will be the primary method used. In fact, all
+    test problems we have written use this script and subclass definition
+    method.
+
+\subsection{Heat Equation} \label{sse:Heat}
     The heat equation is a canonical example of parabolic partial differential
     equations. Given the domain $\Omega$ with boundary $\partial \Omega$ and
     time interval $I$ the heat equation is given by
@@ -106,32 +118,44 @@ entering the details for the domain, boundary conditions, and the weak form.
         \label{eq:HeatBC}
     \end{equation}
 
-    Just as in the definition of the PDE \texttt{AFES} requires certain things to be
-    defined. First, we can define the mesh (we will use a
+    With the definition of the problem in place we are now ready to move on to
+    writing our code. As stated previously, the code for the heat equation will
+    be presented in two different fashions, one corresponding to passing
+    function handles to class, \autoref{sss:FunctionHandles}, while the other
+    consists of created a script and subclasses of \texttt{Problem} and
+    \texttt{Solver} classes, \autoref{sss:Subclasses}.
+
+    \subsubsection{Function Handle Method} \label{sss:FunctionHandles}
+    Just as in the definition of the PDE \texttt{AFES} requires certain things
+    to be defined. First, we can define the mesh (we will use a
     \texttt{UnitSquareMesh} as our domain), and then the mesh must be passed to
     the \texttt{Problem} class. This can be done in the following way
     \lstinputlisting[firstline=63,lastline=68,
-        caption={Creating a mesh of unit square problem domain.}
+        caption={[Unit Square Mesh Creation] Creating a mesh of unit square problem
+                domain.}
     ]{Heat.py}
     we need to define the initial conditions and
     boundary conditions. For the initial condition, \eqref{eq:HeatIC}, and
     the boundary condition, \eqref{eq:HeatBC}, these functions can be defined
     as follows
     \lstinputlisting[firstline=10,lastline=20,
-        caption={Create the initial conditions and boundary conditions.}
+        caption={[Heat: ICs and BCs] Create the initial conditions and boundary
+        conditions.}
     ]{Heat.py}
     To be able to access these functions \texttt{AFES} needs them define. To do this we
     must pass the functions to AFES' \texttt{Problem} class. This is done quite
     easily in the following way
     \lstinputlisting[firstline=73,lastline=74,
-        caption={Send initial conditions and boundary conditions to AFES.}
+        caption={[Heat: Passing ICs and BCs] Send initial conditions and
+                boundary conditions to AFES.}
     ]{Heat.py}
     To define the heat source/sink things are actually a bit easier and the user
     need only to pass the function directly to the \texttt{Problem} class. This
     is done in a quite similar way as to the way we passed the ICs and BCs, as
     can be seen below
     \lstinputlisting[firstline=69,lastline=69, label={lst:IC+BC2Problem},
-        caption={Send forcing function to AFES.}
+        caption={[Heat: Passing Forcing Fucntion] Send forcing function to
+                AFES.}
     ]{Heat.py}
     In fact, this could be left out if the user does not require it in the weak
     form, but we include it here for completeness.
@@ -145,13 +169,14 @@ entering the details for the domain, boundary conditions, and the weak form.
     same way we passed \texttt{functions\_space}. The definition of the function
     space and the weak form given by \eqref{eq:WeakHeat} can be seen below
     \lstinputlisting[firstline=28,lastline=44,
-        caption={Defining the function space and weak residual}
+        caption={[Heat: Function Space and Weak Residual] Defining the function
+                space and weak residual}
     ]{Heat.py}
     These functions are then passed to the \texttt{Solver} class in the
     following way
     \lstinputlisting[firstline=80,lastline=81, label={lst:FS+WR2Solver},
-        caption={Passing our function space and weak residual to
-            \texttt{Solver}.}
+        caption={[Heat: Passing Function Space and Weak Residual] Passing our
+                function space and weak residual to \texttt{Solver}.}
     ]{Heat.py}
 
     In addition to the standard functions above, we can define some auxiliary
@@ -163,46 +188,56 @@ entering the details for the domain, boundary conditions, and the weak form.
     only override the \texttt{Plot} function; this is done in much the same way
     as we did for the other functions already seen above.
     \lstinputlisting[firstline=47,lastline=54,
-        caption={Plot function for post processing.}
+        caption={[Heat: Plot] Plot function for post processing.}
     ]{Heat.py}
     \lstinputlisting[firstline=82,lastline=82,
-        caption={Passing the plot function to \texttt{Solver}}
+        caption={[Heat: Passing Plot] Passing the plot function to
+                \texttt{Solver}}
     ]{Heat.py}
 
     The entire code can be viewed below
     \lstinputlisting[label={lst:Heat},
-        caption={Complete code for the Heat equation \eqref{eq:Heat}}
+        caption={[Heat Equation and Square Problem Code using Function Handle
+                Method] Complete code for the Heat equation on a Unit
+                Square\eqref{eq:Heat}}
     ]{Heat.py}
 
     While from a coders point of view this looks more complicated than the
     standard heat equation solver in the FEniCS demos, the beauty of this code
-    is that the main() portion of the script remains mostly unchanged from
-    problem to problem and from solver to solver. The power of this approach can
-    be seen in the code snippets \autoref{lst:FS+WR2Solver} and
+    is that the \texttt{main()} portion of the script remains mostly unchanged
+    from problem to problem and from solver to solver. The power of this
+    approach can be seen in the code snippets \autoref{lst:FS+WR2Solver} and
     \autoref{lst:IC+BC2Problem}.  With this approach we can easily mix and match
     problems and solvers. Thus, we can use the same main() to run, say, the heat
     equation or even the Navier-Stokes equations (on a simple domain).
 
-    To demonstrate a very straight forward way to simplify such a script to use
-    any solver and problem combination we will present the above example using
-    subclasses instead of pure function definitions. We will not change any of
-    the above functionality, except for placing functions in an appropriate
-    subclass. To this end we first present the \texttt{problem} which is a
-    subclass of \texttt{ProblemBase}, where \texttt{ProblemBase} is the
-    \texttt{Problem} class provided by AFES.
-    \lstinputlisting[firstline=5,caption={Square \texttt{Problem} subclass.}]{
+    \subsubsection{Subclass Method} \label{sss:Subclasses}
+
+    To demonstrate a very straight forward way to simplify such a script so as
+    to use any solver and problem combination we will present the above example
+    using subclasses instead of pure function definitions. We will not change
+    any of the above functionality, except for placing functions in an
+    appropriate subclass. To this end we first present the \texttt{problem}
+    which is a subclass of \texttt{ProblemBase}, where \texttt{ProblemBase} is
+    the \texttt{Problem} class provided by AFES.
+    \lstinputlisting[firstline=5,
+        caption={Square \texttt{Problem} subclass.}
+    ]{
         Square.py
     }
     Now we define the \texttt{solver} which will be a subclass of
     \text{SolverBase}, which is the \texttt{Solver} class provided by AFES.
-    \lstinputlisting[firstline=4,caption={Heat \texttt{Solver} subclass.},
-                    label={lst:HeatClass}]{
+    \lstinputlisting[firstline=4,
+        caption={Heat \texttt{Solver} subclass.}, label={lst:HeatClass}
+    ]{
         HeatClass.py
     }
 
     Finally, one can then solve a particular problem using a script like the
     following.
-    \lstinputlisting[caption={Solver Script}, label={lst:Script}]{solve.py}
+    \lstinputlisting[caption={[Heat and Square: Solver Script] Solver Script for
+        the Heat equation Solver and Square Problem}, label={lst:Script}
+    ]{solve.py}
 
     With the above method one can write a general script to run a variety of
     problem/solver combinations, thus allow for a very easy method to test
@@ -212,7 +247,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     various problem will be assumed to be quite similar to the script presented
     in \autoref{lst:Script}.
 
-\subsection{Goal Oriented Adaptivity} \label{sse:Adaptivity}
+\section{Goal Oriented Adaptivity} \label{sec:Adaptivity}
 
     In this subsection we will introduce Goal Oriented Adaptivity as used in
     AFES.  The details for the goal oriented adaptivity algorithm used by AFES
@@ -238,9 +273,9 @@ entering the details for the domain, boundary conditions, and the weak form.
         presented again, only for completeness.
     \end{remark}
 
-\subsubsection{Advection-Reaction-Diffusion Equation} \label{sss:ADR}
+\subsection{Advection-Reaction-Diffusion Equation} \label{sse:ADR}
     In this subsection we extend what was done for the Heat Equation,
-    \autoref{sss:Heat}, to that of the Advection-Reaction-Diffusion equation
+    \autoref{sse:Heat}, to that of the Advection-Reaction-Diffusion equation
     (ADR). The ADR is a simple linear model of a reactive and diffusive flow. In
     what follows the parameters $\alpha,\,\beta$, and $\kappa$ represent the
     reactivity, convective velocity vector, and diffusivity tensor,
@@ -353,21 +388,21 @@ entering the details for the domain, boundary conditions, and the weak form.
     \end{equation*}
     where $C_{CFL}=100$.
 
-    \lstinputlisting[firstline=5,caption={ADR Domain \texttt{Problem} subclass.},
-                    label={lst:ADRDomain}
+    \lstinputlisting[firstline=5,
+        caption={ADR Domain \texttt{Problem} subclass.}, label={lst:ADRDomain}
     ]{Hole.py}
-    \lstinputlisting[firstline=5,caption={ADR \texttt{Solver} subclass.},
-                    label={lst:ADR}
+    \lstinputlisting[firstline=5,
+        caption={ADR \texttt{Solver} subclass.}, label={lst:ADR}
     ]{ADR.py}
     \begin{figure}[H]
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
-        \caption{Adaptive error estimate versus ``true'' error for the Solution
+        \caption{Adaptive error estimate versus ``true'' error for the solution
             for the ADR equation.}
         \label{fig:ADR_err}
     \end{figure}
 
-\subsubsection{Navier-Stokes Equations} \label{sss:NSE}
+\subsection{Navier-Stokes Equations} \label{sse:NSE}
 
     In this subsection we demonstrate the use of \texttt{AFES} on a more complicated
     example, one that includes a non-linear term, namely the Navier-Stokes
@@ -622,9 +657,9 @@ entering the details for the domain, boundary conditions, and the weak form.
     \begin{figure}[H]
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveCylinder.png}
-        \caption{Adaptive error estimate versus ``true'' error for the Solution
+        \caption{Adaptive error estimate versus ``true'' error for the solution
             of the NSE.}
         \label{fig:NSE_err}
     \end{figure}
 
-%\subsection{Optimization} \label{sse:Optimization}
+%\section{Optimization} \label{sec:Optimization}

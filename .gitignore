@@ -21,6 +21,7 @@ latexSuiteTemp0.*
 *.run.*
 *.toc
 *-blx.bib
+*.lol
 
 #DOLFIN specific
 ffc_form_*.h
@@ -69,3 +70,6 @@ nosetests.xml
 
 # rope completion
 .ropeproject
+
+#doxygen db
+*.db
