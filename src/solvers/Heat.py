@@ -28,7 +28,7 @@ class Solver(SolverBase):
         rho = problem.rho
         c = problem.c
 
-        self.f = problem.F(t)  # forcing and mass source/sink
+        f = problem.F(t)  # forcing and mass source/sink
 
         # weak form of the equations
         r = rho * c * (1. / k) * (U - U_) * v * dx
