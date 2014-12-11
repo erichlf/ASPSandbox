@@ -57,5 +57,28 @@ class Problem(ProblemBase):
         # forcing function for the momentum equation
         return Constant(0)
 
+    def Optimize(self, solver, V, u):
+        # file for solution to optimization
+        optfile = File(solver.s + '_Opt.pvd')
+
+        x = SpatialCoordinate(V.mesh())
+        d = 1 / (2*pi**2) * sin(pi * x[0]) * sin(pi * x[1])  # goal function
+        alpha = Constant(1e-6)  # penalty
+
+        # Functionnal to be minimized
+        J = Functional((0.5 * inner(u - d, u - d)) * dx * dt[FINISH_TIME]
+                       + alpha / 2. * solver.f**2 * dx)
+
+        m = Parameter(solver.f)
+
+        Jhat = ReducedFunctional(J, m)  # Reduced Functional
+        opt_params = minimize(Jhat)
+        opt_control = project(self.object_init(opt_params), solver.Q)
+        if solver.plot_solution:
+            plot(opt_object, title='Optimization result.')
+            interactive()
+        else:
+            optfile << opt_object
+
     def __str__(self):
         return 'Square'

@@ -34,7 +34,7 @@ class InitialConditions(Expression):
         values[0] = 0.
         values[1] = 0.
         values[2] = 0.5 * (rhoMin + rhoMax) + 0.5 * (rhoMax - rhoMin) * \
-            tanh((x[1] + eta * cos(2 * pi * x[0] / d)) / (0.01 * d))
+            tanh((x[1] - 1.5*d + eta * cos(2 * pi * x[0] / d)) / (0.01 * d))
         values[3] = 0.
 
     def value_shape(self):
