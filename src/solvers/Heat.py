@@ -72,7 +72,7 @@ class Solver(SolverBase):
 
         # Plot velocity and height and wave object
         if self.vizU is None:
-            self.vizU = plot(u, title='Temperature', rescale=True, elevate=0.0)
+            self.vizU = plot(u, title='Temperature', rescale=True)
         else:
             self.vizU.plot(u)
 
