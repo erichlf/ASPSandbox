@@ -72,13 +72,13 @@ class Problem(ProblemBase):
         x = SpatialCoordinate(V.mesh())
         d = sin(pi*x[0])*sin(pi*x[1])
         dp = project(d, V)
-        alpha = Constant(1e-6)  # penalty
 
         # Functionnal to be minimized
         J = Functional((0.5 * inner(u - d, u - d)) * dx * dt[FINISH_TIME])
 
         Jhat = ReducedFunctional(J, Control(solver.f))  # Reduced Functional
-        self.opt_control = minimize(Jhat, method = "L-BFGS-B", bounds = (-1, 1))
+        self.opt_control = minimize(Jhat, method = "L-BFGS-B",
+                bounds = (-10, 10), options = {"gtol": 2e-8, "disp": True})
         self.opt_control = project(self.opt_control, V)
         if solver.plotSolution:
             plot(self.opt_control, title='Optimization result.')
