@@ -4,6 +4,7 @@ __license__ = "GNU GPL version 3 or any later version"
 
 from AFES import *
 from AFES import Problem as ProblemBase
+from dolfin_adjoint import *
 
 
 class Problem(ProblemBase):
@@ -55,30 +56,30 @@ class Problem(ProblemBase):
 
     def F(self, t):
         # forcing function for the momentum equation
-        return Constant(0)
+        W = FunctionSpace(self.mesh, "DG", 0)
+        m = Function(W, name='Control')
+        return m
 
     def Optimize(self, solver, V, u):
         # file for solution to optimization
         optfile = File(solver.s + '_Opt.pvd')
 
         x = SpatialCoordinate(V.mesh())
-        d = 1 / (2*pi**2) * sin(pi * x[0]) * sin(pi * x[1])  # goal function
+        d = exp(-1/(1-x[0]*x[0])-1/(1-x[1]*x[1]))
+        dp = project(d, V)
         alpha = Constant(1e-6)  # penalty
 
         # Functionnal to be minimized
-        J = Functional((0.5 * inner(u - d, u - d)) * dx * dt[FINISH_TIME]
-                       + alpha / 2. * solver.f**2 * dx)
+        J = Functional((0.5 * inner(u - d, u - d)) * dx * dt[FINISH_TIME])
 
-        m = Parameter(solver.f)
-
-        Jhat = ReducedFunctional(J, m)  # Reduced Functional
-        opt_params = minimize(Jhat)
-        opt_control = project(self.object_init(opt_params), solver.Q)
-        if solver.plot_solution:
-            plot(opt_object, title='Optimization result.')
+        Jhat = ReducedFunctional(J, Control(solver.f))  # Reduced Functional
+        opt_control = minimize(Jhat, method = "L-BFGS-B", bounds = (-1, 1))
+        opt_control = project(opt_control, V)
+        if solver.plotSolution:
+            plot(opt_control, title='Optimization result.')
             interactive()
         else:
-            optfile << opt_object
+            optfile << opt_control
 
     def __str__(self):
         return 'Square'
