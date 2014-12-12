@@ -12,6 +12,8 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
+        self.opt_control = None
+
         # Create mesh
         Nx = options["Nx"]
         Ny = options["Ny"]
@@ -55,9 +57,13 @@ class Problem(ProblemBase):
         return bcs
 
     def F(self, t):
-        # forcing function for the momentum equation
-        W = FunctionSpace(self.mesh, "DG", 0)
-        m = Function(W, name='Control')
+        if self.opt_control is None:
+            W = FunctionSpace(self.mesh, "DG", 0)
+            m = Function(W, name='Control')
+        else:
+            print "optimized"
+            m = self.opt_control
+
         return m
 
     def Optimize(self, solver, V, u):
@@ -73,13 +79,13 @@ class Problem(ProblemBase):
         J = Functional((0.5 * inner(u - d, u - d)) * dx * dt[FINISH_TIME])
 
         Jhat = ReducedFunctional(J, Control(solver.f))  # Reduced Functional
-        opt_control = minimize(Jhat, method = "L-BFGS-B", bounds = (-1, 1))
-        opt_control = project(opt_control, V)
+        self.opt_control = minimize(Jhat, method = "L-BFGS-B", bounds = (-1, 1))
+        self.opt_control = project(self.opt_control, V)
         if solver.plotSolution:
-            plot(opt_control, title='Optimization result.')
+            plot(self.opt_control, title='Optimization result.')
             interactive()
         else:
-            optfile << opt_control
+            optfile << self.opt_control
 
     def __str__(self):
         return 'Square'
