@@ -61,7 +61,6 @@ class Problem(ProblemBase):
             W = FunctionSpace(self.mesh, "DG", 0)
             m = Function(W, name='Control')
         else:
-            print "optimized"
             m = self.opt_control
 
         return m
@@ -71,7 +70,7 @@ class Problem(ProblemBase):
         optfile = File(solver.s + '_Opt.pvd')
 
         x = SpatialCoordinate(V.mesh())
-        d = 1/(2*pi**2)*sin(pi*x[0])*sin(pi*x[1])
+        d = sin(pi*x[0])*sin(pi*x[1])
         dp = project(d, V)
         alpha = Constant(1e-6)  # penalty
 
