@@ -83,15 +83,21 @@ class Solver(SolverBase):
                 u.rename("dual", "ADR")
                 self._uDualfile << u
 
-    def file_naming(self, n=-1, dual=False):
+    def file_naming(self, problem, n=-1, opt=False):
+        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+
         if n == -1:
-            self._ufile = File(self.s + '_u.pvd', 'compressed')
-            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
-            self.meshfile = File(self.s + '_mesh.xml')
+            if opt:
+                self._ufile = File(s + '_uOpt.pvd', 'compressed')
+            else:
+                self._ufile = File(s + '_u.pvd', 'compressed')
+            self._uDualfile = File(s + '_uDual.pvd', 'compressed')
+            self.meshfile = File(s + '_mesh.xml')
         else:
-            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
-            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
-            self.meshfile = File(self.s + '_mesh%d.xml' % n)
+            self.eifile = File(s + '_ei.pvd', 'compressed')
+            self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
+            self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(s + '_mesh%d.xml' % n)
 
     def suffix(self, problem):
         import numpy as np
@@ -122,7 +128,7 @@ class Solver(SolverBase):
         if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
             s += 'Nz' + str(problem.Nz)
 
-        s += 'K' + str(int(1. / problem.k))
+        s += 'K' + str(problem.k)
 
         return s
 

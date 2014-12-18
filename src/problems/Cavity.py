@@ -86,6 +86,13 @@ class Problem(ProblemBase):
         self.T = options['T']
         self.k = options['k']
 
+        try:
+            self.nu = options['nu']
+        except:
+            self.nu = 1E-3
+
+        self.Re = 1. / self.nu
+
     def initial_conditions(self, W):
         if self.dim == 2:
             w0 = InitialConditions2D()

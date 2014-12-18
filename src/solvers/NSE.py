@@ -14,12 +14,6 @@ class Solver(SolverBase):
     '''
 
     def __init__(self, options):
-        try:
-            self.nu = 1. / options['Re']
-        except:
-            self.nu = 1E-3
-            options['Re'] = 1000
-
         SolverBase.__init__(self, options)
 
     # strong residual for cG(1)cG(1)
@@ -53,7 +47,7 @@ class Solver(SolverBase):
         d1, d2 = self.stabilization_parameters(
             U_, P_, k, h)  # stabilization parameters
 
-        nu = self.nu  # Reynolds Number
+        nu = problem.nu  # Reynolds Number
 
         t0 = problem.t0
 
@@ -88,6 +82,28 @@ class Solver(SolverBase):
         d2 = K2 * h
 
         return d1, d2
+
+    def suffix(self, problem):
+        '''
+            Obtains the run specific data for file naming, e.g. Nx, k, etc.
+        '''
+
+        try:
+            s = 'Re' + str(problem.Re)
+        except:
+            s = 'nu' + str(prblem.nu)
+
+        s += 'T' + str(problem.T)
+        if problem.Nx is not None:
+            s += 'Nx' + str(problem.Nx)
+        if problem.Ny is not None:
+            s += 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
+            s += 'Nz' + str(problem.Nz)
+
+        s += 'K' + str(problem.k)
+
+        return s
 
     def __str__(self):
         return 'NSE'

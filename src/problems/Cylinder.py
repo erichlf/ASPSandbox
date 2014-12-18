@@ -137,9 +137,9 @@ class Problem(ProblemBase):
         self.cube = cube
 
         try:
-            nu = 1/options['Re']
+            self.nu = options['nu']
         except:
-            nu = 1E-3
+            self.nu = 1E-3
 
         self.t0 = 0.
         try:
@@ -150,26 +150,32 @@ class Problem(ProblemBase):
         H = ymax
         # setup our domain and conditions
         if self.dim == 2:  # 2D problem
-            channel = Rectangle(xmin, ymin, xmax, ymax)
-            if cube:
-                bluff = Rectangle(xcenter - radius, ycenter - radius,
-                                  xcenter + radius, ycenter + radius)
+            if options['initial_mesh'] is not None:
+                domain = options['initial_mesh']
             else:
-                bluff = Circle(xcenter, ycenter, radius)
+                channel = Rectangle(xmin, ymin, xmax, ymax)
+                if cube:
+                    bluff = Rectangle(xcenter - radius, ycenter - radius,
+                                    xcenter + radius, ycenter + radius)
+                else:
+                    bluff = Circle(xcenter, ycenter, radius)
             self.noSlip = Constant((0, 0))
             self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)*t*t/(1+t*t)',
                                  '0.0'), Um=Um, H=ymax, t=self.t0)
             self.Ubar = 4. / 3. * Um * ymax * (H - ymax / 2.) / (H * H)
         else:  # 3D problem
-            xmax = 2.5
-            xcenter = 0.5
-            channel = Box(xmin, ymin, zmin, xmax, ymax, zmax)
-            if cube:
-                bluff = Box(xcenter - radius, ycenter - radius, zmin,
-                            xcenter + radius, ycenter + radius, zmax)
+            if options['initial_mesh'] is not None:
+                domain = options['initial_mesh']
             else:
-                bluff = Cylinder(Point(xcenter, ycenter, zmax),
-                                 Point(xcenter, ycenter, zmin), radius)
+                xmax = 2.5
+                xcenter = 0.5
+                channel = Box(xmin, ymin, zmin, xmax, ymax, zmax)
+                if cube:
+                    bluff = Box(xcenter - radius, ycenter - radius, zmin,
+                                xcenter + radius, ycenter + radius, zmax)
+                else:
+                    bluff = Cylinder(Point(xcenter, ycenter, zmax),
+                                    Point(xcenter, ycenter, zmin), radius)
             self.noSlip = Constant((0, 0, 0))
             self.U = Expression(('16*Um*x[1]*x[2]' +
                                  '*(H - x[1])*(H - x[2])/pow(H,4)*t*t/(1+t*t)',
@@ -177,16 +183,15 @@ class Problem(ProblemBase):
             self.Ubar = 16. / 9. * Um * ymax * zmax * \
                 (H - ymax / 2.) * (H - zmax / 2.) / pow(H, 4)
 
-        domain = channel - bluff
-        if options['initialMesh'] is None:
+        if options['initial_mesh'] is None:
+            domain = channel - bluff
             self.mesh = Mesh(domain, self.Nx)
         else:
-            self.mesh = Mesh(options['initialMesh'])
+            self.mesh = Mesh(domain)
 
         self.k = self.time_step(self.Ubar, self.mesh)  # mesh size
 
-        # since Cube relies on this code we need a lot of selfs
-        self.channel = channel
+        self.Re = self.Ubar*Diameter/self.nu
 
     def initial_conditions(self, W):
         if self.dim == 2:

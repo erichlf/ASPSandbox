@@ -58,15 +58,51 @@ class Solver(SolverBase):
             else:
                 self._uDualfile << u
 
-    def file_naming(self, n=-1, dual=False):
-        if n == -1:
-            self._ufile = File(self.s + '_u.pvd', 'compressed')
-            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
-            self.meshfile = File(self.s + '_mesh.xml')
+    def suffix(self, problem):
+        import numpy as np
+        '''
+            Obtains the run specific data for file naming, e.g. Nx, k, etc.
+        '''
+        s = ''
+
+        rho = float(problem.rho)
+        c = float(problem.c)
+        if problem.kappa.rank() == 0:
+            kappa = float(problem.kappa)
         else:
-            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
-            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
-            self.meshfile = File(self.s + '_mesh%d.xml' % n)
+            kappa = np.zeros(2)
+            problem.kappa.eval(kappa, np.zeros(3))
+            kappa = np.dot(kappa, kappa)**0.5
+
+        # Return file suffix for output files
+        s = 'rho%.3Gc%.3Gkappa%.3G' % (rho, c, kappa)
+
+        s += 'T%G' % (problem.T)
+        if problem.Nx is not None:
+            s += 'Nx' + str(problem.Nx)
+        if problem.Ny is not None:
+            s += 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
+            s += 'Nz' + str(problem.Nz)
+
+        s += 'K' + str(problem.k)
+
+        return s
+
+    def file_naming(self, problem, n=-1, opt=False):
+        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+
+        if n == -1:
+            if opt:
+                self._ufile = File(s + '_uOpt.pvd', 'compressed')
+            else:
+                self._ufile = File(s + '_u.pvd', 'compressed')
+            self._uDualfile = File(s + '_uDual.pvd', 'compressed')
+            self.meshfile = File(s + '_mesh.xml')
+        else:
+            self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
+            self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(s + '_mesh%d.xml' % n)
 
     def Plot(self, problem, V, u):
 

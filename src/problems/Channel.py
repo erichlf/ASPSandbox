@@ -14,6 +14,7 @@ x1 = 6
 y0 = 0
 y1 = 2
 
+
 class InitialConditions(Expression):
 
     def eval(self, values, x):
@@ -56,6 +57,13 @@ class Problem(ProblemBase):
         self.t0 = 0.
         self.T = options['T']
         self.k = options['k']
+
+        try:
+            self.nu = options['nu']
+        except:
+            self.nu = 1E-3
+
+        self.Re = (y1 - y0)/self.nu
 
     def initial_conditions(self, W):
         w0 = InitialConditions()

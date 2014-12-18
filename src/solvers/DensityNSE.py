@@ -15,15 +15,6 @@ class Solver(SolverBase):
 
     def __init__(self, options):
 
-        if options['dim'] is not 2:
-            options['dim'] = 2
-
-        try:
-            self.nu = 1 / options['Re']
-        except:
-            self.nu = 1E-3
-            options['Re'] = 1000
-
         SolverBase.__init__(self, options)
 
         self.vizRho = None
@@ -62,7 +53,7 @@ class Solver(SolverBase):
         # stabilization parameters
         d1, d2, d3 = self.stabilization_parameters(U_, Rho_, P_, k, h)
 
-        nu = self.nu  # kinematic viscosity
+        nu = problem.nu  # kinematic viscosity
 
         t0 = problem.t0
 
@@ -101,6 +92,50 @@ class Solver(SolverBase):
 
         return d1, d2, d3
 
+    def suffix(self, problem):
+        '''
+            Obtains the run specific data for file naming, e.g. Nx, k, etc.
+        '''
+
+        s = 'nu' + str(prblem.nu)
+
+        s += 'T' + str(problem.T)
+        if problem.Nx is not None:
+            s += 'Nx' + str(problem.Nx)
+        if problem.Ny is not None:
+            s += 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
+            s += 'Nz' + str(problem.Nz)
+
+        s += 'K' + str(problem.k)
+
+        return s
+
+    def file_naming(self, problem, n=-1, opt=False):
+        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+
+        if n == -1:
+            if opt:
+                self._ufile = File(s + '_uOpt.pvd', 'compressed')
+                self._rhofile = File(s + '_rhoOpt.pvd', 'compressed')
+                self._pfile = File(s + '_pOpt.pvd', 'compressed')
+            else:
+                self._ufile = File(s + '_u.pvd', 'compressed')
+                self._rhofile = File(s + '_rho.pvd', 'compressed')
+                self._pfile = File(s + '_p.pvd', 'compressed')
+            self._uDualfile = File(s + '_uDual.pvd', 'compressed')
+            self._rhoDualfile = File(s + '_rhoDual.pvd', 'compressed')
+            self._pDualfile = File(s + '_pDual.pvd', 'compressed')
+            self.meshfile = File(s + '_mesh.xml')
+        else:
+            self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
+            self._rhofile = File(s + '_rho%d.pvd' % n, 'compressed')
+            self._pfile = File(s + '_p%d.pvd' % n, 'compressed')
+            self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
+            self._rhoDualfile = File(s + '_rhoDual%d.pvd' % n, 'compressed')
+            self._pDualfile = File(s + '_pDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(s + '_mesh%02d.xml' % n)
+
     def Save(self, problem, w, dual=False):
         u = w.split()[0]
         rho = w.split()[1]
@@ -116,28 +151,6 @@ class Solver(SolverBase):
                 self._uDualfile << u
                 self._pDualfile << p
                 self._rhoDualfile << rho
-
-    def file_naming(self, n=-1, dual=False):
-        if n == -1:
-            self._ufile = File(self.s + '_u.pvd', 'compressed')
-            self._rhofile = File(self.s + '_rho.pvd', 'compressed')
-            self._pfile = File(self.s + '_p.pvd', 'compressed')
-            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
-            self._rhoDualfile = File(self.s + '_rhoDual.pvd', 'compressed')
-            self._pDualfile = File(self.s + '_pDual.pvd', 'compressed')
-            self.meshfile = File(self.s + '_mesh.xml')
-        else:
-            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
-            self._rhofile = File(self.s + '_rho%d.pvd' % n, 'compressed')
-            self._pfile = File(self.s + '_p%d.pvd' % n, 'compressed')
-            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
-            self._rhoDualfile = File(
-                self.s +
-                '_rhoDual%d.pvd' %
-                n,
-                'compressed')
-            self._pDualfile = File(self.s + '_pDual%d.pvd' % n, 'compressed')
-            self.meshfile = File(self.s + '_mesh%02d.xml' % n)
 
     def Plot(self, problem, W, w):
         u = w.split()[0]

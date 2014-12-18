@@ -19,26 +19,6 @@ class Solver(SolverBase):
     def __init__(self, options):
         SolverBase.__init__(self, options)
         try:
-            self.Re = options['Re']
-        except:
-            self.Re = 1000
-        try:
-            self.H = options['H']
-        except:
-            self.H = 1
-        try:
-            self.Ro = options['Ro']
-        except:
-            self.Ro = 1
-        try:
-            self.Fr = options['Fr']
-        except:
-            self.Fr = 1
-        try:
-            self.Th = options['Theta']
-        except:
-            self.Th = 1
-        try:
             linear = options['linear']
         except:
             linear = False
@@ -60,16 +40,9 @@ class Solver(SolverBase):
             self.inviscid = 1
 
     # strong residual for cG(1)cG(1)
-    def strong_residual(self, w, w2):
+    def strong_residual(self, w, w2, Ro, Fr, Th, H):
         (u, eta) = (as_vector((w[0], w[1])), w[2])
         (U, Eta) = (as_vector((w2[0], w2[1])), w2[2])
-
-        # get problem parameters
-        Re = self.Re  # Reynolds number
-        H = self.H  # Fluid depth
-        Ro = self.Ro  # Rossby number
-        Th = self.Th  # average wave height
-        Fr = self.Fr  # Froude number
 
         NonLinear = self.NonLinear
 
@@ -93,19 +66,17 @@ class Solver(SolverBase):
         d1, d2 = self.stabilization_parameters(
             U_, Eta_, k, h)  # stabilization parameters
 
-        # get problem parameters
-        Re = self.Re  # Reynolds number
-        H = self.H  # Fluid depth
-        Ro = self.Ro  # Rossby number
-        Th = self.Th  # average wave height
-        Fr = self.Fr  # Froude number
+        Re = problem.Re
+        H = problem.H
+        Ro = problem.Ro
+        Fr = porblem.Fr
+        Th = problem.Theta
 
         NonLinear = self.NonLinear
         inviscid = self.inviscid
 
-        t0 = problem.t0
+        t = problem.t0
 
-        t = t0 + k
         # forcing and mass source/sink
         F1 = problem.F1(t)
         F2 = problem.F2(t)
@@ -118,19 +89,18 @@ class Solver(SolverBase):
         # weak form of the equations
         # momentum equation
         r = ((1. / k) * inner(U - U_, v)
-                 + 1 / Ro * (u[0] * v[1] - u[1] * v[0])
-                 - Fr ** (-2) * Th * eta * div(v)) * dx
+             + 1 / Ro * (u[0] * v[1] - u[1] * v[0])
+             - Fr ** (-2) * Th * eta * div(v)) * dx
         r += inviscid / Re * inner(grad(u), grad(v)) * dx
         # add the terms for the non-linear SWE
         r += NonLinear * inner(grad(u) * u, v) * dx
         # continuity equation
-        r += ((1. / k) * (Eta - Eta_) * chi
-                  + H / Th * div(u) * chi) * dx
+        r += ((1. / k) * (Eta - Eta_) * chi + H / Th * div(u) * chi) * dx
 
         r -= (inner(F1, v) + F2 * chi) * dx
 
-        R1, R2 = self.strong_residual(w, w)
-        Rv1, Rv2 = self.strong_residual(wt, w)
+        R1, R2 = self.strong_residual(w, w, Ro, Fr, Th, H)
+        Rv1, Rv2 = self.strong_residual(wt, w, Ro, Fr, Th, H)
         r += (d1 * inner(R1 - F1, Rv1) + d2 * (R2 - F2) * Rv2) * dx
 
         return r
@@ -143,19 +113,48 @@ class Solver(SolverBase):
 
         return d1, d2
 
-    def file_naming(self, n=-1, dual=False):
+    def suffix(self, problem):
+        '''
+            Obtains the run specific data for file naming, e.g. Nx, k, etc.
+        '''
+
+        s = 'Re' + str(problem.Re)
+        s += 'Fr' + str(problem.Fr)
+        s += 'H' + str(problem.H)
+        s += 'Theta' + str(problem.Th)
+
+        s += 'T' + str(problem.T)
+        if problem.Nx is not None:
+            s += 'Nx' + str(problem.Nx)
+        if problem.Ny is not None:
+            s += 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
+            s += 'Nz' + str(problem.Nz)
+
+        s += 'K' + str(problem.k)
+
+        return s
+
+    def file_naming(self, problem, n=-1, opt=False):
+
+        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+
         if n == -1:
-            self._ufile = File(self.s + '_u.pvd', 'compressed')
-            self._pfile = File(self.s + '_eta.pvd', 'compressed')
-            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
-            self._pDualfile = File(self.s + '_etaDual.pvd', 'compressed')
-            self.meshfile = File(self.s + '_mesh.xml')
+            if opt:
+                self._ufile = File(s + '_uOpt.pvd', 'compressed')
+                self._pfile = File(s + '_etaOpt.pvd', 'compressed')
+            else:
+                self._ufile = File(s + '_u.pvd', 'compressed')
+                self._pfile = File(s + '_eta.pvd', 'compressed')
+            self._uDualfile = File(s + '_uDual.pvd', 'compressed')
+            self._pDualfile = File(s + '_etaDual.pvd', 'compressed')
+            self.meshfile = File(s + '_mesh.xml')
         else:
-            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
-            self._pfile = File(self.s + '_eta%d.pvd' % n, 'compressed')
-            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
-            self._pDualfile = File(self.s + '_etaDual%d.pvd' % n, 'compressed')
-            self.meshfile = File(self.s + '_mesh%d.xml' % n)
+            self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
+            self._pfile = File(s + '_eta%d.pvd' % n, 'compressed')
+            self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
+            self._pDualfile = File(s + '_etaDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(s + '_mesh%d.xml' % n)
 
     # this is a separate function so that it can be overloaded
     def Plot(self, problem, W, w):
