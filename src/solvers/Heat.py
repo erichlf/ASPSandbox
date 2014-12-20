@@ -99,6 +99,7 @@ class Solver(SolverBase):
                 self._ufile = File(s + '_u.pvd', 'compressed')
             self._uDualfile = File(s + '_uDual.pvd', 'compressed')
             self.meshfile = File(s + '_mesh.xml')
+            self.optfile = File(s + '_control.pvd', 'compressed')
         else:
             self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
             self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
