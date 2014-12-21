@@ -381,32 +381,30 @@ class Problem(ProblemBase):
         '''
             Shape optimization for Peregrine System.
         '''
-        eta = w.split()[1]
-        # file for solution to optimization
-        optfile = File(solver.s + '_Opt.pvd')
+        (u, eta) = (as_vector((w[0], w[1])), w[2])
 
         # bounds on object
 #        lb = project(Expression('-0.5'), self.Q, name='LowerBound')
 #        ub = project(Expression('0.0'), self.Q, name='UpperBound')
 
         # Functionnal to be minimized: L2 norm over a subdomain
-        J = Functional(- inner(eta, eta) * dx * dt[FINISH_TIME]
-                       + self.Zeta * self.Zeta * dx)
+        J = Functional(- inner(eta, eta) * dx * dt[FINISH_TIME])
+                       #+ solver.Zeta * solver.Zeta * dx * dt[FINISH_TIME])
 
         # shape parameters
         m = [Control(p) for p in self.params]
         Jhat = ReducedFunctional(J, m)  # Reduced Functional
-        opt_params = minimize(Jhat)
-        opt_object = project(self.object_init(opt_params), solver.Q)
-        if self.options['plot_solution']:
-            plot(opt_object, title='Optimization result.')
-            interactive()
-        else:
-            optfile << opt_object
+        opt_params = minimize(Jhat, method="L-BFGS-B")
+        #opt_object = project(self.object_init(opt_params), solver.Q)
+        #if self.options['plot_solution']:
+        #    plot(opt_object, title='Optimization result.')
+        #    interactive()
+        #else:
+        #    solver.optfile << opt_object
 
-        print 'H=%f, N1=%f, N2=%f, W=[%f, %f, %f, %f], dz=%f]' % \
-            (opt_params[0], opt_params[1], opt_params[2], opt_params[3],
-             opt_params[4], opt_params[5], opt_params[6], opt_params[7])
+        #print 'H=%f, N1=%f, N2=%f, W=[%f, %f, %f, %f], dz=%f]' % \
+        #    (opt_params[0], opt_params[1], opt_params[2], opt_params[3],
+        #     opt_params[4], opt_params[5], opt_params[6], opt_params[7])
 
     def __str__(self):
         return 'Pool'
