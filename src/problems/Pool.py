@@ -14,6 +14,7 @@ from AFES import *
 from AFES import Problem as ProblemBase
 from dolfin_adjoint import *
 from math import factorial
+import numpy as np
 
 x0 = -6.
 x1 = 60.
@@ -61,13 +62,28 @@ vmax = ((hb + a0) * g) ** (0.5)  # Max Speed of the moving object [m.s^(-1)]
 
 class InitialConditions(Expression):
 
+    def __init__(self, epsilon, params):
+        self.obj = Object(vmax=vmax, H=params[0], N1=params[1], N2=params[2],
+                          W1=params[3], W2=params[4], W3=params[5],
+                          W4=params[6], dz=params[7])
+        self.D = Depth()
+        self.epsilon = epsilon
+
     def eval(self, values, x):
+
+        D = np.array([0], dtype='d')
+        self.D.eval(D, x)
+        z = np.array([0], dtype='d')
+        self.obj.eval(z, x)
+
         values[0] = 0.
         values[1] = 0.
         values[2] = 0.
+        values[3] = z
+        values[4] = D + self.epsilon * z
 
     def value_shape(self):
-        return (3,)
+        return (5,)
 
 
 class Y_SlipBoundary(SubDomain):
@@ -86,6 +102,30 @@ class X_SlipBoundary(SubDomain):
             (x[0] < x0 + DOLFIN_EPS or x[0] > x1 - DOLFIN_EPS)
 
 
+class Depth(Expression):
+
+    def __init__(self):
+
+        # Definition of the shape of the seabed
+        self.M1 = (hb - hd) / (y1 - objectTop)
+        self.M2 = (hb - hd) / (y0 - objectBottom)
+
+    def eval(self, value, x):
+        if x[1] > objectTop:
+            M = self.M1
+            X = objectTop
+        elif x[1] < objectBottom:
+            M = self.M2
+            X = objectBottom
+        else:
+            M = 0
+            X = 0
+        value[0] = hd + M * (x[1] - X)
+
+    def value_shape(self):
+        return ()
+
+
 class Object(Expression):
 
     '''
@@ -97,13 +137,12 @@ class Object(Expression):
         http://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method
     '''
 
-    def __init__(self, vmax, H, N1, N2, W1, W2, W3, W4, dz, t):
+    def __init__(self, vmax, H, N1, N2, W1, W2, W3, W4, dz):
         self.H = H  # Object height
         self.N1 = N1  # shape parameter for 'back' of object
         self.N2 = N2  # shape parameter for 'front' of object
         self.w = (W1, W2, W3, W4)  # weights for arc between 'front' and 'back'
         self.dz = dz  # 'leading' edge thickness
-        self.t = t
         self.vmax = vmax
 
     def eval(self, value, x):
@@ -112,12 +151,8 @@ class Object(Expression):
         N2 = self.N2
         w = self.w
         dz = self.dz
-        t = self.t
-        vmax = self.vmax
 
-        u = vmax * tanh(t)
-
-        X = ((x[0] - objectLeft - u * t) / (objectRight - objectLeft),
+        X = ((x[0] - objectLeft) / (objectRight - objectLeft),
              (x[1] - objectBottom) / (objectTop - objectBottom))
 
         if(X[0] >= 0 and X[0] <= 1 and X[1] >= 0 and X[1] <= 1):
@@ -132,7 +167,7 @@ class Object(Expression):
                 K = float(factorial(n) / (factorial(i) * factorial(n - i)))
                 S += w[i] * K * X[0] ** i * (1. - X[0]) ** (n - i)
 
-            value[0] = 4. * (H * C * S + X[0] * dz) * \
+            value[0] = -4. * (H * C * S + X[0] * dz) * \
                 (1 - x[1] ** 2 / objectTop ** 2)
         else:
             value[0] = 0.
@@ -146,12 +181,8 @@ class Object(Expression):
         N1 = self.N1
         N2 = self.N2
         w = self.w
-        t = self.t
-        vmax = self.vmax
 
-        u = vmax * tanh(t)
-
-        X = ((x[0] - objectLeft - u * t) / (objectRight - objectLeft),
+        X = ((x[0] - objectLeft) / (objectRight - objectLeft),
              (x[1] - objectBottom) / (objectTop - objectBottom))
 
         if(X[0] >= 0 and X[0] <= 1 and X[1] >= 0 and X[1] <= 1):
@@ -228,22 +259,12 @@ class Object(Expression):
                 self.dz]
 
     def copy(self):
-        return self.__class__(
-            vmax=self.vmax,
-            H=self.H,
-            N1=self.N1,
-            N2=self.N2,
-            W1=self.w[0],
-            W2=self.w[1],
-            W3=self.w[2],
-            W4=self.w[3],
-            dz=self.dz,
-            t=self.t)
+        return self.__class__(vmax=self.vmax, H=self.H, N1=self.N1, N2=self.N2,
+                              W1=self.w[0], W2=self.w[1], W3=self.w[2],
+                              W4=self.w[3], dz=self.dz)
 
     def value_shape(self):
         return ()
-
-# Problem definition
 
 
 class Problem(ProblemBase):
@@ -255,19 +276,18 @@ class Problem(ProblemBase):
 
     def __init__(self, options):
         ProblemBase.__init__(self, options)
-        self.options = options
 
         # Scaling Parameters
         self.sigma = Constant(h0 / lambda0)
         self.epsilon = Constant(a0 / h0)
 
         # Create mesh
-        self.Nx = options["Nx"]
-        self.Ny = options["Ny"]
+        self.Nx = options['Nx']
+        self.Ny = options['Ny']
         self.mesh = RectangleMesh(x0, y0, x1, y1, self.Nx, self.Ny)
 
         try:
-            refine = options['Refine']
+            refine = options['refine']
         except:
             refine = False
 
@@ -290,46 +310,9 @@ class Problem(ProblemBase):
         dz = Constant(0., name='dz')
 
         self.params = [ObjH, N1, N2, W1, W2, W3, W4, dz]
-        self.zeta0 = self.object_init(self.params)
 
-        # Defintion of the shape of the seabed
-        M1 = (hb - hd) / (y1 - objectTop)
-        M2 = (hb - hd) / (y0 - objectBottom)
-        M = 'x[1] > ' + str(objectTop) + ' ? ' + str(M1) \
-            + ' : (x[1] < ' + str(objectBottom) + ' ? ' + str(M2) \
-            + ' : 0) '
-        X = 'x[1] > ' + str(objectTop) + ' ? ' + str(objectTop) + \
-            ' : (x[1] < ' + str(objectBottom) + ' ? ' + str(objectBottom) + \
-            ' : 0) '
-        self.D = str(hd) + '+ (' + M + ')*(x[1] - (' + X + '))'
-
-    def object_init(self, params):
-        '''
-            Returns a DOLFIN function representing the wave object given params.
-        '''
-        obj = Object(vmax=vmax, H=params[0], N1=params[1], N2=params[2],
-                     W1=params[3], W2=params[4], W3=params[5], W4=params[6],
-                     dz=params[7], t=self.t0)
-
-        return obj
-
-    def update_bathymetry(self, Q, t, annotate=True):
-        '''
-            Tells the solver what the bathymetry looks like at time t.
-        '''
-        D = Expression(self.D, element=Q.ufl_element(), annotate=False)
-
-        self.zeta0.t = t
-        zeta = project(self.zeta0, Q, annotate=annotate)
-        self.zeta0.t = max(t - self.k, self.t0)
-        zeta_ = project(self.zeta0, Q, annotate=annotate)
-        self.zeta0.t = max(t - 2 * self.k, self.t0)
-        zeta__ = project(self.zeta0, Q, annotate=annotate)
-
-        H = project(D + self.epsilon * zeta, Q, annotate=annotate)
-        H_ = project(D + self.epsilon * zeta_, Q, annotate=annotate)
-
-        return H, H_, zeta, zeta_, zeta__
+        self.D = Depth()  # pool depth
+        self.beta = Expression((('vmax', '0')), vmax=vmax)
 
     def Refine(self, mesh):
         '''
@@ -349,8 +332,8 @@ class Problem(ProblemBase):
         return mesh
 
     def initial_conditions(self, W):
-        w0 = InitialConditions()
-        w0 = project(w0, W, annotate=False)
+        w0 = InitialConditions(self.epsilon, self.params)
+        w0 = project(w0, W)
 
         return w0
 
@@ -370,7 +353,7 @@ class Problem(ProblemBase):
             Functional for mesh adaptivity
         '''
 
-        (u, eta) = (as_vector((w[0], w[1])), w[2])
+        (u, eta, zeta, H) = (as_vector((w[0], w[1])), w[2], w[3], w[4])
 
         M = u[0] * dx  # Mean of the x-velocity in the whole domain
 
@@ -381,30 +364,28 @@ class Problem(ProblemBase):
         '''
             Shape optimization for Peregrine System.
         '''
-        (u, eta) = (as_vector((w[0], w[1])), w[2])
-
-        # bounds on object
-#        lb = project(Expression('-0.5'), self.Q, name='LowerBound')
-#        ub = project(Expression('0.0'), self.Q, name='UpperBound')
+        (u, eta, zeta, H) = (as_vector((w[0], w[1])), w[2], w[3], W[4])
 
         # Functionnal to be minimized: L2 norm over a subdomain
-        J = Functional(- inner(eta, eta) * dx * dt[FINISH_TIME])
-                       #+ solver.Zeta * solver.Zeta * dx * dt[FINISH_TIME])
+        J = Functional(- inner(eta, eta) * dx * dt[FINISH_TIME]
+                       + zeta * zeta * dx * dt[FINISH_TIME])
 
         # shape parameters
         m = [Control(p) for p in self.params]
         Jhat = ReducedFunctional(J, m)  # Reduced Functional
         opt_params = minimize(Jhat, method="L-BFGS-B")
-        #opt_object = project(self.object_init(opt_params), solver.Q)
-        #if self.options['plot_solution']:
-        #    plot(opt_object, title='Optimization result.')
-        #    interactive()
-        #else:
-        #    solver.optfile << opt_object
+        '''
+        opt_object = project(self.object_init(opt_params), solver.Q)
+        if self.options['plot_solution']:
+            plot(opt_object, title='Optimization result.')
+            interactive()
+        else:
+            solver.optfile << opt_object
+        '''
 
-        #print 'H=%f, N1=%f, N2=%f, W=[%f, %f, %f, %f], dz=%f]' % \
-        #    (opt_params[0], opt_params[1], opt_params[2], opt_params[3],
-        #     opt_params[4], opt_params[5], opt_params[6], opt_params[7])
+        print 'H=%f, N1=%f, N2=%f, W=[%f, %f, %f, %f], dz=%f]' % \
+            (opt_params[0], opt_params[1], opt_params[2], opt_params[3],
+             opt_params[4], opt_params[5], opt_params[6], opt_params[7])
 
     def __str__(self):
         return 'Pool'
