@@ -8,6 +8,7 @@ problems = [
     'Channel',
     'Cube',
     'Cylinder',
+    'OldBCylinder',
     'Dam',
     'DoubleGyre',
     'Drop',

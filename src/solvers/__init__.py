@@ -11,7 +11,8 @@ solvers = [
     'DensityNSE',
     'Heat',
     'ADR',
-    'MixedWaveALE'
+    'MixedWaveALE',
+    'OldroydB'
 ]
 
 
