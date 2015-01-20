@@ -333,7 +333,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, W):
         w0 = InitialConditions(self.epsilon, self.params)
-        w0 = project(w0, W)
+        w0 = project(-w0, W)
 
         return w0
 

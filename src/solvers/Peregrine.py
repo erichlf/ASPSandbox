@@ -111,7 +111,7 @@ class Solver(SolverBase):
         # ( dot(v, n) + |dot(v, n)| )/2.0
         betan = (dot(beta, n) + abs(dot(beta, n)))/2.0
 
-        r -= dot(beta*zeta, grad(nu)) * dx
+        r += 1. / k * (Zeta - Zeta_) * nu * dx - dot(beta*zeta, grad(nu)) * dx
         r += dot(betan('+') * zeta('+') - betan('-') * zeta('-'),
                  jump(nu)) * dS + dot(betan * zeta, nu) * ds
 

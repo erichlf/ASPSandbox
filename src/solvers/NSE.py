@@ -57,8 +57,8 @@ class Solver(SolverBase):
 
         # least squares stabilization
         if(ei_mode):
-            d1 = 0
-            d2 = 0
+            d1 = Constant(0)
+            d2 = Constant(0)
 
         # weak form of the equations
         r = (1. / k) * inner(U - U_, v) * dx \
