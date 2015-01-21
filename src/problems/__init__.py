@@ -8,7 +8,6 @@ problems = [
     'Channel',
     'Cube',
     'Cylinder',
-    'OldBCylinder',
     'Dam',
     'DoubleGyre',
     'Drop',
@@ -20,6 +19,8 @@ problems = [
     'SmallHole',
     'Square',
     'TwoFluid',
+    'SS_Cylinder',
+    'OldBCylinder',
 ]
 
 
