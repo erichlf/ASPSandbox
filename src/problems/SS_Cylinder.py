@@ -24,10 +24,10 @@ class WallBoundary(SubDomain):
 
 class InnerBoundary(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and not (x[0] > xmin + DOLFIN_EPS
-                                    or x[1] > ymin + DOLFIN_EPS
-                                    or x[0] < xmax - DOLFIN_EPS
-                                    or x[1] < ymax - DOLFIN_EPS)
+        return on_boundary and (x[0] > xmin + DOLFIN_EPS
+                                    and x[1] > ymin + DOLFIN_EPS
+                                    and x[0] < xmax - DOLFIN_EPS
+                                    and x[1] < ymax - DOLFIN_EPS)
 
 
 class InflowBoundary(SubDomain):
