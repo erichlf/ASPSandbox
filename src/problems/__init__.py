@@ -19,6 +19,7 @@ problems = [
     'SmallHole',
     'Square',
     'TwoFluid',
+    'SS_Cylinder',
 ]
 
 
