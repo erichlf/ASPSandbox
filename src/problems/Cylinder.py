@@ -87,7 +87,7 @@ class ObjectBoundary(SubDomain):
         Cube = near(x[0], xcenter - radius) or near(x[0], xcenter + radius) \
             or near(x[1], ycenter - radius) or near(x[1], ycenter + radius)
 
-        return on_boundary and ((not self.cube and r < radius + bmarg)
+        return on_boundary and ((not self.cube and near(r, radius))
                                 or (self.cube and Cube))
 
 
