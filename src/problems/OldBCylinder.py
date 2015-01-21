@@ -36,7 +36,6 @@ class InitialConditions2D(Expression):
         values[5] = 0.
         values[6] = 0.
 
-
     def value_shape(self):
         return (7,)
 
@@ -161,7 +160,7 @@ class Problem(ProblemBase):
                 channel = Rectangle(xmin, ymin, xmax, ymax)
                 if cube:
                     bluff = Rectangle(xcenter - radius, ycenter - radius,
-                                    xcenter + radius, ycenter + radius)
+                                      xcenter + radius, ycenter + radius)
                 else:
                     bluff = Circle(xcenter, ycenter, radius)
             self.noSlip = Constant((0, 0))
@@ -180,7 +179,7 @@ class Problem(ProblemBase):
                                 xcenter + radius, ycenter + radius, zmax)
                 else:
                     bluff = Cylinder(Point(xcenter, ycenter, zmax),
-                                    Point(xcenter, ycenter, zmin), radius)
+                                     Point(xcenter, ycenter, zmin), radius)
             self.noSlip = Constant((0, 0, 0))
             self.U = Expression(('16*Um*x[1]*x[2]' +
                                  '*(H - x[1])*(H - x[2])/pow(H,4)*t*t/(1+t*t)',
@@ -216,7 +215,6 @@ class Problem(ProblemBase):
         self.U.t = t
         # Create inflow boundary condition
         subU = W.sub(0)
-        print W.sub(0)
         bc0 = DirichletBC(subU, self.U, InflowBoundary())
 
         # Create no-slip boundary condition
@@ -227,11 +225,11 @@ class Problem(ProblemBase):
         # bc2 = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
 
         # Collect boundary conditions
-        bcs = []#[bc0, bc1]
+        bcs = [bc0, bc1]
 
         return bcs
 
-    def F1(self, t):
+    def F(self, t):
         # forcing function for the momentum equation
         if self.dim == 2:
             f = Constant((0, 0))
@@ -239,10 +237,6 @@ class Problem(ProblemBase):
             f = Constant((0, 0, 0))
 
         return f
-
-    def F2(self, t):
-        # mass source for the continuity equation
-        return Constant(0)
 
     def update(self, W, t):
         # update the bc for each time step
@@ -272,4 +266,4 @@ class Problem(ProblemBase):
         return M
 
     def __str__(self):
-        return 'Cylinder'
+        return 'OldBCylinder'

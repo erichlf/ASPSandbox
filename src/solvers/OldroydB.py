@@ -17,7 +17,7 @@ class Solver(SolverBase):
         SolverBase.__init__(self, options)
 
         self.vizRho = None
-        self.rhofile = None
+        self.taufile = None
 
     # Define function spaces
     def function_space(self, mesh):
@@ -30,31 +30,37 @@ class Solver(SolverBase):
         return W
 
     # strong residual for cG(1)cG(1)
-    def strong_residual(self, w, w2):  # U, v, rho, r, p):
-        (u, p, tau) = (as_vector((w[0], w[1])), w[2], as_tensor((w[3], w[4]),(w[5], w[6])))
-        (U, P, T) = (as_vector((w2[0], w2[1])), w2[2], as_tensor((w2[3], w2[4]),(w2[5], w2[6])))
+    def strong_residual(self, w, w2):  # U, v, tau, r, p):
+        (u, p, tau) = (as_vector((w[0], w[1])), w[2],
+                       as_tensor((w[3], w[4]), (w[5], w[6])))
+        (U, P, T) = (as_vector((w2[0], w2[1])), w2[2],
+                     as_tensor((w2[3], w2[4]), (w2[5], w2[6])))
 
         R1 = grad(U) * u + grad(p)
-        R2 = div( u)
+        R2 = div(u)
         R3 = div(u)
 
         return R1, R2, R3
 
-    def epsilon(self,u):
-        return 0.5*(nabla_grad(u) + nabla_grad(u).T)
+    def epsilon(self, u):
+        return Constant(0.5) * (nabla_grad(u) + nabla_grad(u).T)
 
-    def a_h(self,sigma, v):
-        return inner(sigma,self.epsilon(v))*dx
+    def a_h(self, sigma, v):
+        return inner(sigma, self.epsilon(v)) * dx
 
-    def b_h(self,p,v):
-        return -div(v)*p*dx
+    def b_h(self, p, v):
+        return -div(v) * p * dx
 
     # weak residual for cG(1)cG(1)
     def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
-        (u, p, tau) = (as_vector((w[0], w[1])), w[2], as_tensor(((w[3], w[4]),(w[5], w[6]))))
-        (U, P, T) = (as_vector((ww[0], ww[1])), ww[2], as_tensor(((ww[3], ww[4]),(ww[5], ww[6]))))
-        (U_, P_, T_) = (as_vector((w_[0], w_[1])), w_[2], as_tensor(((w_[3], w_[4]),(w_[5], w_[6]))))
-        (v, q, s) = (as_vector((wt[0], wt[1])), wt[2], as_tensor(((wt[3], wt[4]),(wt[5], wt[6]))))
+        (u, p, tau) = (as_vector((w[0], w[1])), w[2],
+                       as_tensor(((w[3], w[4]), (w[5], w[6]))))
+        (U, P, T) = (as_vector((ww[0], ww[1])), ww[2],
+                     as_tensor(((ww[3], ww[4]), (ww[5], ww[6]))))
+        (U_, P_, T_) = (as_vector((w_[0], w_[1])), w_[2],
+                        as_tensor(((w_[3], w_[4]), (w_[5], w_[6]))))
+        (v, q, s) = (as_vector((wt[0], wt[1])), wt[2],
+                     as_tensor(((wt[3], wt[4]), (wt[5], wt[6]))))
 
         h = CellSize(W.mesh())  # mesh size
         # stabilization parameters
@@ -67,21 +73,20 @@ class Solver(SolverBase):
 
         t = t0 + k
         # forcing and mass source/sink
-        f = problem.F1(t)
+        f = problem.F(t)
 
         # least squares stabilization
         if ei_mode:
-            d1 = 0
-            d2 = 0
-            d3 = 0
+            d1 = Constant(0)
+            d2 = Constant(0)
+            d3 = Constant(0)
 
         # weak form of the equations
-        r = rho * ((1. / k) * inner(U - U_, v)
-                     + inner(grad(u) * u, v))*dx
-        r += 1/(2*nu)*inner(tau,s)*dx
+        r = rho * ((1. / k) * inner(U - U_, v) + inner(grad(u) * u, v)) * dx
+        r += 1. / (2. * nu)*inner(tau, s) * dx
         r += self.a_h(tau, v) - self.a_h(s, u)
-        r += self.b_h(p, v) - self.b_h(q,u)
-        r +=  - rho * dot(f, v)* dx  # momentum equation
+        r += self.b_h(p, v) - self.b_h(q, u)
+        r -= rho * dot(f, v) * dx  # momentum equation
         r += div(u) * q * dx  # continuity equation
 
         r += d1 * (inner(grad(u), grad(v))) * dx
@@ -121,22 +126,24 @@ class Solver(SolverBase):
         if n == -1:
             if opt:
                 self._ufile = File(s + '_uOpt.pvd', 'compressed')
-                self._rhofile = File(s + '_rhoOpt.pvd', 'compressed')
+                self._taufile = File(s + '_tauOpt.pvd', 'compressed')
                 self._pfile = File(s + '_pOpt.pvd', 'compressed')
             else:
                 self._ufile = File(s + '_u.pvd', 'compressed')
-                self._rhofile = File(s + '_rho.pvd', 'compressed')
+                self._taufile = File(s + '_tau.pvd', 'compressed')
                 self._pfile = File(s + '_p.pvd', 'compressed')
             self._uDualfile = File(s + '_uDual.pvd', 'compressed')
-            self._rhoDualfile = File(s + '_rhoDual.pvd', 'compressed')
+            self._tauDualfile = File(s + '_tauDual.pvd', 'compressed')
             self._pDualfile = File(s + '_pDual.pvd', 'compressed')
             self.meshfile = File(s + '_mesh.xml')
         else:
+            if self.eifile is None:  # error indicators
+                self.eifile = File(s + '_ei.pvd', 'compressed')
             self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
-            self._rhofile = File(s + '_rho%d.pvd' % n, 'compressed')
+            self._taufile = File(s + '_tau%d.pvd' % n, 'compressed')
             self._pfile = File(s + '_p%d.pvd' % n, 'compressed')
             self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
-            self._rhoDualfile = File(s + '_rhoDual%d.pvd' % n, 'compressed')
+            self._tauDualfile = File(s + '_tauDual%d.pvd' % n, 'compressed')
             self._pDualfile = File(s + '_pDual%d.pvd' % n, 'compressed')
             self.meshfile = File(s + '_mesh%02d.xml' % n)
 
@@ -150,11 +157,11 @@ class Solver(SolverBase):
             if not dual:
                 self._ufile << u
                 self._pfile << p
-                self._rhofile << tau
+                self._taufile << tau
             else:
                 self._uDualfile << u
                 self._pDualfile << p
-                self._rhoDualfile << tau
+                self._tauDualfile << tau
 
     def Plot(self, problem, W, w):
         u = w.split()[0]
@@ -165,11 +172,11 @@ class Solver(SolverBase):
             # Plot velocity and pressure
             self.vizU = plot(u, title='Velocity', rescale=True)
             self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
-            self.vizRho = plot(tau, title='Stress', rescale=True, elevate=0.0)
+            self.vizTau = plot(tau, title='Stress', rescale=True, elevate=0.0)
         else:
             self.vizU.plot(u)
             self.vizP.plot(p)
-            self.vizRho.plot(tau)
+            self.vizTau.plot(tau)
 
     def __str__(self):
         return 'OldroydB'
