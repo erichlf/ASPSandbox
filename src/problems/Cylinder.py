@@ -58,11 +58,10 @@ class InflowBoundary(SubDomain):
 # No-slip boundary
 class NoSlipBoundary(SubDomain):
 
-    def __init__(self, dim, cube):
+    def __init__(self, dim,):
         SubDomain.__init__(self)
         self.dim = dim
-        self.cube = cube
-        self.object = ObjectBoundary(dim, cube)
+        self.object = ObjectBoundary(dim)
 
     def inside(self, x, on_boundary):
 
@@ -74,21 +73,19 @@ class NoSlipBoundary(SubDomain):
 
 class ObjectBoundary(SubDomain):
 
-    def __init__(self, dim, cube):
+    def __init__(self, dim):
         SubDomain.__init__(self)
         self.dim = dim
-        self.cube = cube
 
     def inside(self, x, on_boundary):
-        dx = x[0] - xcenter
-        dy = x[1] - ycenter
-        r = sqrt(dx * dx + dy * dy)
 
-        Cube = near(x[0], xcenter - radius) or near(x[0], xcenter + radius) \
-            or near(x[1], ycenter - radius) or near(x[1], ycenter + radius)
-
-        return on_boundary and ((not self.cube and near(r, radius))
-                                or (self.cube and Cube))
+        return on_boundary and not (x[0] < xmin + DOLFIN_EPS
+                                    or x[0] > xmax - DOLFIN_EPS
+                                    or x[1] < ymin + DOLFIN_EPS
+                                    or x[1] > ymax - DOLFIN_EPS
+                                    or (self.dim == 3
+                                        and (x[2] > zmin + DOLFIN_EPS
+                                             or x[2] < zmax - DOLFIN_EPS)))
 
 
 # Outflow boundary
@@ -100,12 +97,11 @@ class OutflowBoundary(SubDomain):
 
 class PsiMarker(Expression):
 
-    def __init__(self, dim, cube):
+    def __init__(self, dim):
         self.dim = dim
-        self.cube = cube
 
     def eval(self, values, x):
-        object = ObjectBoundary(self.dim, self.cube)
+        object = ObjectBoundary(self.dim)
 
         if(object.inside(x, True)):
             values[0] = 1.0
@@ -156,7 +152,7 @@ class Problem(ProblemBase):
                 channel = Rectangle(xmin, ymin, xmax, ymax)
                 if cube:
                     bluff = Rectangle(xcenter - radius, ycenter - radius,
-                                    xcenter + radius, ycenter + radius)
+                                      xcenter + radius, ycenter + radius)
                 else:
                     bluff = Circle(xcenter, ycenter, radius)
             self.noSlip = Constant((0, 0))
@@ -175,7 +171,7 @@ class Problem(ProblemBase):
                                 xcenter + radius, ycenter + radius, zmax)
                 else:
                     bluff = Cylinder(Point(xcenter, ycenter, zmax),
-                                    Point(xcenter, ycenter, zmin), radius)
+                                     Point(xcenter, ycenter, zmin), radius)
             self.noSlip = Constant((0, 0, 0))
             self.U = Expression(('16*Um*x[1]*x[2]' +
                                  '*(H - x[1])*(H - x[2])/pow(H,4)*t*t/(1+t*t)',
@@ -213,8 +209,7 @@ class Problem(ProblemBase):
         bc0 = DirichletBC(W.sub(0), self.U, InflowBoundary())
 
         # Create no-slip boundary condition
-        bc1 = DirichletBC(W.sub(0), self.noSlip,
-                          NoSlipBoundary(self.dim, self.cube))
+        bc1 = DirichletBC(W.sub(0), self.noSlip, NoSlipBoundary(self.dim))
 
         # Create outflow boundary condition for pressure
         bc2 = DirichletBC(W.sub(1), Constant(0), OutflowBoundary())
@@ -244,7 +239,7 @@ class Problem(ProblemBase):
 
     def marker(self):
         # provide a marker to indicate if we are on the object
-        return PsiMarker(self.dim, self.cube)
+        return PsiMarker(self.dim)
 
     def functional(self, W, w):
         '''
