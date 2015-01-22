@@ -9,6 +9,7 @@ __license__ = "GNU GPL version 3 or any later version"
 
 from AFES import *
 from AFES import Problem as ProblemBase
+from mshr import *
 
 # Constants related to the geometry
 bmarg = 1.e-3 + DOLFIN_EPS
@@ -147,49 +148,34 @@ class Problem(ProblemBase):
         except:
             self.T = 10
 
-        H = ymax
         # setup our domain and conditions
-        if self.dim == 2:  # 2D problem
-            if options['initial_mesh'] is not None:
-                domain = options['initial_mesh']
-            else:
-                channel = Rectangle(xmin, ymin, xmax, ymax)
+        if options['initial_mesh'] is not None:
+            domain = options['initial_mesh']
+            self.mesh = Mesh(domain)
+        else:
+            if self.dim == 2:  # 2D problem
+                channel = Rectangle(Point(xmin, ymin), Point(xmax, ymax))
                 if cube:
-                    bluff = Rectangle(xcenter - radius, ycenter - radius,
-                                      xcenter + radius, ycenter + radius)
+                    bluff = Rectangle(Point(xcenter - radius, ycenter - radius),
+                                      Point(xcenter + radius, ycenter + radius))
                 else:
-                    bluff = Circle(xcenter, ycenter, radius)
-            self.noSlip = Constant((0, 0))
-            self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)*t*t/(1+t*t)',
-                                 '0.0'), Um=Um, H=ymax, t=self.t0)
-            self.Ubar = 4. / 3. * Um * ymax * (H - ymax / 2.) / (H * H)
-        else:  # 3D problem
-            if options['initial_mesh'] is not None:
-                domain = options['initial_mesh']
-            else:
+                    bluff = Circle(Point(xcenter, ycenter), radius)
+            else:  # 3D problem
                 xmax = 2.5
                 xcenter = 0.5
-                channel = Box(xmin, ymin, zmin, xmax, ymax, zmax)
+                channel = Box(Point(xmin, ymin, zmin), Point(xmax, ymax, zmax))
                 if cube:
-                    bluff = Box(xcenter - radius, ycenter - radius, zmin,
-                                xcenter + radius, ycenter + radius, zmax)
+                    bluff = Box(Point(xcenter - radius, ycenter - radius, zmin),
+                                Point(xcenter + radius, ycenter + radius, zmax))
                 else:
                     bluff = Cylinder(Point(xcenter, ycenter, zmax),
-                                     Point(xcenter, ycenter, zmin), radius)
-            self.noSlip = Constant((0, 0, 0))
-            self.U = Expression(('16*Um*x[1]*x[2]' +
-                                 '*(H - x[1])*(H - x[2])/pow(H,4)*t*t/(1+t*t)',
-                                 '0.0', '0.0'), Um=Um ** 2, H=ymax, t=self.t0)
-            self.Ubar = 16. / 9. * Um * ymax * zmax * \
-                (H - ymax / 2.) * (H - zmax / 2.) / pow(H, 4)
+                                     Point(xcenter, ycenter, zmin),
+                                     radius, radius)
 
-        if options['initial_mesh'] is None:
             domain = channel - bluff
-            self.mesh = Mesh(domain, self.Nx)
-        else:
-            self.mesh = Mesh(domain)
+            self.mesh = generate_mesh(domain, self.Nx)
 
-        self.k = self.time_step(self.Ubar, self.mesh)  # mesh size
+        self.k = options['k']
 
         self.Re = self.Ubar*Diameter/self.nu
 
@@ -202,10 +188,6 @@ class Problem(ProblemBase):
         w0 = project(w0, W)
 
         return w0
-
-    def time_step(self, u, mesh):
-        C_CFL = 100.
-        return C_CFL * mesh.hmin()/u
 
     def boundary_conditions(self, W, t):
         self.U.t = t

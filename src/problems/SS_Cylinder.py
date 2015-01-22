@@ -1,5 +1,6 @@
 from AFES import *
 from AFES import Problem as ProblemBase
+from mshr import *
 
 ymax = 0.41
 xmax = 2.2
@@ -25,9 +26,9 @@ class WallBoundary(SubDomain):
 class InnerBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and (x[0] > xmin + DOLFIN_EPS
-                                    and x[1] > ymin + DOLFIN_EPS
-                                    and x[0] < xmax - DOLFIN_EPS
-                                    and x[1] < ymax - DOLFIN_EPS)
+                                and x[1] > ymin + DOLFIN_EPS
+                                and x[0] < xmax - DOLFIN_EPS
+                                and x[1] < ymax - DOLFIN_EPS)
 
 
 class InflowBoundary(SubDomain):
@@ -63,7 +64,21 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
-        self.mesh = Mesh("data/turek_cylinder_01.xml")
+        if options['initial_mesh'] is not None:
+            domain = options['initial_mesh']
+            self.mesh = Mesh(domain)
+        else:
+            self.Nx = options['Nx']
+
+            channel = Rectangle(Point(xmin, ymin), Point(xmax, ymax))
+            if cube:
+                bluff = Rectangle(Point(xcenter - radius, ycenter - radius),
+                                  Point(xcenter + radius, ycenter + radius))
+            else:
+                bluff = Circle(Point(xcenter, ycenter), radius)
+
+            domain = channel - bluff
+            self.mesh = generate_mesh(domain, self.Nx)
 
         try:
             self.nu = options['nu']

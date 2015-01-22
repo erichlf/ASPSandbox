@@ -165,18 +165,18 @@ class Solver(SolverBase):
 
     def Plot(self, problem, W, w):
         u = w.split()[0]
-        tau = w.split()[2]
+        # tau = w.split()[2]
         p = w.split()[1]
 
         if self.vizU is None:
             # Plot velocity and pressure
             self.vizU = plot(u, title='Velocity', rescale=True)
             self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
-            self.vizTau = plot(tau, title='Stress', rescale=True, elevate=0.0)
+            #   self.vizTau = plot(tau, title='Stress', rescale=True, elevate=0.0)
         else:
             self.vizU.plot(u)
             self.vizP.plot(p)
-            self.vizTau.plot(tau)
+            # self.vizTau.plot(tau)
 
     def __str__(self):
         return 'OldroydB'
