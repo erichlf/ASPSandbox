@@ -21,6 +21,7 @@ problems = [
     'TwoFluid',
     'SS_Cylinder',
     'OldBCylinder',
+    'SS_3F_Cylinder',
 ]
 
 
