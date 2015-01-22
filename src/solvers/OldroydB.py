@@ -79,7 +79,6 @@ class Solver(SolverBase):
         if ei_mode:
             d1 = Constant(0)
             d2 = Constant(0)
-            d3 = Constant(0)
 
         # weak form of the equations
         r = rho * ((1. / k) * inner(U - U_, v) + inner(grad(u) * u, v)) * dx
@@ -172,7 +171,7 @@ class Solver(SolverBase):
             # Plot velocity and pressure
             self.vizU = plot(u, title='Velocity', rescale=True)
             self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
-            #   self.vizTau = plot(tau, title='Stress', rescale=True, elevate=0.0)
+            # self.vizTau = plot(tau, title='Stress', rescale=True, elevate=0.0)
         else:
             self.vizU.plot(u)
             self.vizP.plot(p)

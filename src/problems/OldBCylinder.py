@@ -148,6 +148,7 @@ class Problem(ProblemBase):
         except:
             self.T = 10
 
+        H = ymax
         # setup our domain and conditions
         if options['initial_mesh'] is not None:
             domain = options['initial_mesh']
@@ -174,6 +175,19 @@ class Problem(ProblemBase):
 
             domain = channel - bluff
             self.mesh = generate_mesh(domain, self.Nx)
+
+        if self.mesh.topology().dim() == 2:
+            self.noSlip = Constant((0, 0))
+            self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'),
+                                Um=Um, H=ymax, t=self.t0)
+            self.Ubar = 4. / 3. * Um * ymax * (H - ymax / 2.) / (H * H)
+        else:
+            self.noSlip = Constant((0, 0, 0))
+            self.U = Expression(('16*Um*x[1]*x[2]*(H - x[1])*(H - x[2])' +
+                                 '/pow(H,4)*t*t/(1+t*t)', '0.0', '0.0'),
+                                Um=Um ** 2, H=ymax, t=self.t0)
+            self.Ubar = 16. / 9. * Um * ymax * zmax * (H - ymax / 2.) \
+                * (H - zmax / 2.) / pow(H, 4)
 
         self.k = options['k']
 
