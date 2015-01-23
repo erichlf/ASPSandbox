@@ -13,6 +13,7 @@ solvers = [
     'ADR',
     'MixedWaveALE',
     'OldroydB',
+    'ThreeField_Stokes',
     'SS_NSE',
     'SS_3F_Stokes',
 ]
