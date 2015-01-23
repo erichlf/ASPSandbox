@@ -33,9 +33,9 @@ class Solver(SolverBase):
     # weak residual for cG(1)cG(1)
     def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
         if W.mesh().topology().dim() == 2:
-            (u, p) = (as_vector((w[0], w[1])), w[2])
+            (u, p) = (as_vector((ww[0], ww[1])), ww[2])
             (U, P) = (as_vector((ww[0], ww[1])), ww[2])
-            (U_, P_) = (as_vector((w_[0], w_[1])), w_[2])
+            (U_, P_) = (as_vector((ww[0], ww[1])), ww[2])
             (v, q) = (as_vector((wt[0], wt[1])), wt[2])
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
@@ -44,8 +44,7 @@ class Solver(SolverBase):
             (v, q) = (as_vector((wt[0], wt[1], wt[2])), wt[3])
 
         h = CellSize(W.mesh())  # mesh size
-        d1, d2 = self.stabilization_parameters(
-            U_, P_, k, h)  # stabilization parameters
+        d1, d2 = self.stabilization_parameters(U_, P_, k, h)
 
         nu = problem.nu  # Reynolds Number
 
@@ -61,8 +60,8 @@ class Solver(SolverBase):
             d2 = Constant(0)
 
         # weak form of the equations
-        r = (1. / k) * inner(U - U_, v) * dx \
-            + inner(grad(p) + grad(u) * u, v) * dx
+        r = (1. / k) * inner(U - U_, v) * dx
+        r += -p*div(v)*dx + inner(grad(u) * u, v) * dx
         r += nu * inner(grad(u), grad(v)) * dx
         r += div(u) * q * dx
 

@@ -84,13 +84,14 @@ class ObjectBoundary(SubDomain):
 
     def inside(self, x, on_boundary):
 
-        return on_boundary and (x[0] > xmin + DOLFIN_EPS
-                                and x[0] < xmax - DOLFIN_EPS
-                                and x[1] > ymin + DOLFIN_EPS
-                                and x[1] < ymax - DOLFIN_EPS
-                                and (self.dim == 3
-                                     and (x[2] > zmin + DOLFIN_EPS
-                                          and x[2] < zmax - DOLFIN_EPS)))
+        b = on_boundary and (x[0] > xmin + DOLFIN_EPS
+                             and x[0] < xmax - DOLFIN_EPS
+                             and x[1] > ymin + DOLFIN_EPS
+                             and x[1] < ymax - DOLFIN_EPS)
+        if self.dim == 3:
+            b = b and x[2] > zmin + DOLFIN_EPS and x[2] < zmax - DOLFIN_EPS
+
+        return b
 
 
 # Outflow boundary

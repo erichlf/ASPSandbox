@@ -6,7 +6,6 @@ class Solver(SolverBase):
     def __init__(self, options):
         SolverBase.__init__(self, options)
 
-        self.steady_state = True
         self.nu = options['nu']
         self.eta = Constant(1.)
 
@@ -32,10 +31,14 @@ class Solver(SolverBase):
 
         return R1, R2, R3
 
-    def weak_residual(self, problem, W, w, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
 
         (u, p, tau) = (as_vector((w[0], w[1])), w[2],
                        as_tensor(((w[3], w[4]), (w[5], w[6]))))
+        (U, P, T) = (as_vector((ww[0], ww[1])), ww[2],
+                     as_tensor(((ww[3], ww[4]), (ww[5], ww[6]))))
+        (U_, P_, T_) = (as_vector((w_[0], w_[1])), w_[2],
+                        as_tensor(((w_[3], w_[4]), (w_[5], w_[6]))))
         (v, q, s) = (as_vector((wt[0], wt[1])), wt[2],
                      as_tensor(((wt[3], wt[4]), (wt[5], wt[6]))))
 
@@ -48,11 +51,13 @@ class Solver(SolverBase):
         if ei_mode:  # turn off stabilization in ei_mode
             d1 = Constant(0)
 
-        f = problem.F()  # forcing
+        f = problem.F(problem.t0)  # forcing
 
         # Weak form
-        r = 1. / (2. * eta) * inner(tau - self.epsilon(u), s) * dx
-        r += (inner(tau, self.epsilon(v)) - p*div(v) - inner(f,v)) * dx
+        r = 1. / k * inner(T - T_, s) * dx
+        r += 1. / (2. * eta) * inner(tau - self.epsilon(u), s) * dx
+        r += 1. / k * inner(U - U_, v) * dx
+        r += (inner(tau, self.epsilon(v)) - p*div(v) - inner(f, v)) * dx
         r += div(u) * q * dx
 
         # GLS stabilization

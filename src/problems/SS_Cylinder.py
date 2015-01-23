@@ -43,7 +43,7 @@ class OutflowBoundary(SubDomain):
 
 class Inflow(Expression):  # Coefficients for defining boundary conditions
     def eval(self, values, x):
-        values[0] = 4*1.0*(x[1]*(ymax-x[1]))/(ymax*ymax)
+        values[0] = 4*1.5*(x[1]*(ymax-x[1]))/(ymax*ymax)
         values[1] = 0
 
     def value_shape(self):
