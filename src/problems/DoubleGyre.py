@@ -1,33 +1,13 @@
 __author__ = "Erich L Foster <efoster@bcamath.org>"
-__date__ = "2014-07-17"
-#
-#   adapted from channel.py in nsbench originally developed
-#   by Kent-Andre Mardal <kent-and@simula.no>
-#
+__date__ = "2014-01-26"
 
 from AFES import *
 from AFES import Problem as ProblemBase
 
-x0 = 0
-x1 = 1
-y0 = -1
-y1 = 1
-
-
-class InitialConditions(Expression):
-
-    def eval(self, values, x):
-        values[0] = 0.
-        values[1] = 0.
-
-    def value_shape(self):
-        return (2,)
-
-
-class NoslipBoundary(SubDomain):
-
-    def inside(self, x, on_boundary):
-        return on_boundary
+'''
+    This is the implementation for four-gyre problem with double-gyre forcing.
+    It is specifically written with the q-psi formulation of QGE in mind.
+'''
 
 
 class Problem(ProblemBase):
@@ -35,49 +15,48 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
-        # Create mesh
-        Nx = options['Nx']
-        Ny = options['Ny']
-        self.mesh = RectangleMesh(x0, y0, x1, y1, Nx, Ny)
+        self.Nx = options['Nx']
+        self.Ny = options['Ny']
+        self.mesh = RectangleMesh(0, -1, 1, 1, self.Nx, self.Ny)
 
-        try:
-            self.Re = options['Re']
-        except:
-            self.Re = 200
-            options['Re'] = self.Re
-        try:
-            self.Ro = options['Ro']
-        except:
-            self.Ro = 1.6E-3
-            options['Ro'] = self.Ro
-
+        # initial time, final time, time-step
         self.t0 = 0.
         self.T = options['T']
         self.k = options['k']
 
+        # Reynolds number
+        try:
+            self.Re = options['Re']
+        except:
+            self.Re = 200
+
+        # Rossby number
+        try:
+            self.Ro = options['Ro']
+        except:
+            self.Ro = 0.0016
+
     def initial_conditions(self, W):
-        w0 = InitialConditions()
+        w0 = Expression(('0', '0'))
         w0 = project(w0, W)
 
         return w0
 
     def boundary_conditions(self, W, t):
-        # Create no-slip boundary condition for velocity
-        noslipQ = DirichletBC(W.sub(0), Constant(0.), NoslipBoundary())
-        noslipPsi = DirichletBC(W.sub(1), Constant(0.), NoslipBoundary())
+        noslipQ = DirichletBC(W.sub(0), Constant(0.), 'on_boundary')
+        noslipPsi = DirichletBC(W.sub(1), Constant(0.), 'on_boundary')
 
         bcs = [noslipQ, noslipPsi]
 
         return bcs
 
-    def F(self, t):
-        return Expression('sin(pi*x[1])', t=t)  # Forcing function
+    def F(self, t):  # Forcing function
+        return Expression('sin(pi*x[1])', t=t)
 
-    def functional(self, W, w):
-
+    def functional(self, W, w):  # functional for adaptivity
         (q, psi) = (w[0], w[1])
 
-        M = q * dx  # Mean of the vorticity in the whole domain
+        M = q * dx
 
         return M
 
