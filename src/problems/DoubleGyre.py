@@ -56,7 +56,7 @@ class Problem(ProblemBase):
     def functional(self, W, w):  # functional for adaptivity
         (q, psi) = (w[0], w[1])
 
-        M = q * dx
+        M = Constant(0.5) * q * q * dx
 
         return M
 

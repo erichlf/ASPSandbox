@@ -31,7 +31,7 @@ class Solver(SolverBase):
         (q, psi) = (w[0], w[1])
         (q2, psi2) = (w2[0], w2[1])
 
-        R1 = self.Jac(q, psi) - psi.dx(0)
+        R1 = self.Jac(psi, q2) - psi.dx(0)
         R2 = q
 
         return R1, R2
@@ -50,7 +50,8 @@ class Solver(SolverBase):
         t = problem.t0
         f = problem.F(t)  # forcing and mass source/sink
 
-        d1, d2 = self.stabilization_parameters(w_, k, h)
+        d1 = 0.001 * conditional(le(h, 1/Re), h**2, h)  # stabilization parameter
+        d2 = 1000 * conditional(le(h, Ro), h**2, h)  # stabilization parameter
 
         if(not self.stabilize or ei_mode):
             d1 = Constant(0)
@@ -68,21 +69,12 @@ class Solver(SolverBase):
         # least squares stabilization
         R1, R2 = self.strong_residual(w, w)
         Rv1, Rv2 = self.strong_residual(wt, w)
-        r += d1 * (R1 - f) * Rv2 * dx + d2 * R2 * Rv2 * dx
+        r += (d1 * (R1 - f) * Rv1 + d2 * R2 * Rv2) * dx
 
         return r
 
     def Jac(self, psi, q):
         return psi.dx(1) * q.dx(0) - psi.dx(0) * q.dx(1)
-
-    def stabilization_parameters(self, w, k, h):
-        (q, psi) = (w[0], w[1])
-        K1 = 10
-        K2 = 10
-        d1 = K1 * h**2  # (k**(-2) + q * q * h**(-2))**(-0.5)
-        d2 = K2 * h  # (k**(-2) + psi * psi * h**(-2))**(-0.5)
-
-        return d1, d2
 
     def suffix(self, problem):
         '''
