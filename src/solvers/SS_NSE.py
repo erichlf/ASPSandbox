@@ -7,7 +7,6 @@ class Solver(SolverBase):
         SolverBase.__init__(self, options)
 
         self.steady_state = True
-        self.nu = options['nu']
 
     def strong_residual(self, w, w2):
         (u, p) = (as_vector((w[0], w[1])), w[2])
@@ -23,7 +22,7 @@ class Solver(SolverBase):
         (u, p) = (as_vector((w[0], w[1])), w[2])
         (v, q) = (as_vector((wt[0], wt[1])), wt[2])
 
-        nu = self.nu
+        nu = problem.nu
 
         h = CellSize(W.mesh())
         d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter

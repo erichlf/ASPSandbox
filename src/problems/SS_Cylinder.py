@@ -19,11 +19,13 @@ Diameter = 2. * radius
 
 
 class WallBoundary(SubDomain):
+
     def inside(self, x, on_boundary):
         return on_boundary and (near(x[1], ymax) or near(x[1], ymin))
 
 
 class InnerBoundary(SubDomain):
+
     def inside(self, x, on_boundary):
         return on_boundary and (x[0] > xmin + DOLFIN_EPS
                                 and x[1] > ymin + DOLFIN_EPS
@@ -32,16 +34,19 @@ class InnerBoundary(SubDomain):
 
 
 class InflowBoundary(SubDomain):
+
     def inside(self, x, on_boundary):
         return on_boundary and near(x[0], xmin)
 
 
 class OutflowBoundary(SubDomain):
+
     def inside(self, x, on_boundary):
         return on_boundary and near(x[0], xmax)
 
 
 class Inflow(Expression):  # Coefficients for defining boundary conditions
+
     def eval(self, values, x):
         values[0] = 4*1.5*(x[1]*(ymax-x[1]))/(ymax*ymax)
         values[1] = 0
@@ -51,6 +56,7 @@ class Inflow(Expression):  # Coefficients for defining boundary conditions
 
 
 class PsiMarker(Expression):
+
     def eval(self, values, x):
         ib = InnerBoundary()
 
@@ -61,6 +67,7 @@ class PsiMarker(Expression):
 
 
 class Problem(ProblemBase):
+
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
@@ -71,11 +78,7 @@ class Problem(ProblemBase):
             self.Nx = options['Nx']
 
             channel = Rectangle(Point(xmin, ymin), Point(xmax, ymax))
-            if cube:
-                bluff = Rectangle(Point(xcenter - radius, ycenter - radius),
-                                  Point(xcenter + radius, ycenter + radius))
-            else:
-                bluff = Circle(Point(xcenter, ycenter), radius)
+            bluff = Circle(Point(xcenter, ycenter), radius)
 
             domain = channel - bluff
             self.mesh = generate_mesh(domain, self.Nx)

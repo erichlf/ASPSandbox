@@ -31,7 +31,7 @@ class Solver(SolverBase):
         return R1, R2
 
     # weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, ww, w, w_, wt, ei_mode=False):
         if W.mesh().topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])
             (U, P) = (as_vector((ww[0], ww[1])), ww[2])
@@ -43,10 +43,11 @@ class Solver(SolverBase):
             (U_, P_) = (as_vector((w_[0], w_[1], w_[2])), w_[3])
             (v, q) = (as_vector((wt[0], wt[1], wt[2])), wt[3])
 
-        h = CellSize(W.mesh())  # mesh size
-        d1, d2 = self.stabilization_parameters(U_, P_, k, h)
-
         nu = problem.nu  # Reynolds Number
+
+        h = CellSize(W.mesh())  # mesh size
+        d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter
+        # d1, d2 = self.stabilization_parameters(U_, P_, k, h)
 
         t0 = problem.t0
 
@@ -57,7 +58,7 @@ class Solver(SolverBase):
         # least squares stabilization
         if(ei_mode):
             d1 = Constant(0)
-            d2 = Constant(0)
+            # d2 = Constant(0)
 
         # weak form of the equations
         r = (1. / k) * inner(U - U_, v) * dx
@@ -70,7 +71,7 @@ class Solver(SolverBase):
 
         R1, R2 = self.strong_residual(W, w, w)
         Rv1, Rv2 = self.strong_residual(W, wt, w)
-        r += (d1 * inner(R1 - F, Rv1) + d2 * R2 * Rv2) * dx
+        r += d1 * (inner(R1 - F, Rv1) + R2 * Rv2) * dx
 
         return r
 
@@ -90,7 +91,7 @@ class Solver(SolverBase):
         try:
             s = 'Re' + str(problem.Re)
         except:
-            s = 'nu' + str(prblem.nu)
+            s = 'nu' + str(problem.nu)
 
         s += 'T' + str(problem.T)
         if problem.Nx is not None:

@@ -17,7 +17,7 @@ class Solver(SolverBase):
         try:
             self.stabilize = options['stabilize']
         except:
-            self.stabilize = False
+            self.stabilize = True
 
     def function_space(self, mesh):
         # Define function spaces
@@ -76,11 +76,11 @@ class Solver(SolverBase):
         return psi.dx(1) * q.dx(0) - psi.dx(0) * q.dx(1)
 
     def stabilization_parameters(self, w, k, h):
-        # (q, psi) = (w[0], w[1])
-        K1 = 1.
-        K2 = 1.
-        d1 = K1 * h  # (k**(-2) + inner(u,u)*h**(-2))**(-0.5)
-        d2 = K2 * h
+        (q, psi) = (w[0], w[1])
+        K1 = 10
+        K2 = 10
+        d1 = K1 * h**2  # (k**(-2) + q * q * h**(-2))**(-0.5)
+        d2 = K2 * h  # (k**(-2) + psi * psi * h**(-2))**(-0.5)
 
         return d1, d2
 
