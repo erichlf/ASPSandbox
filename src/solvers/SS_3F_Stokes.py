@@ -51,7 +51,7 @@ class Solver(SolverBase):
 
         # Weak form
         r = 1. / (2. * eta) * inner(tau - self.epsilon(u), s) * dx
-        r += (inner(tau, self.epsilon(v)) - p*div(v) - inner(f,v)) * dx
+        r += (inner(tau, self.epsilon(v)) - p*div(v) - inner(f, v)) * dx
         r += div(u) * q * dx
 
         # GLS stabilization

@@ -50,8 +50,8 @@ class Solver(SolverBase):
         t = problem.t0
         f = problem.F(t)  # forcing and mass source/sink
 
-        d1 = 0.001 * conditional(le(h, 1/Re), h**2, h)  # stabilization parameter
-        d2 = 1000 * conditional(le(h, Ro), h**2, h)  # stabilization parameter
+        d1 = conditional(le(h, 1. / Re), h**2, h)  # stabilization parameter
+        d2 = conditional(le(h, Ro), h**2, h)  # stabilization parameter
 
         if(not self.stabilize or ei_mode):
             d1 = Constant(0)
@@ -59,9 +59,9 @@ class Solver(SolverBase):
 
         # weak form of the equations
         r = ((1. / k) * (Q - Q_) * p
-             + (1. / Re) * inner(grad(q), grad(p))
+             + 1. / Re * inner(grad(q), grad(p))
              + self.Jac(psi, q) * p
-             - psi.dx(0) * p) * dx  # vorticity equation
+             + psi * p.dx(0)) * dx  # vorticity equation
         r -= f * p * dx  # forcing function
         # streamfunction equation
         r += (q * chi - Ro * inner(grad(psi), grad(chi))) * dx
