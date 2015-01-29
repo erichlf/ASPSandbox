@@ -7,7 +7,6 @@ class Solver(SolverBase):
         SolverBase.__init__(self, options)
 
         self.steady_state = True
-        self.nu = options['nu']
         self.eta = Constant(1.)
 
     # Define function spaces
@@ -40,7 +39,7 @@ class Solver(SolverBase):
                      as_tensor(((wt[3], wt[4]), (wt[5], wt[6]))))
 
         eta = self.eta
-        nu = self.nu
+        nu = problem.nu
 
         h = CellSize(W.mesh())
         d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter
