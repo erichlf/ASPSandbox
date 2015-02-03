@@ -23,8 +23,8 @@ class Solver(SolverBase):
     # Define function spaces
     def function_space(self, mesh):
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        R = FunctionSpace(mesh, 'CG', self.Pp)
-        Q = FunctionSpace(mesh, 'CG', self.Pp)
+        R = FunctionSpace(mesh, 'CG', 1)
+        Q = FunctionSpace(mesh, 'CG', 1)
 
         W = MixedFunctionSpace([V, R, Q])
 
@@ -33,10 +33,10 @@ class Solver(SolverBase):
     # strong residual for cG(1)cG(1)
     def strong_residual(self, w, w2):  # U, v, rho, r, p):
         (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
-        (U, Rho, P) = (as_vector((w2[0], w2[1])), w2[2], w2[3])
+        (u2, rho2, p2) = (as_vector((w2[0], w2[1])), w2[2], w2[3])
 
-        R1 = Rho * grad(U) * u + grad(p)
-        R2 = div(Rho * u)
+        R1 = div(rho2 * u)
+        R2 = rho2 * grad(u2) * u + grad(p)
         R3 = div(u)
 
         return R1, R2, R3
@@ -49,11 +49,11 @@ class Solver(SolverBase):
         (U_, Rho_, P_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
         (v, psi, q) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
 
+        nu = problem.nu  # kinematic viscosity
+
         h = CellSize(W.mesh())  # mesh size
         # stabilization parameters
-        d1, d2, d3 = self.stabilization_parameters(U_, Rho_, P_, k, h)
-
-        nu = problem.nu  # kinematic viscosity
+        d1 = conditional(le(h, nu), h**2, h)
 
         t0 = problem.t0
 
@@ -63,9 +63,7 @@ class Solver(SolverBase):
 
         # least squares stabilization
         if ei_mode:
-            d1 = 0
-            d2 = 0
-            d3 = 0
+            d = Constant(0)
 
         # weak form of the equations
         r = ((1. / k) * (Rho - Rho_) + div(rho * u)) * \
@@ -77,29 +75,18 @@ class Solver(SolverBase):
               - rho * dot(f, v)) * dx  # momentum equation
         r += div(u) * q * dx  # continuity equation
 
-        r += d1 * (inner(grad(u), grad(v))) * dx
-        r += d2 * (inner(grad(rho), grad(psi))) * dx
-        r += d3 * ((inner(grad(p), grad(q))) + p * q) * dx
+        R1, R2, R3 = self.strong_residual(w, w)
+        Rv1, Rv2, Rv3 = self.strong_residual(wt, w)
+        r += d * (R1 * Rv1 + inner(R2 - f, Rv2) + R3 * Rv3) * dx
+
         return r
-
-    def stabilization_parameters(self, u, rho, p, k, h):
-        K1 = 1000
-        K2 = 1
-        K3 = 1E-4
-        d1 = K1 * h ** (2.)
-        d2 = K2 * h ** (2.)
-        d3 = K3 * h ** (2.)
-
-        return d1, d2, d3
 
     def suffix(self, problem):
         '''
             Obtains the run specific data for file naming, e.g. Nx, k, etc.
         '''
 
-        s = 'nu' + str(prblem.nu)
-
-        s += 'T' + str(problem.T)
+        s = 'nu' + str(problem.nu) + 'At' + str(problem.At)
         if problem.Nx is not None:
             s += 'Nx' + str(problem.Nx)
         if problem.Ny is not None:
@@ -107,7 +94,7 @@ class Solver(SolverBase):
         if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
             s += 'Nz' + str(problem.Nz)
 
-        s += 'K' + str(problem.k)
+        s += 'T' + str(problem.T) + 'K' + str(problem.k)
 
         return s
 

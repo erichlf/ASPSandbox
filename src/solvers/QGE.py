@@ -51,7 +51,7 @@ class Solver(SolverBase):
         f = problem.F(t)  # forcing and mass source/sink
 
         d1 = conditional(le(h, 1. / Re), h**2, h)  # stabilization parameter
-        d2 = conditional(le(h, Ro), h**2, h)  # stabilization parameter
+        d2 = 0.01 * conditional(le(h, Ro), h**2, h)  # stabilization parameter
 
         if(not self.stabilize or ei_mode):
             d1 = Constant(0)
@@ -61,15 +61,16 @@ class Solver(SolverBase):
         r = ((1. / k) * (Q - Q_) * p
              + 1. / Re * inner(grad(q), grad(p))
              + self.Jac(psi, q) * p
-             + psi * p.dx(0)) * dx  # vorticity equation
+             - psi.dx(0) * p) * dx  # vorticity equation
         r -= f * p * dx  # forcing function
         # streamfunction equation
         r += (q * chi - Ro * inner(grad(psi), grad(chi))) * dx
 
         # least squares stabilization
-        R1, R2 = self.strong_residual(w, w)
-        Rv1, Rv2 = self.strong_residual(wt, w)
-        r += (d1 * (R1 - f) * Rv1 + d2 * R2 * Rv2) * dx
+        # R1, R2 = self.strong_residual(w, w)
+        # Rv1, Rv2 = self.strong_residual(wt, w)
+        r += d1 * inner(grad(q), grad(p)) * dx  # (d1 * (R1 - f) * Rv1 + d2 * R2 * Rv2) * dx
+        r -= d2 * inner(grad(psi), grad(chi)) * dx
 
         return r
 
