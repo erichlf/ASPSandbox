@@ -62,7 +62,7 @@ class Solver(SolverBase):
         # GLS stabilization
         R1, R2, R3 = self.strong_residual(w, w)
         Rv1, Rv2, Rv3 = self.strong_residual(wt, w)
-        r += d1*(inner(R1, Rv1) + inner(R2 - f, Rv2) + R3 * Rv3) * dx
+        r += d1 * (inner(R1, Rv1) + inner(R2 - f, Rv2) + R3 * Rv3) * dx
 
         return r
 

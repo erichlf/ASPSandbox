@@ -36,7 +36,7 @@ class Solver(SolverBase):
         kappa = problem.kappa
         beta = problem.beta  # velocity
 
-        d = self.stabilization_parameters(U_, k, h, kappa)
+        d = self.stabilization_parameters(U_, h, beta, kappa)
 
         t0 = problem.t0
 
@@ -67,9 +67,9 @@ class Solver(SolverBase):
 
         return r
 
-    def stabilization_parameters(self, u, k, h, kappa):
-        K = 0.5 / sqrt(1.0 ** 2 + 1.61 ** 2)
-        d = conditional(le(h, kappa), K * h ** 2, K * h)
+    def stabilization_parameters(self, u, h, beta, kappa):
+        d = conditional(ge(h, kappa), h/sqrt(dot(beta, beta)),
+                h**2/sqrt(dot(beta, beta)))
 
         return d
 

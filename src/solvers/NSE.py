@@ -20,12 +20,12 @@ class Solver(SolverBase):
     def strong_residual(self, W, w, w2):
         if W.mesh().topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])
-            (U, P) = (as_vector((w2[0], w2[1])), w2[2])
+            (u2, p2) = (as_vector((w2[0], w2[1])), w2[2])
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
-            (U, P) = (as_vector((w2[0], w2[1], w2[2])), w2[3])
+            (u2, p2) = (as_vector((w2[0], w2[1], w2[2])), w2[3])
 
-        R1 = grad(U) * u + grad(p)
+        R1 = grad(u2) * u + grad(p)
         R2 = div(u)
 
         return R1, R2
