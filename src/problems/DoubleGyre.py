@@ -22,8 +22,8 @@ class Problem(ProblemBase):
         # initial time, final time, time-step
         self.t0 = 0.
         self.T = options['T']
-        psi_avg = 2.  # expected time-averaged max streamfunction
-        self.k = self.time_step(psi_avg, self.mesh)
+        self.Ubar = 2.  # expected time-averaged max streamfunction
+        self.k = self.time_step(self.Ubar, self.mesh)
 
         # Reynolds number
         try:
@@ -52,7 +52,7 @@ class Problem(ProblemBase):
         return bcs
 
     def time_step(self, psi, mesh):
-        C_CFL = 100.
+        C_CFL = 10.
         return C_CFL * mesh.hmin()/psi
 
     def F(self, t):  # Forcing function
