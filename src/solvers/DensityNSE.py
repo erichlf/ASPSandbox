@@ -23,8 +23,8 @@ class Solver(SolverBase):
     # Define function spaces
     def function_space(self, mesh):
         V = VectorFunctionSpace(mesh, 'CG', self.Pu)
-        R = FunctionSpace(mesh, 'CG', self.Pp)
-        Q = FunctionSpace(mesh, 'CG', self.Pp)
+        R = FunctionSpace(mesh, 'CG', 1)
+        Q = FunctionSpace(mesh, 'CG', 1)
 
         W = MixedFunctionSpace([V, R, Q])
 
@@ -63,9 +63,7 @@ class Solver(SolverBase):
 
         # least squares stabilization
         if ei_mode:
-            d1 = Constant(0)
-            # d2 = 0
-            # d3 = 0
+            d = Constant(0)
 
         # weak form of the equations
         r = ((1. / k) * (Rho - Rho_) + div(rho * u)) * \
@@ -77,13 +75,9 @@ class Solver(SolverBase):
               - rho * dot(f, v)) * dx  # momentum equation
         r += div(u) * q * dx  # continuity equation
 
-        r += d1 * (inner(grad(u), grad(v))) * dx
-        r += d1 * (inner(grad(rho), grad(psi))) * dx
-        r += d1 * ((inner(grad(p), grad(q))) + p * q) * dx
-
-        # R1, R2, R3 = self.strong_residual(w, w)
-        # Rv1, Rv2, Rv3 = self.strong_residual(wt, w)
-        # r += d1 * (R1 * Rv1 + inner(R2 - f, Rv2) + R3 * Rv3) * dx
+        R1, R2, R3 = self.strong_residual(w, w)
+        Rv1, Rv2, Rv3 = self.strong_residual(wt, w)
+        r += d * (R1 * Rv1 + inner(R2 - f, Rv2) + R3 * Rv3) * dx
 
         return r
 

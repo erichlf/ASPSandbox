@@ -50,9 +50,8 @@ class Solver(SolverBase):
         t = problem.t0
         f = problem.F(t)  # forcing and mass source/sink
 
-        # stabilization parameters
-        d1 = conditional(le(h, (1. / Re * Ro)**(1./3.)), h**2, h)
-        d2 = 0.01 * conditional(le(h, Ro**0.5), h**2, h)
+        d1 = conditional(le(h, 1. / Re), h**2, h)  # stabilization parameter
+        d2 = 0.01 * conditional(le(h, Ro), h**2, h)  # stabilization parameter
 
         if(not self.stabilize or ei_mode):
             d1 = Constant(0)
@@ -70,7 +69,8 @@ class Solver(SolverBase):
         # least squares stabilization
         # R1, R2 = self.strong_residual(w, w)
         # Rv1, Rv2 = self.strong_residual(wt, w)
-        r += d1 * inner(grad(q), grad(p)) * dx  # (d1 * (R1 - f) * Rv1 + d2 * R2 * Rv2) * dx
+        # r += (d1 * (R1 - f) * Rv1 + d2 * R2 * Rv2) * dx
+        r += d1 * inner(grad(q), grad(p)) * dx
         r -= d2 * inner(grad(psi), grad(chi)) * dx
 
         return r
