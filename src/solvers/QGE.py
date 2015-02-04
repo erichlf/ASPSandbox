@@ -50,8 +50,9 @@ class Solver(SolverBase):
         t = problem.t0
         f = problem.F(t)  # forcing and mass source/sink
 
-        d1 = conditional(le(h, 1. / Re), h**2, h)  # stabilization parameter
-        d2 = 0.01 * conditional(le(h, Ro), h**2, h)  # stabilization parameter
+        # stabilization parameters
+        d1 = conditional(le(h, (1. / Re * Ro)**(1./3.)), h**2, h)
+        d2 = 0.01 * conditional(le(h, Ro**0.5), h**2, h)
 
         if(not self.stabilize or ei_mode):
             d1 = Constant(0)

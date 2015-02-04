@@ -22,7 +22,8 @@ class Problem(ProblemBase):
         # initial time, final time, time-step
         self.t0 = 0.
         self.T = options['T']
-        self.k = options['k']
+        psi_avg = 2.  # expected time-averaged max streamfunction
+        self.k = self.time_step(psi_avg, self.mesh)
 
         # Reynolds number
         try:
@@ -49,6 +50,10 @@ class Problem(ProblemBase):
         bcs = [noslipQ, noslipPsi]
 
         return bcs
+
+    def time_step(self, psi, mesh):
+        C_CFL = 100.
+        return C_CFL * mesh.hmin()/psi
 
     def F(self, t):  # Forcing function
         return Expression('sin(pi*x[1])', t=t)

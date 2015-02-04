@@ -37,7 +37,7 @@ class InitialConditions(Expression):
         values[0] = 0.
         values[1] = 0.
         values[2] = 0.5 * (rhoMin + rhoMax) + 0.5 * (rhoMax - rhoMin) * \
-            tanh((x[1] + eta * cos(2 * pi * x[0] / d)) / (0.01 * d))
+            tanh((x[1] - 1.5 * d + eta * cos(2 * pi * x[0] / d)) / (0.01 * d))
         values[3] = 0.
 
     def value_shape(self):
@@ -122,10 +122,10 @@ class Problem(ProblemBase):
 
         # Create no-slip boundary condition for velocity
         bc1 = DirichletBC(W.sub(0), Constant((0.0, 0.0)), NoslipBoundary())
-        bc2 = DirichletBC(W.sub(1), Constant(rhoMin), BottomBoundary())
-        bc3 = DirichletBC(W.sub(1), Constant(rhoMax), TopBoundary())
+        # bc2 = DirichletBC(W.sub(1), Constant(rhoMin), BottomBoundary())
+        # bc3 = DirichletBC(W.sub(1), Constant(rhoMax), TopBoundary())
 
-        return [bc1, bc2, bc3]
+        return [bc1]  # , bc2, bc3]
 
     def F(self, t):
         # forcing function for the momentum equation
@@ -135,7 +135,7 @@ class Problem(ProblemBase):
 
         (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
 
-        M = (u[1].dx(0) - u[0].dx(1)) * dx
+        M = (u[1] + u[0]) * dx
 
         return M
 
