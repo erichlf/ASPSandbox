@@ -57,7 +57,7 @@ hb = hb / h0  # depth at the boundary
 c0 = (h0 * g) ** (0.5)
 
 # maximum velocity of wave object
-vmax = ((hb + a0) * g) ** (0.5) / 10.  # Max Speed of the moving object [m.s^(-1)]
+vmax = ((hb + a0) * g) ** (0.5) / 2.  # Max Speed of the moving object [m.s^(-1)]
 
 
 class InitialConditions(Expression):

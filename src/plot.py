@@ -36,12 +36,12 @@ if uniformfile is not None:
 hold(True)
 title(titlestr, va='baseline', ha='center', loc='center')
 
-plot(log10(adaptdofs), log10(adapterr), 'k')
+plot(log10(adaptdofs), log10(adapterr_est), 'k')
 
 if uniformfile is not None:
     plot(log10(uniformdofs), log10(uniformerr), 'r')
 
-plot(log10(adaptdofs), log10(adapterr_est), 'k--')
+plot(log10(adaptdofs), log10(adapterr), 'k--')
 
 if uniformfile is not None:
     legend(["Goal Oriented Error", "Uniform Error", "``True'' Error"],

@@ -80,13 +80,14 @@ class ObjectBoundary(SubDomain):
 
     def inside(self, x, on_boundary):
 
-        return on_boundary and (x[0] > xmin + DOLFIN_EPS
-                                and x[0] < xmax - DOLFIN_EPS
-                                and x[1] > ymin + DOLFIN_EPS
-                                and x[1] < ymax - DOLFIN_EPS
-                                and (self.dim == 3
-                                     and (x[2] > zmin + DOLFIN_EPS
-                                          and x[2] < zmax - DOLFIN_EPS)))
+        b = on_boundary and (x[0] > xmin + DOLFIN_EPS
+                             and x[0] < xmax - DOLFIN_EPS
+                             and x[1] > ymin + DOLFIN_EPS
+                             and x[1] < ymax - DOLFIN_EPS)
+        if self.dim == 3:
+            b = b and x[2] > zmin + DOLFIN_EPS and x[2] < zmax - DOLFIN_EPS
+
+        return b
 
 
 # Outflow boundary
@@ -251,13 +252,27 @@ class Problem(ProblemBase):
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
 
-        # n = FacetNormal(mesh)
-        # marker = problem.marker()
+        n = FacetNormal(W.mesh())
+        psimarker = self.marker()
 
+        I = Identity(2)
+        sigma = p*I - self.nu*self.epsilon(u)
+        theta = Constant((1.0, 0.0))
+
+        # g = Expression(
+        #     ("200.0*exp(-200.0*(pow(x[0] - 0.5, 2) + pow(x[1] - 0.3, 2)))",
+        #      "0.0"))
+
+        # M = psimarker*p*n[0]*ds  # Drag (only pressure)
+        # M = psimarker*p*n[1]*ds  # Lift (only pressure)
+        # M = inner(g, u)*dx  # Mean of the velocity in a region
+        # M = psimarker*dot(dot(sigma, n), theta)*ds  # Drag (full stress)
         M = u[0] * dx  # Mean of the x-velocity in the whole domain
-        # M = marker*p*n[0]*ds  # Drag (only pressure)
 
         return M
+
+    def epsilon(self, z):
+        return 0.5*(grad(z) + grad(z).T)
 
     def __str__(self):
         return 'Cylinder'
