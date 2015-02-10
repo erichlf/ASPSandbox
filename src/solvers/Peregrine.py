@@ -31,7 +31,7 @@ class Solver(SolverBase):
         Xi = FunctionSpace(mesh, 'DG', 1)
         W = MixedFunctionSpace([V, Q, Nu, Xi])
 
-        self.w__ = Function(W)
+        self.w__ = Function(W, name='w__')
 
         return W
 
@@ -39,8 +39,8 @@ class Solver(SolverBase):
         '''
             Defines the strong residual for Peregrine System.
         '''
-        (u, eta, zeta, H) = (as_vector((w[0], w[1])), w[2], w[3], w[4])
-        (v, chi, nu, xi) = (as_vector((wt[0], wt[1])), wt[2], wt[3], wt[4])
+        (u, eta, H) = (as_vector((w[0], w[1])), w[2], w[4])
+        (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
         # Parameters
         sigma = problem.sigma
         epsilon = problem.epsilon
@@ -62,51 +62,48 @@ class Solver(SolverBase):
         (u, eta, zeta, H) = (as_vector((w[0], w[1])), w[2], w[3], w[4])
         (U, Eta, Zeta, Height) = (as_vector((ww[0], ww[1])),
                                   ww[2], ww[3], ww[4])
-        (U_, Eta_, Zeta_, Height_) = (as_vector((w_[0], w_[1])),
-                                      w_[2], w_[3], w_[4])
+        (U_, Eta_, Zeta_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
         (v, chi, nu, xi) = (as_vector((wt[0], wt[1])), wt[2], wt[3], wt[4])
 
         # initial the n - 2 time-step
         self.w__.assign(w_)
-        (U__, Eta__, Zeta__, Height__) = (as_vector((self.w__[0], self.w__[1])),
-                                      self.w__[2], self.w__[3], self.w__[4])
+        Zeta__ = self.w__[3]
 
         h = CellSize(W.mesh())  # mesh size
-        d = 0.1 * h ** (3. / 2.)  # stabilization parameter
+        # d = 0.1 * h ** (3. / 2.)  # stabilization parameter
         d1, d2 = self.stabilization_parameters(U_, Eta_, k, h)
 
         # Parameters
         sigma = problem.sigma
         epsilon = problem.epsilon
-        beta = problem.beta
+        # we want to ramp up the velocity of the object
+        self.betaScale = Expression('tanh(100*t)', t=problem.t0)
+        beta = problem.beta * self.betaScale
         D = problem.D
 
         zeta_tt = 1. / k ** 2 * (Zeta - 2 * Zeta_ + Zeta__)
         zeta_t = 1. / k * (Zeta - Zeta_)
 
         if ei_mode:
-            d = 0
+            # d = 0
             d1 = 0
             d2 = 0
 
         # weak form for peregrine
-        r = (1. / k * inner(U - U_, v) + epsilon * inner(grad(u) * u, v)
-             - div(v) * eta) * dx
+        r = (1. / k * inner(U - U_, v)
+             - div(v) * eta
+             + epsilon * inner(grad(u) * u, v)
+             + sigma ** 2 / 2. * (div(H * 1. / k * (U - U_)) * div(H * v)
+             - div(1. / k * (U - U_)) * div(H ** 2 / 3. * v)
+             + zeta_tt * div(H * v))) * dx  # momentum equation
 
-        r += (sigma ** 2 * 1. / k * div(H * (U - U_)) *
-              div(H * v / 2.) - sigma ** 2 * 1. / k * div(U - U_) *
-              div(H ** 2 * v / 6.)) * dx
-        r += sigma ** 2 * zeta_tt * div(H * v / 2.) * dx
-
-        r += (1. / k * (Eta - Eta_) * chi + zeta_t * chi) * dx
-        r -= inner(u, grad(chi)) * (epsilon * eta + H) * dx
+        r += (1. / k * (Eta - Eta_) * chi
+              - inner((H + epsilon * eta) * u, grad(chi))
+              + zeta_t * chi) * dx  # continuity
 
         # the following will deal with the moving bottom using DG
-        alpha = Constant(5.0) # Penalty term
-
         # Mesh-related functions
         n = FacetNormal(W.mesh())
-        h_avg = (h('+') + h('-'))/2
 
         # ( dot(v, n) + |dot(v, n)| )/2.0
         betan = (dot(beta, n) + abs(dot(beta, n)))/2.0
@@ -116,14 +113,14 @@ class Solver(SolverBase):
                  jump(nu)) * dS + dot(betan * zeta, nu) * ds
 
         # The following is to describe the bathymetry
-        r += (H - (D + epsilon * zeta)) * xi * dx
+        r += (Height - (D + epsilon * Zeta)) * xi * dx
 
         # stabilization
         R1, R2, z1, z2 = self.strong_residual(problem, w, w, zeta_t, zeta_tt)
         Rv1, Rv2, z1, z2 = self.strong_residual(problem, w, wt, zeta_t, zeta_tt)
         r += (d1 * inner(R1 + z1, Rv1) + d2 * (R2 + z2) * Rv2) * dx
         # streamline diffusion
-        r += d * (inner(grad(u), grad(v)) + inner(grad(eta), grad(chi))) * dx
+        # r += d * (inner(grad(u), grad(v)) + inner(grad(eta), grad(chi))) * dx
 
         return r
 
@@ -137,6 +134,7 @@ class Solver(SolverBase):
 
     def post_step(self, problem, t, k, W, w, w_):
         self.w__.assign(w_)
+        self.betaScale.t = t
 
     def Save(self, problem, w, dual=False):
         '''
@@ -145,7 +143,6 @@ class Solver(SolverBase):
         '''
         u = w.split()[0]
         eta = w.split()[1]
-        zeta = w.split()[2]
         H = w.split()[3]
 
         if self.saveFrequency != 0 and (self._timestep - 1) \
@@ -153,14 +150,14 @@ class Solver(SolverBase):
             if not dual:
                 u.rename("Velocity", "Peregrine")
                 eta.rename("WaveHeight", "Peregrine")
-                u.rename("Bathymetry", "Peregrine")
+                H.rename("Bathymetry", "Peregrine")
                 self._ufile << u
                 self._pfile << eta
                 self._Hfile << H
             else:
                 u.rename("DualVelocity", "Peregrine")
                 eta.rename("DualWaveHeight", "Peregrine")
-                u.rename("DualBathymetry", "Peregrine")
+                H.rename("DualBathymetry", "Peregrine")
                 self._uDualfile << u
                 self._pDualfile << eta
                 self._HDualfile << H
@@ -180,17 +177,20 @@ class Solver(SolverBase):
                 self._ufile = File(s + '_u.pvd', 'compressed')
                 self._pfile = File(s + '_eta.pvd', 'compressed')
                 self._Hfile = File(s + '_H.pvd', 'compressed')
+            self._uDualfile = File(s + '_ei.pvd', 'compressed')
             self._uDualfile = File(s + '_uDual.pvd', 'compressed')
             self._pDualfile = File(s + '_etaDual.pvd', 'compressed')
-            self._pDualfile = File(s + '_HDual.pvd', 'compressed')
+            self._HDualfile = File(s + '_HDual.pvd', 'compressed')
             self.meshfile = File(s + '_mesh.xml')
         else:
+            if self.eifile is None:  # error indicators
+                self.eifile = File(s + '_ei.pvd', 'compressed')
             self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
             self._pfile = File(s + '_eta%d.pvd' % n, 'compressed')
             self._Hfile = File(s + '_H%d.pvd' % n, 'compressed')
             self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
             self._pDualfile = File(s + '_etaDual%d.pvd' % n, 'compressed')
-            self._pDualfile = File(s + '_HDual%d.pvd' % n, 'compressed')
+            self._HDualfile = File(s + '_HDual%d.pvd' % n, 'compressed')
             self.meshfile = File(s + '_mesh%d.xml' % n)
 
     def Plot(self, problem, W, w):
@@ -200,7 +200,6 @@ class Solver(SolverBase):
         '''
         u = w.split()[0]
         eta = w.split()[1]
-        zeta = w.split()[2]
         H = w.split()[3]
 
         # Plot velocity and height and wave object

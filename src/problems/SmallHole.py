@@ -90,8 +90,9 @@ class Problem(ProblemBase):
         return u0
 
     def boundary_conditions(self, V, t):
+        F = Expression('TA/2 + TA/2*sin(pi*t)', TA=TA, t=t)
         bc0 = DirichletBC(V, Constant(0.0), OuterBoundary())
-        bc1 = DirichletBC(V, Constant(TA), InnerBoundary())
+        bc1 = DirichletBC(V, F, InnerBoundary())
 
         return [bc0, bc1]
 
@@ -111,8 +112,9 @@ class Problem(ProblemBase):
         return M
 
     def time_step(self, Ubar, mesh):
+        CFL = 100
 
-        k = 100*mesh.hmin()
+        k = CFL*mesh.hmin()
 
         return k
 

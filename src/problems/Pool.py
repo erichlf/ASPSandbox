@@ -33,7 +33,7 @@ channelTop = objectTop + 0.5
 hd = 2.  # Depth of the pool in the central lane [m]
 hb = 0.3  # Depth at the boundaries [m]
 ad = -0.3  # height of the moving object [m]
-g = 9.8  # Gravity
+g = 1.  # Gravity
 lambda0 = 20.  # typical wavelength
 a0 = 0.8  # Typical wave height
 h0 = 2.  # Typical depth
@@ -56,21 +56,20 @@ ad = ad / a0  # height of the moving object
 hb = hb / h0  # depth at the boundary
 c0 = (h0 * g) ** (0.5)
 
-# maximum velocity of wave object
-vmax = ((hb + a0) * g) ** (0.5) / 2.  # Max Speed of the moving object [m.s^(-1)]
+# Max Speed of the moving object [m.s^(-1)]
+vmax = ((hb + a0) * g) ** (0.5)
 
 
 class InitialConditions(Expression):
 
     def __init__(self, epsilon, params):
-        self.obj = Object(vmax=vmax, H=params[0], N1=params[1], N2=params[2],
+        self.obj = Object(H=params[0], N1=params[1], N2=params[2],
                           W1=params[3], W2=params[4], W3=params[5],
                           W4=params[6], dz=params[7])
         self.D = Depth()
         self.epsilon = epsilon
 
     def eval(self, values, x):
-
         D = np.array([0], dtype='d')
         self.D.eval(D, x)
         z = np.array([0], dtype='d')
@@ -137,13 +136,12 @@ class Object(Expression):
         http://www.mathworks.com/matlabcentral/fileexchange/42239-airfoil-generation-using-cst-parameterization-method
     '''
 
-    def __init__(self, vmax, H, N1, N2, W1, W2, W3, W4, dz):
+    def __init__(self, H, N1, N2, W1, W2, W3, W4, dz):
         self.H = H  # Object height
         self.N1 = N1  # shape parameter for 'back' of object
         self.N2 = N2  # shape parameter for 'front' of object
         self.w = (W1, W2, W3, W4)  # weights for arc between 'front' and 'back'
         self.dz = dz  # 'leading' edge thickness
-        self.vmax = vmax
 
     def eval(self, value, x):
         H = self.H
@@ -167,7 +165,7 @@ class Object(Expression):
                 K = float(factorial(n) / (factorial(i) * factorial(n - i)))
                 S += w[i] * K * X[0] ** i * (1. - X[0]) ** (n - i)
 
-            value[0] = -4. * (H * C * S + X[0] * dz) * \
+            value[0] = 4. * (H * C * S + X[0] * dz) * \
                 (1 - x[1] ** 2 / objectTop ** 2)
         else:
             value[0] = 0.
@@ -259,7 +257,7 @@ class Object(Expression):
                 self.dz]
 
     def copy(self):
-        return self.__class__(vmax=self.vmax, H=self.H, N1=self.N1, N2=self.N2,
+        return self.__class__(H=self.H, N1=self.N1, N2=self.N2,
                               W1=self.w[0], W2=self.w[1], W3=self.w[2],
                               W4=self.w[3], dz=self.dz)
 
@@ -312,7 +310,7 @@ class Problem(ProblemBase):
         self.params = [ObjH, N1, N2, W1, W2, W3, W4, dz]
 
         self.D = Depth()  # pool depth
-        self.beta = Expression((('vmax', '0')), vmax=vmax)
+        self.beta = Expression((('v', '0')), v=vmax)
 
     def Refine(self, mesh):
         '''
@@ -333,7 +331,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, W):
         w0 = InitialConditions(self.epsilon, self.params)
-        w0 = project(-w0, W)
+        w0 = project(w0, W)
 
         return w0
 
@@ -353,7 +351,7 @@ class Problem(ProblemBase):
             Functional for mesh adaptivity
         '''
 
-        (u, eta, zeta, H) = (as_vector((w[0], w[1])), w[2], w[3], w[4])
+        u = as_vector((w[0], w[1]))
 
         M = u[0] * dx  # Mean of the x-velocity in the whole domain
 
@@ -364,15 +362,16 @@ class Problem(ProblemBase):
         '''
             Shape optimization for Peregrine System.
         '''
-        (u, eta, zeta, H) = (as_vector((w[0], w[1])), w[2], w[3], W[4])
+        (eta, zeta) = (w[2], w[3])
+
+        adj_html('forward.html', 'forward')
 
         # Functionnal to be minimized: L2 norm over a subdomain
         J = Functional(- inner(eta, eta) * dx * dt[FINISH_TIME]
                        + zeta * zeta * dx * dt[FINISH_TIME])
 
         # shape parameters
-        m = [Control(p) for p in self.params]
-        Jhat = ReducedFunctional(J, m)  # Reduced Functional
+        Jhat = ReducedFunctional(J, [Control(p) for p in self.params])  # Reduced Functional
         opt_params = minimize(Jhat, method="L-BFGS-B")
         '''
         opt_object = project(self.object_init(opt_params), solver.Q)
