@@ -62,13 +62,9 @@ class Problem(ProblemBase):
         domain = outerRect - innerRect
         self.mesh = generate_mesh(domain, self.Nx)
 
-        self.t0 = 0.
-        self.T = options['T']
-        self.k = options['k']
-
         # set up heat coefficient
         try:
-            self.kappa = Expression('kappa', kappa=options['kappa'])
+            self.kappa = Constant(options['kappa'])
         except:
             K = np.array([[kappa1, 0], [0, kappa2]])
             Theta = np.array([[cos(theta), -sin(theta)], [sin(theta),
@@ -91,19 +87,14 @@ class Problem(ProblemBase):
 
         return w0
 
-    def boundary_conditions(self, W, t):
-        g = Expression('TR - TA*cos(omega*t)', TR=TR, TA=TA, omega=omega, t=t)
+    def boundary_conditions(self, W):
         bc0 = DirichletBC(W, Constant(0.0), OuterBoundary())
-        bc1 = DirichletBC(W, g, InnerBoundary())
+        bc1 = DirichletBC(W, Constant(TA), InnerBoundary())
 
         return [bc0, bc1]
 
-    def F(self, t):
+    def F(self):
         return Constant(0)
-
-    def update(self, W, t):
-
-        return self.boundary_conditions(W, t)
 
     def functional(self, V, u):
 
@@ -112,4 +103,4 @@ class Problem(ProblemBase):
         return M
 
     def __str__(self):
-        return 'Hole'
+        return 'SS_Hole'

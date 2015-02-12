@@ -29,7 +29,7 @@ class Solver(SolverBase):
 
     def strong_residual(self, w, w2):  # Not implemented yet
         (q, psi) = (w[0], w[1])
-        (q2, psi2) = (w2[0], w2[1])
+        q2 = w2[0]
 
         R1 = self.Jac(psi, q2) - psi.dx(0)
         R2 = q
@@ -38,8 +38,8 @@ class Solver(SolverBase):
 
     def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
         (q, psi) = (w[0], w[1])
-        (Q, Psi) = (ww[0], ww[1])
-        (Q_, Psi_) = (w_[0], w_[1])
+        Q = ww[0]
+        Q_ = w_[0]
         (p, chi) = (wt[0], wt[1])
 
         h = CellSize(W.mesh())  # mesh size
@@ -130,7 +130,7 @@ class Solver(SolverBase):
                 self._uDualfile << q
                 self._pDualfile << psi
 
-    def Plot(self, problem, W, w):
+    def Plot(self, problem, W, w, dual=False):
         q = w.split()[0]
         psi = w.split()[1]
 

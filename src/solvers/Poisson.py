@@ -13,29 +13,25 @@ class Solver(SolverBase):
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
+        self.steady_state = True
 
     def function_space(self, mesh):
         # Define function spaces
-        V = FunctionSpace(mesh, 'CG', self.Pu)
+        V = FunctionSpace(mesh, 'CG', 1)
 
         return V
 
-    def weak_residual(self, problem, k, V, u, U, U_, v, ei_mode=False):
-        t = problem.t0
-
+    def weak_residual(self, problem, W, u, v, ei_mode=False):
         # problem parameters
         kappa = problem.kappa
-        rho = problem.rho
-        c = problem.c
 
-        self.f = problem.F(t)  # forcing and mass source/sink
+        self.f = problem.F()  # forcing and mass source/sink
 
         # weak form of the equations
-        r = rho * c * (1. / k) * (U - U_) * v * dx
         if kappa.rank() == 0:
-            r += kappa * inner(grad(u), grad(v)) * dx
+            r = kappa * inner(grad(u), grad(v)) * dx
         else:  # anisotropic case
-            r += inner(dot(kappa, grad(u)), grad(v)) * dx
+            r = inner(dot(kappa, grad(u)), grad(v)) * dx
 
         r -= self.f * v * dx
 
@@ -65,8 +61,6 @@ class Solver(SolverBase):
         '''
         s = ''
 
-        rho = float(problem.rho)
-        c = float(problem.c)
         if problem.kappa.rank() == 0:
             kappa = float(problem.kappa)
         else:
@@ -75,17 +69,14 @@ class Solver(SolverBase):
             kappa = np.dot(kappa, kappa)**0.5
 
         # Return file suffix for output files
-        s = 'rho%.3Gc%.3Gkappa%.3G' % (rho, c, kappa)
+        s = 'kappa%.3G' % (kappa)
 
-        s += 'T%G' % (problem.T)
         if problem.Nx is not None:
             s += 'Nx' + str(problem.Nx)
         if problem.Ny is not None:
             s += 'Ny' + str(problem.Ny)
         if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
             s += 'Nz' + str(problem.Nz)
-
-        s += 'K' + str(problem.k)
 
         return s
 
@@ -117,4 +108,4 @@ class Solver(SolverBase):
             self.vizU.plot(u)
 
     def __str__(self):
-        return 'Heat'
+        return 'Poisson'

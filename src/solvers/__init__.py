@@ -14,6 +14,7 @@ solvers = [
     'MixedWaveALE',
     'OldroydB',
     'ThreeField_Stokes',
+    'Poisson',
     'SS_NSE',
     'SS_3F_Stokes',
 ]
