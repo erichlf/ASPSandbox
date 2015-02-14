@@ -1,6 +1,5 @@
 from SS_Cylinder import *
 from SS_Cylinder import Problem as SS_Cylinder
-import sys
 
 
 class Problem(SS_Cylinder):

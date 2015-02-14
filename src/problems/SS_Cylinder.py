@@ -1,6 +1,5 @@
 from Cylinder import *
 from Cylinder import Problem as Cylinder
-import sys
 
 
 class Problem(Cylinder):
@@ -53,7 +52,7 @@ class Problem(Cylinder):
         # mesh = W.mesh()
         # psimarker = PsiMarker()
 
-        if W.mesh().topology().dim == 2:
+        if W.mesh().topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])
         else:
             print

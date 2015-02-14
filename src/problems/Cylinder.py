@@ -10,6 +10,7 @@ __license__ = "GNU GPL version 3 or any later version"
 from AFES import *
 from AFES import Problem as ProblemBase
 from mshr import *
+import sys
 
 # Constants related to the geometry
 bmarg = 1.e-3 + DOLFIN_EPS
