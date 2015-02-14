@@ -255,12 +255,12 @@ class Problem(ProblemBase):
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
 
-        n = FacetNormal(W.mesh())
-        psimarker = self.marker()
+        # n = FacetNormal(W.mesh())
+        # psimarker = self.marker()
 
-        I = Identity(2)
-        sigma = p*I - self.nu*self.epsilon(u)
-        theta = Constant((1.0, 0.0))
+        # I = Identity(2)
+        # sigma = p*I - self.nu*self.epsilon(u)
+        # theta = Constant((1.0, 0.0))
 
         # g = Expression(
         #     ("200.0*exp(-200.0*(pow(x[0] - 0.5, 2) + pow(x[1] - 0.3, 2)))",

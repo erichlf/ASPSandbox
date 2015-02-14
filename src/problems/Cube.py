@@ -17,7 +17,7 @@ class Problem(Cylinder):
     '''
 
     def __init__(self, options):
-        self = Cylinder.__init__(self, options, cube=True)
+        Cylinder.__init__(self, options, cube=True)
 
     def __str__(self):
         return 'Cube'
