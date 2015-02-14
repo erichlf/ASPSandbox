@@ -181,11 +181,15 @@ class Problem(ProblemBase):
         else:
             self.noSlip = Constant((0, 0, 0))
             self.U = Expression(('16*Um*x[1]*x[2]*(H - x[1])*(H - x[2])' +
-                                 '/pow(H,4)*t*t/(1+t*t)', '0.0', '0.0'),
+                                 '/pow(H,4)', '0.0', '0.0'),
                                 Um=Um ** 2, H=ymax, t=self.t0)
             self.Ubar = 16. / 9. * Um * ymax * zmax * (H - ymax / 2.) \
                 * (H - zmax / 2.) / pow(H, 4)
 
+        try:
+            self.CFL = options['CFL']
+        except:
+            self.CFL = 100.
         self.k = self.time_step(self.Ubar, self.mesh)  # mesh size
 
         self.Re = self.Ubar*Diameter/self.nu
@@ -201,8 +205,7 @@ class Problem(ProblemBase):
         return w0
 
     def time_step(self, u, mesh):
-        C_CFL = 100.
-        return C_CFL * mesh.hmin()/u
+        return self.CFL * mesh.hmin()/u
 
     def boundary_conditions(self, W, t):
         self.U.t = t

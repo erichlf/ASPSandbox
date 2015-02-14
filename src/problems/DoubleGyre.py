@@ -53,7 +53,7 @@ class Problem(ProblemBase):
 
     def time_step(self, psi, mesh):
         C_CFL = 10.
-        return C_CFL * mesh.hmin()/psi
+        return 0.01  # C_CFL * mesh.hmin()/psi
 
     def F(self, t):  # Forcing function
         return Expression('sin(pi*x[1])', t=t)

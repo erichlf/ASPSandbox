@@ -331,7 +331,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, W):
         w0 = InitialConditions(self.epsilon, self.params)
-        w0 = project(w0, W)
+        w0 = project(w0, W, annotate=True)
 
         return w0
 
@@ -363,16 +363,15 @@ class Problem(ProblemBase):
             Shape optimization for Peregrine System.
         '''
         (eta, zeta) = (w[2], w[3])
-
-        adj_html('forward.html', 'forward')
+        params = self.params
 
         # Functionnal to be minimized: L2 norm over a subdomain
         J = Functional(- inner(eta, eta) * dx * dt[FINISH_TIME]
                        + zeta * zeta * dx * dt[FINISH_TIME])
 
         # shape parameters
-        Jhat = ReducedFunctional(J, [Control(p) for p in self.params])  # Reduced Functional
-        opt_params = minimize(Jhat, method="L-BFGS-B")
+        Jhat = ReducedFunctional(J, [Control(p) for p in params])
+        opt_params = minimize(Jhat)
         '''
         opt_object = project(self.object_init(opt_params), solver.Q)
         if self.options['plot_solution']:
