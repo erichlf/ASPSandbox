@@ -9,6 +9,7 @@ __license__ = "GNU GPL version 3 or any later version"
 
 from Cylinder import *
 from Cylinder import Problem as Cylinder
+import sys
 
 
 class InitialConditions2D(Expression):
