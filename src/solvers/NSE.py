@@ -20,10 +20,10 @@ class Solver(SolverBase):
     def strong_residual(self, W, w, w2):
         if W.mesh().topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])
-            (u2, p2) = (as_vector((w2[0], w2[1])), w2[2])
+            u2 = as_vector((w2[0], w2[1]))
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
-            (u2, p2) = (as_vector((w2[0], w2[1], w2[2])), w2[3])
+            u2 = as_vector((w2[0], w2[1], w2[2]))
 
         R1 = grad(u2) * u + grad(p)
         R2 = div(u)
@@ -31,47 +31,41 @@ class Solver(SolverBase):
         return R1, R2
 
     # weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, k, W, ww, w, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
+
         if W.mesh().topology().dim() == 2:
-            (u, p) = (as_vector((w[0], w[1])), w[2])
-            (U, P) = (as_vector((ww[0], ww[1])), ww[2])
-            (U_, P_) = (as_vector((w_[0], w_[1])), w_[2])
+            U = as_vector((w[0], w[1]))
+            U_ = as_vector((w_[0], w_[1]))
+            (u, p) = (as_vector((w_theta[0], w_theta[1])), w_theta[2])
             (v, q) = (as_vector((wt[0], wt[1])), wt[2])
         else:
-            (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
-            (U, P) = (as_vector((ww[0], ww[1], ww[2])), ww[3])
-            (U_, P_) = (as_vector((w_[0], w_[1], w_[2])), w_[3])
-            (v, q) = (as_vector((wt[0], wt[1], wt[2])), wt[3])
+            U = as_vector((w[0], w[1], w[2]))
+            U_ = as_vector((w_[0], w_[1], w_[2]))
+            (u, p) = (as_vector((w_theta[0], w_theta[1], w_theta[2])),
+                      w_theta[3])
+            (v, q) = (as_vector((wt[0], wt[1]), wt[2]), wt[3])
 
-        nu = problem.nu  # Reynolds Number
+        nu = problem.nu
 
-        h = CellSize(W.mesh())  # mesh size
+        h = CellSize(W.mesh())
         d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter
-        # d1, d2 = self.stabilization_parameters(U_, P_, k, h)
 
-        t0 = problem.t0
-
-        t = t0 + k
-        # forcing and mass source/sink
-        F = problem.F1(t)
-
-        # least squares stabilization
-        if(ei_mode):
+        if ei_mode:  # turn off stabilization in ei_mode
             d1 = Constant(0)
-            # d2 = Constant(0)
 
-        # weak form of the equations
-        r = (1. / k) * inner(U - U_, v) * dx
-        r += -p*div(v)*dx + inner(grad(u) * u, v) * dx
-        r += nu * inner(grad(u), grad(v)) * dx
-        r += div(u) * q * dx
+        f = problem.F1(problem.t0)  # forcing
 
-        # forcing function
-        r -= inner(F, v) * dx
+        # Weak form
+        r = (1. / k * inner(U - U_, v)
+             + nu*inner(grad(u), grad(v))
+             + inner(grad(p) + grad(u)*u, v)
+             + div(u)*q)*dx
+        r -= inner(f, v)*dx
 
-        R1, R2 = self.strong_residual(W, w, w)
-        Rv1, Rv2 = self.strong_residual(W, wt, w)
-        r += d1 * (inner(R1 - F, Rv1) + R2 * Rv2) * dx
+        # GLS stabilization
+        R1, R2 = self.strong_residual(W, w_theta, w_theta)
+        Rv1, Rv2 = self.strong_residual(W, wt, w_theta)
+        r += d1*(inner(R1 - f, Rv1) + R2 * Rv2) * dx
 
         return r
 

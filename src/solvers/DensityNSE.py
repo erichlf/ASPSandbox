@@ -32,8 +32,8 @@ class Solver(SolverBase):
 
     # strong residual for cG(1)cG(1)
     def strong_residual(self, w, w2):  # U, v, rho, r, p):
-        (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
-        (u2, rho2, p2) = (as_vector((w2[0], w2[1])), w2[2], w2[3])
+        (u, p) = (as_vector((w[0], w[1])), w[3])
+        (u2, rho2) = (as_vector((w2[0], w2[1])), w2[2])
 
         R1 = div(rho2 * u)
         R2 = rho2 * grad(u2) * u + grad(p)
@@ -45,15 +45,18 @@ class Solver(SolverBase):
     def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
         # rho = 1/rho' - 1
         (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
-        (U, Rho, P) = (as_vector((ww[0], ww[1])), ww[2], ww[3])
-        (U_, Rho_, P_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
+        (U, Rho) = (as_vector((ww[0], ww[1])), ww[2])
+        (U_, Rho_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, psi, q) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
 
         nu = problem.nu  # kinematic viscosity
 
         h = CellSize(W.mesh())  # mesh size
         # stabilization parameters
-        d = conditional(le(h, nu), h**2, h)
+        d1 = conditional(le(h, nu), h**2, h)
+        d2 = Constant(1000) * (h**(2.) + problem.wb * h**(3./2.))
+        d3 = d2 / Constant(1000)
+        d4 = Constant(1E-4) * d3
 
         t0 = problem.t0
 
@@ -63,7 +66,10 @@ class Solver(SolverBase):
 
         # least squares stabilization
         if ei_mode:
-            d = Constant(0)
+            d1 = Constant(0)
+            d2 = Constant(0)
+            d3 = Constant(0)
+            d4 = Constant(0)
 
         # weak form of the equations
         r = ((1. / k) * (Rho - Rho_) + div(rho * u)) * \
@@ -77,7 +83,10 @@ class Solver(SolverBase):
 
         R1, R2, R3 = self.strong_residual(w, w)
         Rv1, Rv2, Rv3 = self.strong_residual(wt, w)
-        r += d * (R1 * Rv1 + inner(R2 - f, Rv2) + R3 * Rv3) * dx
+        r += d1 * (R1 * Rv1 + inner(R2 - f, Rv2) + R3 * Rv3) * dx
+        r += d2 * inner(grad(u), grad(v)) * dx
+        r += d3 * inner(grad(rho), grad(psi)) * dx
+        r += d4 * (inner(grad(p), grad(q)) + p * q) * dx
 
         return r
 
