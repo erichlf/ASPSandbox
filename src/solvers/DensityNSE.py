@@ -53,7 +53,7 @@ class Solver(SolverBase):
 
         h = CellSize(W.mesh())  # mesh size
         # stabilization parameters
-        d1 = conditional(le(h, nu), h**2, h)
+        d = conditional(le(h, nu), h**2, h)
 
         t0 = problem.t0
 
