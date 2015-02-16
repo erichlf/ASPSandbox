@@ -29,8 +29,8 @@ adapterr = abs(adapt_data[0:len(adapt_data) - 2, 1] - adapt_data[-1, 1])
 adapterr_est = adapt_data[0:len(adapt_data) - 2, 2]
 
 if uniformfile is not None:
-    uniformdofs = uniform_data[0:len(uniform_data) - 2, 0]
-    uniformerr = abs(uniform_data[0:len(uniform_data) - 2, 1]
+    uniformdofs = uniform_data[0:len(uniform_data) - 1, 0]
+    uniformerr = abs(uniform_data[0:len(uniform_data) - 1, 1]
                      - adapt_data[-1, 1])
 
 hold(True)
