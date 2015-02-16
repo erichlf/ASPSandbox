@@ -44,10 +44,10 @@ if uniformfile is not None:
 plot(log10(adaptdofs), log10(adapterr), 'k--')
 
 if uniformfile is not None:
-    legend(["Goal Oriented Error", "Uniform Error", "``True'' Error"],
+    legend(["Error Estimate", "Uniform Error", "Error"],
            loc='best')
 else:
-    legend(["Goal Oriented Error", "``True'' Error"], loc='best')
+    legend(["Error Estimate", "Error"], loc='best')
 
 ylabel('log10(error)')
 xlabel('log10(dofs)')
