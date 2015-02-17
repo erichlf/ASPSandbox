@@ -23,7 +23,11 @@ class Problem(ProblemBase):
         self.t0 = 0.
         self.T = options['T']
         self.Ubar = 2.  # expected time-averaged max streamfunction
-        self.k = self.time_step(self.Ubar, self.mesh)
+        try:
+            self.k = options['k']
+        except:
+            self.k = 0.01
+        # self.k = self.time_step(self.Ubar, self.mesh)
 
         # Reynolds number
         try:
@@ -51,15 +55,15 @@ class Problem(ProblemBase):
 
         return bcs
 
-    def time_step(self, psi, mesh):
-        C_CFL = 10.
-        return 0.01  # C_CFL * mesh.hmin()/psi
+    # def time_step(self, psi, mesh):
+    #     C_CFL = 10.
+    #     return 0.01  # C_CFL * mesh.hmin()/psi
 
     def F(self, t):  # Forcing function
         return Expression('sin(pi*x[1])', t=t)
 
     def functional(self, W, w):  # functional for adaptivity
-        (q, psi) = (w[0], w[1])
+        q = w[0]
 
         M = Constant(0.5) * q * q * dx
 
