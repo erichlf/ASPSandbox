@@ -176,7 +176,6 @@ class Problem(ProblemBase):
 
         try:
             varying = options['varying']
-            self.T = 8
         except:
             varying = False
 
@@ -185,6 +184,7 @@ class Problem(ProblemBase):
             if varying:
                 self.U = Expression(('4*Um*x[1]*(H - x[1])*sin(pi*t/8)/(H*H)',
                                      '0.0'), Um=Um, H=ymax, t=self.t0)
+                self.T = 8
             else:
                 self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'),
                                     Um=Um, H=ymax, t=self.t0)
