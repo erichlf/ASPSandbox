@@ -42,10 +42,11 @@ class Solver(SolverBase):
         return R1, R2, R3
 
     # weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
         # rho = 1/rho' - 1
-        (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
-        (U, Rho) = (as_vector((ww[0], ww[1])), ww[2])
+        (u, rho, p) = (as_vector((w_theta[0], w_theta[1])), w_theta[2],
+                       w_theta[3])
+        (U, Rho) = (as_vector((w[0], w[1])), w[2])
         (U_, Rho_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, psi, q) = (as_vector((wt[0], wt[1])), wt[2], wt[3])
 
@@ -81,8 +82,8 @@ class Solver(SolverBase):
               - rho * dot(f, v)) * dx  # momentum equation
         r += div(u) * q * dx  # continuity equation
 
-        R1, R2, R3 = self.strong_residual(w, w)
-        Rv1, Rv2, Rv3 = self.strong_residual(wt, w)
+        R1, R2, R3 = self.strong_residual(w_theta, w_theta)
+        Rv1, Rv2, Rv3 = self.strong_residual(wt, w_theta)
         r += d1 * (R1 * Rv1 + inner(R2 - f, Rv2) + R3 * Rv3) * dx
         r += d2 * inner(grad(u), grad(v)) * dx
         r += d3 * inner(grad(rho), grad(psi)) * dx
@@ -108,7 +109,7 @@ class Solver(SolverBase):
         return s
 
     def file_naming(self, problem, n=-1, opt=False):
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:

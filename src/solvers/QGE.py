@@ -36,9 +36,9 @@ class Solver(SolverBase):
 
         return R1, R2
 
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
-        (q, psi) = (w[0], w[1])
-        Q = ww[0]
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
+        (q, psi) = (w_theta[0], w_theta[1])
+        Q = w[0]
         Q_ = w_[0]
         (p, chi) = (wt[0], wt[1])
 
@@ -67,8 +67,8 @@ class Solver(SolverBase):
         r += (q * chi - Ro * inner(grad(psi), grad(chi))) * dx
 
         # least squares stabilization
-        # R1, R2 = self.strong_residual(w, w)
-        # Rv1, Rv2 = self.strong_residual(wt, w)
+        # R1, R2 = self.strong_residual(w_theta, w_theta)
+        # Rv1, Rv2 = self.strong_residual(wt, w_theta)
         # r += (d1 * (R1 - f) * Rv1 + d2 * R2 * Rv2) * dx
         r += d1 * inner(grad(q), grad(p)) * dx
         r -= d2 * inner(grad(psi), grad(chi)) * dx
@@ -96,7 +96,7 @@ class Solver(SolverBase):
         return s
 
     def file_naming(self, problem, n=-1, opt=False):
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:

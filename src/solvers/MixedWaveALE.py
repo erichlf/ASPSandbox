@@ -30,9 +30,9 @@ class Solver(SolverBase):
         return R1, R2
 
     # weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
-        (u, p) = (as_vector((w[0], w[1])), w[2])
-        (U, P) = (as_vector((ww[0], ww[1])), ww[2])
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
+        (u, p) = (as_vector((w_theta[0], w_theta[1])), w_theta[2])
+        (U, P) = (as_vector((w[0], w[1])), w[2])
         (U_, P_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, q) = (as_vector((wt[0], wt[1])), wt[2])
 
@@ -65,8 +65,8 @@ class Solver(SolverBase):
         r -= (inner(F, v) + Q * q) * dx
 
         # least squares stabilization
-        R1, R2 = self.strong_residual(W, w, w)
-        Rv1, Rv2 = self.strong_residual(W, wt, w)
+        R1, R2 = self.strong_residual(W, w_theta, w_theta)
+        Rv1, Rv2 = self.strong_residual(W, wt, w_theta)
         r += (d1 * inner(R1 - F, Rv1) + d2 * (R2 - Q) * Rv2) * dx
 
         return r
@@ -78,6 +78,32 @@ class Solver(SolverBase):
         d2 = K2 * h
 
         return d1, d2
+
+    def suffix(self, problem):
+        import numpy as np
+        '''
+            Obtains the run specific data for file naming, e.g. Nx, k, etc.
+        '''
+        s = ''
+
+        Ud = np.zeros(2)
+        problem.Ud.eval(Ud, np.zeros(3))
+        Ud = np.dot(Ud, Ud)**0.5
+
+        # Return file suffix for output files
+        s = 'rho%.3Gc%.3GUd%.3G' % (problem.rho, problem.c, Ud)
+
+        s += 'T%G' % (problem.T)
+        if problem.Nx is not None:
+            s += 'Nx' + str(problem.Nx)
+        if problem.Ny is not None:
+            s += 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
+            s += 'Nz' + str(problem.Nz)
+
+        s += 'K' + str(problem.k)
+
+        return s
 
     def __str__(self):
         return 'MixdWaveALE'

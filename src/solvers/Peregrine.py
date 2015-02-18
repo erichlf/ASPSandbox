@@ -54,14 +54,15 @@ class Solver(SolverBase):
 
         return R1, R2, z1, z2
 
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
         '''
             Defines the weak residual for Peregrine System, including LS
             Stabilization.
         '''
-        (u, eta, zeta, H) = (as_vector((w[0], w[1])), w[2], w[3], w[4])
-        (U, Eta, Zeta, Height) = (as_vector((ww[0], ww[1])),
-                                  ww[2], ww[3], ww[4])
+        (u, eta, zeta, H) = (as_vector((w_theta[0], w_theta[1])), w_theta[2],
+                             w_theta[3], w_theta[4])
+        (U, Eta, Zeta, Height) = (as_vector((w[0], w[1])),
+                                  w[2], w[3], w[4])
         (U_, Eta_, Zeta_) = (as_vector((w_[0], w_[1])), w_[2], w_[3])
         (v, chi, nu, xi) = (as_vector((wt[0], wt[1])), wt[2], wt[3], wt[4])
 
@@ -116,8 +117,10 @@ class Solver(SolverBase):
         r += (Height - (D + epsilon * Zeta)) * xi * dx
 
         # stabilization
-        R1, R2, z1, z2 = self.strong_residual(problem, w, w, zeta_t, zeta_tt)
-        Rv1, Rv2, z1, z2 = self.strong_residual(problem, w, wt, zeta_t, zeta_tt)
+        R1, R2, z1, z2 = self.strong_residual(problem, w_theta, w_theta, zeta_t,
+                                              zeta_tt)
+        Rv1, Rv2, z1, z2 = self.strong_residual(problem, w_theta, wt, zeta_t,
+                                                zeta_tt)
         r += (d1 * inner(R1 + z1, Rv1) + d2 * (R2 + z2) * Rv2) * dx
         # streamline diffusion
         # r += d * (inner(grad(u), grad(v)) + inner(grad(eta), grad(chi))) * dx
@@ -166,7 +169,7 @@ class Solver(SolverBase):
         '''
             File naming for Peregrine system.
         '''
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:

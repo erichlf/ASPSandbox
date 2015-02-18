@@ -22,8 +22,6 @@ class Solver(SolverBase):
     def strong_residual(self, w, w2):
         (u, p, tau) = (as_vector((w[0], w[1])), w[2],
                        as_tensor(((w[3], w[4]), (w[5], w[6]))))
-        (u2, p2, tau2) = (as_vector((w2[0], w2[1])), w2[2],
-                          as_tensor(((w2[3], w2[4]), (w2[5], w2[6]))))
 
         R1 = tau - 2. * self.eta * self.epsilon(u)
         R2 = - div(tau) + grad(p)
@@ -82,7 +80,7 @@ class Solver(SolverBase):
         return s
 
     def file_naming(self, problem, n=-1, opt=False):
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:

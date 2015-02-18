@@ -81,7 +81,7 @@ class Solver(SolverBase):
         return s
 
     def file_naming(self, problem, n=-1, opt=False):
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:

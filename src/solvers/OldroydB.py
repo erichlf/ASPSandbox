@@ -31,10 +31,8 @@ class Solver(SolverBase):
 
     # strong residual for cG(1)cG(1)
     def strong_residual(self, w, w2):  # U, v, tau, r, p):
-        (u, p, tau) = (as_vector((w[0], w[1])), w[2],
-                       as_tensor((w[3], w[4]), (w[5], w[6])))
-        (U, P, T) = (as_vector((w2[0], w2[1])), w2[2],
-                     as_tensor((w2[3], w2[4]), (w2[5], w2[6])))
+        (u, p) = (as_vector((w[0], w[1])), w[2])
+        U = as_vector((w2[0], w2[1]))
 
         R1 = grad(U) * u + grad(p)
         R2 = div(u)
@@ -52,11 +50,11 @@ class Solver(SolverBase):
         return -div(v) * p * dx
 
     # weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
-        (u, p, tau) = (as_vector((w[0], w[1])), w[2],
-                       as_tensor(((w[3], w[4]), (w[5], w[6]))))
-        (U, P, T) = (as_vector((ww[0], ww[1])), ww[2],
-                     as_tensor(((ww[3], ww[4]), (ww[5], ww[6]))))
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
+        (u, p, tau) = (as_vector((w_theta[0], w_theta[1])), w_theta[2],
+                       as_tensor(((w_theta[3], w_theta[4]),
+                                  (w_theta[5], w_theta[6]))))
+        U = as_vector((w[0], w[1]))
         (U_, P_, T_) = (as_vector((w_[0], w_[1])), w_[2],
                         as_tensor(((w_[3], w_[4]), (w_[5], w_[6]))))
         (v, q, s) = (as_vector((wt[0], wt[1])), wt[2],
@@ -120,7 +118,7 @@ class Solver(SolverBase):
         return s
 
     def file_naming(self, problem, n=-1, opt=False):
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:

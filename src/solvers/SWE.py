@@ -42,12 +42,12 @@ class Solver(SolverBase):
     # strong residual for cG(1)cG(1)
     def strong_residual(self, w, w2, Ro, Fr, Th, H):
         (u, eta) = (as_vector((w[0], w[1])), w[2])
-        (U, Eta) = (as_vector((w2[0], w2[1])), w2[2])
+        u2 = as_vector((w2[0], w2[1]))
 
         NonLinear = self.NonLinear
 
         # momentum equation
-        R1 = NonLinear * grad(u) * U \
+        R1 = NonLinear * grad(u) * u2 \
             + 1 / Ro * as_vector((-u[1], u[0])) \
             + Fr ** (-2) * Th * grad(eta)
         # continuity equation
@@ -56,15 +56,14 @@ class Solver(SolverBase):
         return R1, R2
 
     # weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
-        (u, eta) = (as_vector((w[0], w[1])), w[2])
-        (U, Eta) = (as_vector((ww[0], ww[1])), ww[2])
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
+        (u, eta) = (as_vector((w_theta[0], w_theta[1])), w_theta[2])
+        (U, Eta) = (as_vector((w[0], w[1])), w[2])
         (U_, Eta_) = (as_vector((w_[0], w_[1])), w_[2])
         (v, chi) = (as_vector((wt[0], wt[1])), wt[2])
 
         h = CellSize(W.mesh())  # mesh size
-        d1, d2 = self.stabilization_parameters(
-            U_, Eta_, k, h)  # stabilization parameters
+        d1, d2 = self.stabilization_parameters(U_, Eta_, k, h)
 
         Re = problem.Re
         H = problem.H
@@ -83,8 +82,8 @@ class Solver(SolverBase):
 
         # least squares stabilization
         if(ei_mode):
-            d1 = 0
-            d2 = 0
+            d1 = Constant(0)
+            d2 = Constant(0)
 
         # weak form of the equations
         # momentum equation
@@ -99,8 +98,8 @@ class Solver(SolverBase):
 
         r -= (inner(F1, v) + F2 * chi) * dx
 
-        R1, R2 = self.strong_residual(w, w, Ro, Fr, Th, H)
-        Rv1, Rv2 = self.strong_residual(wt, w, Ro, Fr, Th, H)
+        R1, R2 = self.strong_residual(w_theta, w_theta, Ro, Fr, Th, H)
+        Rv1, Rv2 = self.strong_residual(wt, w_theta, Ro, Fr, Th, H)
         r += (d1 * inner(R1 - F1, Rv1) + d2 * (R2 - F2) * Rv2) * dx
 
         return r
@@ -118,10 +117,8 @@ class Solver(SolverBase):
             Obtains the run specific data for file naming, e.g. Nx, k, etc.
         '''
 
-        s = 'Re' + str(problem.Re)
-        s += 'Fr' + str(problem.Fr)
-        s += 'H' + str(problem.H)
-        s += 'Theta' + str(problem.Th)
+        s = 'Re' + str(problem.Re) + 'Fr' + str(problem.Fr) \
+            + 'H' + str(problem.H) + 'Theta' + str(problem.Th)
 
         s += 'T' + str(problem.T)
         if problem.Nx is not None:
@@ -137,7 +134,7 @@ class Solver(SolverBase):
 
     def file_naming(self, problem, n=-1, opt=False):
 
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:

@@ -21,8 +21,6 @@ class Solver(SolverBase):
     def strong_residual(self, w, w2):
         (u, p, tau) = (as_vector((w[0], w[1])), w[2],
                        as_tensor(((w[3], w[4]), (w[5], w[6]))))
-        (u2, p2, tau2) = (as_vector((w2[0], w2[1])), w2[2],
-                          as_tensor(((w2[3], w2[4]), (w2[5], w2[6]))))
 
         R1 = tau - 2. * self.eta * self.epsilon(u)
         R2 = - div(tau) + grad(p)
@@ -30,14 +28,15 @@ class Solver(SolverBase):
 
         return R1, R2, R3
 
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
 
-        (u, p, tau) = (as_vector((w[0], w[1])), w[2],
-                       as_tensor(((w[3], w[4]), (w[5], w[6]))))
-        (U, P, T) = (as_vector((ww[0], ww[1])), ww[2],
-                     as_tensor(((ww[3], ww[4]), (ww[5], ww[6]))))
-        (U_, P_, T_) = (as_vector((w_[0], w_[1])), w_[2],
-                        as_tensor(((w_[3], w_[4]), (w_[5], w_[6]))))
+        (u, p, tau) = (as_vector((w_theta[0], w_theta[1])), w_theta[2],
+                       as_tensor(((w_theta[3], w_theta[4]),
+                                  (w_theta[5], w_theta[6]))))
+        (U, T) = (as_vector((w[0], w[1])),
+                  as_tensor(((w[3], w[4]), (w[5], w[6]))))
+        (U_, T_) = (as_vector((w_[0], w_[1])),
+                    as_tensor(((w_[3], w_[4]), (w_[5], w_[6]))))
         (v, q, s) = (as_vector((wt[0], wt[1])), wt[2],
                      as_tensor(((wt[3], wt[4]), (wt[5], wt[6]))))
 
@@ -60,8 +59,8 @@ class Solver(SolverBase):
         r += div(u) * q * dx
 
         # GLS stabilization
-        R1, R2, R3 = self.strong_residual(w, w)
-        Rv1, Rv2, Rv3 = self.strong_residual(wt, w)
+        R1, R2, R3 = self.strong_residual(w_theta, w_theta)
+        Rv1, Rv2, Rv3 = self.strong_residual(wt, w_theta)
         r += d1 * (inner(R1, Rv1) + inner(R2 - f, Rv2) + R3 * Rv3) * dx
 
         return r
@@ -87,7 +86,7 @@ class Solver(SolverBase):
         return s
 
     def file_naming(self, problem, n=-1, opt=False):
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:
@@ -131,8 +130,8 @@ class Solver(SolverBase):
 
     def Plot(self, problem, W, w):
         u = w.split()[0]
-        # tau = w.split()[2]
         p = w.split()[1]
+        # tau = w.split()[2]
 
         if self.vizU is None:
             # Plot velocity and pressure
@@ -145,4 +144,4 @@ class Solver(SolverBase):
             # self.vizTau.plot(tau)
 
     def __str__(self):
-        return 'SS_3F_Stokes'
+        return 'ThreeField_Stokes'

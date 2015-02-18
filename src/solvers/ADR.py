@@ -69,7 +69,7 @@ class Solver(SolverBase):
 
     def stabilization_parameters(self, u, h, beta, kappa):
         d = conditional(ge(h, kappa), h/sqrt(dot(beta, beta)),
-                h**2/sqrt(dot(beta, beta)))
+                        h**2/sqrt(dot(beta, beta)))
 
         return d
 
@@ -84,7 +84,7 @@ class Solver(SolverBase):
                 self._uDualfile << u
 
     def file_naming(self, problem, n=-1, opt=False):
-        s = 'results/' + self.prefix(problem) + self.suffix(problem)
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
 
         if n == -1:
             if opt:

@@ -34,15 +34,15 @@ class Solver(SolverBase):
     def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
 
         if W.mesh().topology().dim() == 2:
+            (u, p) = (as_vector((w_theta[0], w_theta[1])), w_theta[2])
             U = as_vector((w[0], w[1]))
             U_ = as_vector((w_[0], w_[1]))
-            (u, p) = (as_vector((w_theta[0], w_theta[1])), w_theta[2])
             (v, q) = (as_vector((wt[0], wt[1])), wt[2])
         else:
-            U = as_vector((w[0], w[1], w[2]))
-            U_ = as_vector((w_[0], w_[1], w_[2]))
             (u, p) = (as_vector((w_theta[0], w_theta[1], w_theta[2])),
                       w_theta[3])
+            U = as_vector((w[0], w[1], w[2]))
+            U_ = as_vector((w_[0], w_[1], w_[2]))
             (v, q) = (as_vector((wt[0], wt[1]), wt[2]), wt[3])
 
         nu = problem.nu
