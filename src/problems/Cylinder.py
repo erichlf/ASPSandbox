@@ -174,10 +174,20 @@ class Problem(ProblemBase):
             domain = channel - bluff
             self.mesh = generate_mesh(domain, self.Nx)
 
+        try:
+            varying = options['varying']
+            self.T = 8
+        except:
+            varying = False
+
         if self.mesh.topology().dim() == 2:
             self.noSlip = Constant((0, 0))
-            self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'),
-                                Um=Um, H=ymax, t=self.t0)
+            if varying:
+                self.U = Expression(('4*Um*x[1]*(H - x[1])*sin(pi*t/8)/(H*H)',
+                                     '0.0'), Um=Um, H=ymax, t=self.t0)
+            else:
+                self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'),
+                                    Um=Um, H=ymax, t=self.t0)
             self.Ubar = 4. / 3. * Um * ymax * (H - ymax / 2.) / (H * H)
         else:
             self.noSlip = Constant((0, 0, 0))
