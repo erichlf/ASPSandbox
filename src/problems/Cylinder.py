@@ -205,6 +205,17 @@ class Problem(ProblemBase):
 
         self.Re = self.Ubar*Diameter/self.nu
 
+        # what functional should we use?
+        fDic = {'velocity': self.velocity,
+                'drag': self.drag,
+                'pressure_drag': self.pDrag,
+                'pressure_lift': self.pLift,
+                }
+        try:
+            self.functional = fDic[options['functional']]
+        except:
+            self.functional = fDic['velocity']
+
     def initial_conditions(self, W):
         if self.dim == 2:
             w0 = InitialConditions2D()
@@ -256,7 +267,19 @@ class Problem(ProblemBase):
         # provide a marker to indicate if we are on the object
         return PsiMarker(self.dim)
 
-    def functional(self, W, w):
+    def velocity(self, W, w):  # Mean of the x-velocity in the whole domain
+        '''
+            This is the functional used for adaptivity.
+            We assume the problem is much like NSE.
+        '''
+        if W.mesh().topology().dim() == 2:
+            u = as_vector((w[0], w[1]))
+        else:
+            u = as_vector((w[0], w[1], w[2]))
+
+        return u[0] * dx
+
+    def drag(self, W, w):  # drag functional
         '''
             This is the functional used for adaptivity.
             We assume the problem is much like NSE.
@@ -266,24 +289,40 @@ class Problem(ProblemBase):
         else:
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
 
-        # n = FacetNormal(W.mesh())
-        # psimarker = self.marker()
+        n = FacetNormal(W.mesh())
+        I = Identity(2)
+        sigma = p*I - self.nu*self.epsilon(u)
+        theta = Constant((1.0, 0.0))
 
-        # I = Identity(2)
-        # sigma = p*I - self.nu*self.epsilon(u)
-        # theta = Constant((1.0, 0.0))
+        return self.marker()*dot(dot(sigma, n), theta)*ds
 
-        # g = Expression(
-        #     ("200.0*exp(-200.0*(pow(x[0] - 0.5, 2) + pow(x[1] - 0.3, 2)))",
-        #      "0.0"))
+    def pDrag(self, W, w):  # functional for Drag (only pressure)
+        '''
+            This is the functional used for adaptivity.
+            We assume the problem is much like NSE.
+        '''
+        if W.mesh().topology().dim() == 2:
+            p = w[2]
+        else:
+            p = w[3]
 
-        # M = psimarker*p*n[0]*ds  # Drag (only pressure)
-        # M = psimarker*p*n[1]*ds  # Lift (only pressure)
-        # M = inner(g, u)*dx  # Mean of the velocity in a region
-        # M = psimarker*dot(dot(sigma, n), theta)*ds  # Drag (full stress)
-        M = u[0] * dx  # Mean of the x-velocity in the whole domain
+        n = FacetNormal(W.mesh())
 
-        return M
+        return self.marker()*p*n[0]*ds
+
+    def pLift(self, W, w):  # functional for Lift (only pressure)
+        '''
+            This is the functional used for adaptivity.
+            We assume the problem is much like NSE.
+        '''
+        if W.mesh().topology().dim() == 2:
+            p = w[2]
+        else:
+            p = w[3]
+
+        n = FacetNormal(W.mesh())
+
+        return self.marker() * p * n[1] * ds  # Lift (only pressure)
 
     def epsilon(self, z):
         return 0.5*(grad(z) + grad(z).T)
