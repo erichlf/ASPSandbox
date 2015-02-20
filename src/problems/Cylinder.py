@@ -98,20 +98,6 @@ class OutflowBoundary(SubDomain):
         return on_boundary and near(x[0], xmax)
 
 
-class PsiMarker(Expression):
-
-    def __init__(self, dim):
-        self.dim = dim
-
-    def eval(self, values, x):
-        object = ObjectBoundary(self.dim)
-
-        if(object.inside(x, True)):
-            values[0] = 1.0
-        else:
-            values[0] = 0.0
-
-
 # Problem definition
 class Problem(ProblemBase):
 
@@ -209,8 +195,10 @@ class Problem(ProblemBase):
         fDic = {'velocity': self.velocity,
                 'drag': self.drag,
                 'pressure_drag': self.pDrag,
+                'lift': self.lift,
                 'pressure_lift': self.pLift,
                 }
+        self.CdMax = 0
         try:
             self.functional = fDic[options['functional']]
         except:
@@ -230,6 +218,7 @@ class Problem(ProblemBase):
         return self.CFL * mesh.hmin()/u
 
     def boundary_conditions(self, W, t):
+
         self.U.t = t
         # Create inflow boundary condition
         bc0 = DirichletBC(W.sub(0), self.U, InflowBoundary())
@@ -245,8 +234,7 @@ class Problem(ProblemBase):
 
         return bcs
 
-    def F1(self, t):
-        # forcing function for the momentum equation
+    def F1(self, t):  # forcing function for the momentum equation
         if self.dim == 2:
             f = Constant((0, 0))
         else:
@@ -254,18 +242,12 @@ class Problem(ProblemBase):
 
         return f
 
-    def F2(self, t):
-        # mass source for the continuity equation
+    def F2(self, t):  # mass source for the continuity equation
         return Constant(0)
 
-    def update(self, W, t):
-        # update the bc for each time step
+    def update(self, W, t):  # update the bc for each time step
 
         return self.boundary_conditions(W, t)
-
-    def marker(self):
-        # provide a marker to indicate if we are on the object
-        return PsiMarker(self.dim)
 
     def velocity(self, W, w):  # Mean of the x-velocity in the whole domain
         '''
@@ -279,11 +261,15 @@ class Problem(ProblemBase):
 
         return u[0] * dx
 
-    def drag(self, W, w):  # drag functional
-        '''
-            This is the functional used for adaptivity.
-            We assume the problem is much like NSE.
-        '''
+    def measure(self, W):  # create a subdomain for integrating over the circle
+        bluff = ObjectBoundary(self.dim)
+        boundaries = FacetFunction("size_t", W.mesh())
+        boundaries.set_all(0)
+        bluff.mark(boundaries, 1)
+
+        return Measure("ds")[boundaries]
+
+    def bodyForce(self, W, w, lift=False):  # Calculate the force on the bluff body
         if W.mesh().topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])
         else:
@@ -292,9 +278,24 @@ class Problem(ProblemBase):
         n = FacetNormal(W.mesh())
         I = Identity(2)
         sigma = p*I - self.nu*self.epsilon(u)
-        theta = Constant((1.0, 0.0))
+        if lift:
+            theta = Constant((0.0, 1.0))
+        else:
+            theta = Constant((1.0, 0.0))
 
-        return self.marker()*dot(dot(sigma, n), theta)*ds
+        ds = self.measure(W)
+
+        return dot(dot(sigma, n), theta) * ds(1)
+
+    def drag(self, W, w):  # drag functional
+        '''
+            This is the functional used for adaptivity.
+            We assume the problem is much like NSE.
+        '''
+        if W.mesh().topology().dim() == 2:
+            return 2. / (self.Ubar**2. * Diameter) * self.bodyForce(W, w)
+        else:
+            return 2. / (self.Ubar**2. * Diameter * H) * self.bodyForce(W, w)
 
     def pDrag(self, W, w):  # functional for Drag (only pressure)
         '''
@@ -308,7 +309,21 @@ class Problem(ProblemBase):
 
         n = FacetNormal(W.mesh())
 
-        return self.marker()*p*n[0]*ds
+        ds = self.measure(W)
+
+        return p*n[0]*ds(1)
+
+    def lift(self, W, w):  # drag functional
+        '''
+            This is the functional used for adaptivity.
+            We assume the problem is much like NSE.
+        '''
+        if W.mesh().topology().dim() == 2:
+            return 2. / (self.Ubar**2. * Diameter) \
+                * self.bodyForce(W, w, lift=True)
+        else:
+            return 2. / (self.Ubar**2. * Diameter * H) \
+                * self.bodyForce(W, w, lift=True)
 
     def pLift(self, W, w):  # functional for Lift (only pressure)
         '''
@@ -322,7 +337,9 @@ class Problem(ProblemBase):
 
         n = FacetNormal(W.mesh())
 
-        return self.marker() * p * n[1] * ds  # Lift (only pressure)
+        ds = self.measure(W)
+
+        return p * n[1] * ds(1)  # Lift (only pressure)
 
     def epsilon(self, z):
         return 0.5*(grad(z) + grad(z).T)
