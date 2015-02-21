@@ -279,7 +279,7 @@ class Problem(ProblemBase):
         I = Identity(2)
         sigma = p*I - self.nu*self.epsilon(u)
         if lift:
-            theta = Constant((0.0, 1.0))
+            theta = Constant((0.0, -1.0))
         else:
             theta = Constant((1.0, 0.0))
 
