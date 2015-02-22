@@ -8,6 +8,22 @@ class Solver(SolverBase):
 
         self.steady_state = True
 
+    def function_space(self, mesh):  # define functions spaces
+        try:
+            Pu = options['velocity_order']
+        except:
+            Pu = 1
+        try:
+            Pp = options['pressure_order']
+        except:
+            Pp = 1
+
+        V = VectorFunctionSpace(mesh, 'CG', Pu)
+        Q = FunctionSpace(mesh, 'CG', Pp)
+        W = MixedFunctionSpace([V, Q])
+
+        return W
+
     def strong_residual(self, W, w, w2):
         if W.mesh().topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])
@@ -30,7 +46,7 @@ class Solver(SolverBase):
             (u, p) = (as_vector((w[0], w[1], w[2])), w[3])
             (v, q) = (as_vector((wt[0], wt[1], wt[2])), wt[3])
 
-        nu = problem.nu
+        nu = Constant(problem.nu)
 
         h = CellSize(W.mesh())
         d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter

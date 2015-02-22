@@ -16,6 +16,22 @@ class Solver(SolverBase):
     def __init__(self, options):
         SolverBase.__init__(self, options)
 
+    def function_space(self, mesh):  # define functions spaces
+        try:
+            Pu = options['velocity_order']
+        except:
+            Pu = 1
+        try:
+            Pp = options['pressure_order']
+        except:
+            Pp = 1
+
+        V = VectorFunctionSpace(mesh, 'CG', Pu)
+        Q = FunctionSpace(mesh, 'CG', Pp)
+        W = MixedFunctionSpace([V, Q])
+
+        return W
+
     # strong residual for cG(1)cG(1)
     def strong_residual(self, W, w, w2):
         if W.mesh().topology().dim() == 2:

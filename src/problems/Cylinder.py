@@ -122,6 +122,11 @@ class Problem(ProblemBase):
         self.cube = cube
 
         try:
+            Um = options['Um']
+        except:
+            Um = 1.5
+
+        try:
             self.nu = options['nu']
         except:
             self.nu = 1E-3
@@ -269,7 +274,7 @@ class Problem(ProblemBase):
 
         return Measure("ds")[boundaries]
 
-    def bodyForce(self, W, w, lift=False):  # Calculate the force on the bluff body
+    def bodyForce(self, W, w, lift=False):
         if W.mesh().topology().dim() == 2:
             (u, p) = (as_vector((w[0], w[1])), w[2])
         else:
@@ -279,7 +284,7 @@ class Problem(ProblemBase):
         I = Identity(2)
         sigma = p*I - self.nu*self.epsilon(u)
         if lift:
-            theta = Constant((0.0, -1.0))
+            theta = Constant((0.0, 1.0))
         else:
             theta = Constant((1.0, 0.0))
 
