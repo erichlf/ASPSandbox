@@ -17,7 +17,7 @@ class Solver(SolverBase):
 
     def function_space(self, mesh):
         # Define function spaces
-        V = FunctionSpace(mesh, 'CG', self.Pu)
+        V = FunctionSpace(mesh, 'CG', 1)
 
         return V
 
