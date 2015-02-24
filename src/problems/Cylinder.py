@@ -112,36 +112,90 @@ class Problem(ProblemBase):
 
         global xmax, xcenter, ycenter
 
-        ProblemBase.__init__(self, options)
-
-        # Load mesh
-        self.dim = int(options['dim'])
-        self.Nx = options['Nx']
         options['Ny'] = None
         options['Nz'] = None
+        ProblemBase.__init__(self, options)
+
+        self.load_options(options)
+
+        # Load mesh
         self.cube = cube
-
-        try:
-            Um = options['Um']
-        except:
-            Um = 1.5
-
-        try:
-            self.nu = options['nu']
-        except:
-            self.nu = 1E-3
+        self.mesh = self.Mesh(options['initial_mesh'])
 
         self.t0 = 0.
-        try:
+
+        self.velocity_functions()  # define U, Ubar, noSlip, and T
+        self.k = self.time_step(self.Ubar, self.mesh)  # mesh size
+
+        self.Re = self.Ubar*Diameter/self.nu
+
+    def load_options(self, options):
+        self.dim = int(options['dim'])  # dimension (default is 2)
+        self.Nx = options['Nx']  # discretization along x
+
+        try:  # final time
             self.T = options['T']
         except:
             self.T = 10
 
+        try:  # viscosity
+            self.nu = options['nu']
+        except:
+            self.nu = 1E-3
+
+        try:  # max velocity
+            self.Um = options['Um']
+        except:
+            self.Um = 1.5
+
+        try:  # CFL condition to determine time step
+            self.CFL = options['CFL']
+        except:
+            self.CFL = 100.
+
+        try:  # for Turek 2C
+            self.varying = options['varying']
+        except:
+            self.varying = False
+
+        # what functional should we use?
+        fDic = {'velocity': self.velocity,
+                'drag': self.drag,
+                'pressure_drag': self.pDrag,
+                'lift': self.lift,
+                'pressure_lift': self.pLift,
+                }
+        try:
+            self.functional = fDic[options['functional']]
+        except:
+            self.functional = fDic['velocity']
+
+    def velocity_functions(self):
         H = ymax
-        # setup our domain and conditions
-        if options['initial_mesh'] is not None:
-            domain = options['initial_mesh']
-            self.mesh = Mesh(domain)
+
+        if self.mesh.topology().dim() == 2:
+            self.noSlip = Constant((0, 0))
+            if self.varying:
+                self.U = Expression(('4*Um*x[1]*(H - x[1])*sin(pi*t/8)/(H*H)',
+                                     '0.0'), Um=Um, H=ymax, t=self.t0)
+                self.T = 8
+            else:
+                self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'),
+                                    Um=Um, H=ymax, t=self.t0)
+            self.Ubar = 4. / 3. * Um * ymax * (H - ymax / 2.) / (H * H)
+        else:
+            self.noSlip = Constant((0, 0, 0))
+            self.U = Expression(('16*Um*x[1]*x[2]*(H - x[1])*(H - x[2])' +
+                                 '/pow(H,4)', '0.0', '0.0'),
+                                Um=Um ** 2, H=ymax, t=self.t0)
+            self.Ubar = 16. / 9. * Um * ymax * zmax * (H - ymax / 2.) \
+                * (H - zmax / 2.) / pow(H, 4)
+
+    def Mesh(self, initial_mesh):  # setup our domain
+        global xmax, xcenter, ycenter
+
+        if initial_mesh is not None:
+            mesh = Mesh(initial_mesh)
         else:
             if self.dim == 2:  # 2D problem
                 channel = Rectangle(Point(xmin, ymin), Point(xmax, ymax))
@@ -163,51 +217,9 @@ class Problem(ProblemBase):
                                      radius, radius)
 
             domain = channel - bluff
-            self.mesh = generate_mesh(domain, self.Nx)
+            mesh = generate_mesh(domain, self.Nx)
 
-        try:
-            varying = options['varying']
-        except:
-            varying = False
-
-        if self.mesh.topology().dim() == 2:
-            self.noSlip = Constant((0, 0))
-            if varying:
-                self.U = Expression(('4*Um*x[1]*(H - x[1])*sin(pi*t/8)/(H*H)',
-                                     '0.0'), Um=Um, H=ymax, t=self.t0)
-                self.T = 8
-            else:
-                self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'),
-                                    Um=Um, H=ymax, t=self.t0)
-            self.Ubar = 4. / 3. * Um * ymax * (H - ymax / 2.) / (H * H)
-        else:
-            self.noSlip = Constant((0, 0, 0))
-            self.U = Expression(('16*Um*x[1]*x[2]*(H - x[1])*(H - x[2])' +
-                                 '/pow(H,4)', '0.0', '0.0'),
-                                Um=Um ** 2, H=ymax, t=self.t0)
-            self.Ubar = 16. / 9. * Um * ymax * zmax * (H - ymax / 2.) \
-                * (H - zmax / 2.) / pow(H, 4)
-
-        try:
-            self.CFL = options['CFL']
-        except:
-            self.CFL = 100.
-        self.k = self.time_step(self.Ubar, self.mesh)  # mesh size
-
-        self.Re = self.Ubar*Diameter/self.nu
-
-        # what functional should we use?
-        fDic = {'velocity': self.velocity,
-                'drag': self.drag,
-                'pressure_drag': self.pDrag,
-                'lift': self.lift,
-                'pressure_lift': self.pLift,
-                }
-        self.CdMax = 0
-        try:
-            self.functional = fDic[options['functional']]
-        except:
-            self.functional = fDic['velocity']
+        return mesh
 
     def initial_conditions(self, W):
         if self.dim == 2:

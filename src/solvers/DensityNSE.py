@@ -22,7 +22,7 @@ class Solver(SolverBase):
 
     # Define function spaces
     def function_space(self, mesh):
-        V = VectorFunctionSpace(mesh, 'CG', self.Pu)
+        V = VectorFunctionSpace(mesh, 'CG', 1)
         R = FunctionSpace(mesh, 'CG', 1)
         Q = FunctionSpace(mesh, 'CG', 1)
 
@@ -43,7 +43,6 @@ class Solver(SolverBase):
 
     # weak residual for cG(1)cG(1)
     def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
-        # rho = 1/rho' - 1
         (u, rho, p) = (as_vector((w_theta[0], w_theta[1])), w_theta[2],
                        w_theta[3])
         (U, Rho) = (as_vector((w[0], w[1])), w[2])
@@ -54,10 +53,11 @@ class Solver(SolverBase):
 
         h = CellSize(W.mesh())  # mesh size
         # stabilization parameters
-        d1 = conditional(le(h, nu), h**2, h)
-        d2 = Constant(1000) * (h**(2.) + problem.wb * h**(3./2.))
-        d3 = d2 / Constant(1000)
-        d4 = Constant(1E-4) * d3
+        # d1 = conditional(le(h, nu), h**2, h)
+        d = (h**(2.) + problem.wb * h**(3./2.))
+        d2 = Constant(1000) * d
+        d3 = d
+        d4 = Constant(1E-4) * d
 
         t0 = problem.t0
 
@@ -67,14 +67,11 @@ class Solver(SolverBase):
 
         # least squares stabilization
         if ei_mode:
-            d1 = Constant(0)
-            d2 = Constant(0)
-            d3 = Constant(0)
-            d4 = Constant(0)
+            # d1 = Constant(0)
+            d2, d3, d4 = Constant(0), Constant(0), Constant(0)
 
         # weak form of the equations
-        r = ((1. / k) * (Rho - Rho_) + div(rho * u)) * \
-            psi * dx  # mass equation
+        r = ((1. / k) * (Rho - Rho_) + div(rho * u)) * psi * dx  # mass equation
         r += (rho * ((1. / k) * inner(U - U_, v)
                      + inner(grad(u) * u, v))
               + inner(grad(p), v)
@@ -82,9 +79,9 @@ class Solver(SolverBase):
               - rho * dot(f, v)) * dx  # momentum equation
         r += div(u) * q * dx  # continuity equation
 
-        R1, R2, R3 = self.strong_residual(w_theta, w_theta)
-        Rv1, Rv2, Rv3 = self.strong_residual(wt, w_theta)
-        r += d1 * (R1 * Rv1 + inner(R2 - f, Rv2) + R3 * Rv3) * dx
+        # R1, R2, R3 = self.strong_residual(w_theta, w_theta)
+        # Rv1, Rv2, Rv3 = self.strong_residual(wt, w_theta)
+        # r += d1 * (R1 * Rv1 + inner(R2 - f, Rv2) + R3 * Rv3) * dx
         r += d2 * inner(grad(u), grad(v)) * dx
         r += d3 * inner(grad(rho), grad(psi)) * dx
         r += d4 * (inner(grad(p), grad(q)) + p * q) * dx

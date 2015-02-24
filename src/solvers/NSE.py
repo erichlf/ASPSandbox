@@ -26,6 +26,11 @@ class Solver(SolverBase):
         except:
             Pp = 1
 
+        if Pu == Pp and Pu == 1:
+            self.stabilize = True
+        else:
+            self.stabilize = False
+
         V = VectorFunctionSpace(mesh, 'CG', Pu)
         Q = FunctionSpace(mesh, 'CG', Pp)
         W = MixedFunctionSpace([V, Q])
@@ -66,7 +71,7 @@ class Solver(SolverBase):
         h = CellSize(W.mesh())
         d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter
 
-        if ei_mode:  # turn off stabilization in ei_mode
+        if ei_mode or not self.stabilize:  # turn off stabilization in ei_mode
             d1 = Constant(0)
 
         f = problem.F1(problem.t0)  # forcing
