@@ -1,15 +1,6 @@
 __author__ = "Erich L Foster <erichlf@gmail.com>"
 __date__ = "2013-08-27"
 __license__ = "GNU GPL version 3 or any later version"
-#
-#   adapted from channel.py in nsbench originally developed
-#   by Kent-Andre Mardal <kent-and@simula.no>
-#
-
-'''
-This is an extremely boring problem with no forcing and on a square.
-This is basically a blank problem that we can adapt with optional inputs.
-'''
 
 from AFES import *
 from AFES import Problem as ProblemBase
@@ -18,10 +9,8 @@ d = 1.
 eta = 0.01
 g = 10
 
-x0 = -d / 2.
-x1 = d / 2.
-y0 = -2 * d
-y1 = 2 * d
+x0, x1 = -d / 2., d / 2.
+y0, y1 = -2 * d, 2 * d
 
 
 class InitialConditions(Expression):
@@ -34,33 +23,18 @@ class InitialConditions(Expression):
         rhoMin = self.rhoMin
         rhoMax = self.rhoMax
 
-        values[0] = 0.
-        values[1] = 0.
+        values[0], values[1], values[3] = 0., 0., 0.
         values[2] = 0.5 * (rhoMin + rhoMax) + 0.5 * (rhoMax - rhoMin) * \
             tanh((x[1] - 1.5 * d + eta * cos(2 * pi * x[0] / d)) / (0.01 * d))
-        values[3] = 0.
 
     def value_shape(self):
         return (4,)
 
 
 class NoslipBoundary(SubDomain):
-    # No-slip boundary
 
     def inside(self, x, on_boundary):
         return on_boundary
-
-
-class BottomBoundary(SubDomain):
-
-    def inside(self, x, on_boundary):
-        return on_boundary and x[1] < y1 - DOLFIN_EPS
-
-
-class TopBoundary(SubDomain):
-
-    def inside(self, x, on_boundary):
-        return on_boundary and x[1] > y0 + DOLFIN_EPS
 
 
 class Problem(ProblemBase):
@@ -83,13 +57,19 @@ class Problem(ProblemBase):
         self.Re = d**1.5*g/self.nu
 
         # Create mesh
-        self.Nx = options['Nx']
-        self.Ny = options['Ny']
+        self.Nx, self.Ny = options['Nx'], options['Ny']
         self.mesh = RectangleMesh(x0, y0, x1, y1, self.Nx, self.Ny)
 
-        self.t0 = 0.
-        self.T = options['T']
-        self.k = options['k']
+        self.t0, self.T, = 0., options['T']
+        try:
+            self.CFL = options['CFL']
+        except:
+            self.CFL = 5.
+        self.Ubar = g
+        self.k = self.time_step(self.Ubar, self.mesh)  # mesh size
+
+    def time_step(self, u, mesh):
+        return self.CFL * mesh.hmin()/u
 
     def initial_conditions(self, W):
 
@@ -111,21 +91,16 @@ class Problem(ProblemBase):
         wb = Function(V)
         wt = TestFunction(V)
 
-        F = wb*wt*dx + h*inner(grad(wb), grad(wt))*dx
+        F = (wb * wt + h * inner(grad(wb), grad(wt))) * dx
 
         solve(F == 0, wb, bc0)
         self.wb = wb
 
     def boundary_conditions(self, W, t):
-        rhoMin = 1.
-        rhoMax = rhoMin * (1. + self.At) / (1. - self.At)
 
-        # Create no-slip boundary condition for velocity
         bc1 = DirichletBC(W.sub(0), Constant((0.0, 0.0)), NoslipBoundary())
-        # bc2 = DirichletBC(W.sub(1), Constant(rhoMin), BottomBoundary())
-        # bc3 = DirichletBC(W.sub(1), Constant(rhoMax), TopBoundary())
 
-        return [bc1]  # , bc2, bc3]
+        return [bc1]
 
     def F(self, t):
         # forcing function for the momentum equation
@@ -133,11 +108,9 @@ class Problem(ProblemBase):
 
     def functional(self, W, w):
 
-        (u, rho, p) = (as_vector((w[0], w[1])), w[2], w[3])
+        u = as_vector((w[0], w[1]))
 
-        M = (u[1] + u[0]) * dx
-
-        return M
+        return (u[1] + u[0]) * dx
 
     def __str__(self):
         return 'TwoFluid'

@@ -4,6 +4,7 @@ __license__ = "GNU GPL version 3 or any later version"
 
 # List of problems
 problems = [
+    'Bubble',
     'Cavity',
     'Channel',
     'Cube',

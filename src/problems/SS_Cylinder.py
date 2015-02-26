@@ -44,7 +44,11 @@ class Problem(Cylinder):
         return bcs
 
     def F(self):
-        return Constant((0.0, 0.0))
+        if self.dim == 2:
+            f = Constant((0, 0))
+        else:
+            f = Constant((0, 0, 0))
+        return f
 
     def __str__(self):
         return 'SS_Cylinder'

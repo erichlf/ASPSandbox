@@ -25,15 +25,12 @@ At = (rhoMax - rhoMin) / (rhoMin + rhoMax)  # Atwood number
 class InitialConditions(Expression):
 
     def eval(self, values, x):
-        values[0] = 0.
-        values[1] = 0.
+        values[0], values[1], values[3] = 0., 0., 0.
         if x[1] <= -0.7 * d or (x[0] >= -1.8 * d and x[0] <= -d
                                 and x[1] <= -0.2 * d):
             values[2] = rhoMax
         else:
             values[2] = rhoMin
-
-        values[3] = 0.
 
     def value_shape(self):
         return (4,)
@@ -131,7 +128,7 @@ class Problem(ProblemBase):
         wb = Function(V)
         wt = TestFunction(V)
 
-        F = wb*wt*dx + h*inner(grad(wb), grad(wt))*dx
+        F = (wb * wt + h * inner(grad(wb), grad(wt))) * dx
 
         solve(F == 0, wb, bc0)
         self.wb = wb
@@ -168,7 +165,7 @@ class Problem(ProblemBase):
 
         return p * n[0] * ds(1)  # Drag (only pressure)
 
-    def density(self, W, w):
+    def density(self, W, w):  # density functional
         rho = w[2]
 
         beta = Expression(('50.0*exp(-50.0*(pow(x[0] - 1.0, 2) '

@@ -193,6 +193,7 @@ class Problem(ProblemBase):
 
     def Mesh(self, initial_mesh):  # setup our domain
         global xmax, xcenter, ycenter
+        cube = self.cube
 
         if initial_mesh is not None:
             mesh = Mesh(initial_mesh)
@@ -305,6 +306,7 @@ class Problem(ProblemBase):
         return dot(dot(sigma, n), theta) * ds(1)
 
     def drag(self, W, w):  # drag functional
+        H = ymax
         '''
             This is the functional used for adaptivity.
             We assume the problem is much like NSE.
@@ -328,7 +330,7 @@ class Problem(ProblemBase):
 
         ds = self.measure(W)
 
-        return p*n[0]*ds(1)
+        return p * n[0] * ds(1)
 
     def lift(self, W, w):  # drag functional
         '''
