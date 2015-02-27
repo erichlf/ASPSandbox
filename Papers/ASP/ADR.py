@@ -36,7 +36,7 @@ class Solver(SolverBase):
         kappa = problem.kappa
         beta = problem.beta  # velocity
 
-        d = self.stabilization_parameters(U_, k, h, kappa)
+        d = self.stabilization_parameters(U_, h, beta, kappa)
 
         t0 = problem.t0
 
@@ -46,7 +46,7 @@ class Solver(SolverBase):
 
         # least squares stabilization
         if ei_mode:
-            d = 0
+            d = Constant(0)
 
         # weak form of the equations
         r = ((1. / k) * inner(U - U_, v)
@@ -67,9 +67,9 @@ class Solver(SolverBase):
 
         return r
 
-    def stabilization_parameters(self, u, k, h, kappa):
-        K = 0.5 / sqrt(1.0 ** 2 + 1.61 ** 2)
-        d = conditional(le(h, kappa), K * h ** 2, K * h)
+    def stabilization_parameters(self, u, h, beta, kappa):
+        d = conditional(ge(h, kappa), h/sqrt(dot(beta, beta)),
+                        h**2/sqrt(dot(beta, beta)))
 
         return d
 
@@ -83,15 +83,22 @@ class Solver(SolverBase):
                 u.rename("dual", "ADR")
                 self._uDualfile << u
 
-    def file_naming(self, n=-1, dual=False):
+    def file_naming(self, problem, n=-1, opt=False):
+        s = self.dir + self.prefix(problem) + self.suffix(problem)
+
         if n == -1:
-            self._ufile = File(self.s + '_u.pvd', 'compressed')
-            self._uDualfile = File(self.s + '_uDual.pvd', 'compressed')
-            self.meshfile = File(self.s + '_mesh.xml')
+            if opt:
+                self._ufile = File(s + '_uOpt.pvd', 'compressed')
+            else:
+                self._ufile = File(s + '_u.pvd', 'compressed')
+            self._uDualfile = File(s + '_uDual.pvd', 'compressed')
+            self.meshfile = File(s + '_mesh.xml')
         else:
-            self._ufile = File(self.s + '_u%d.pvd' % n, 'compressed')
-            self._uDualfile = File(self.s + '_uDual%d.pvd' % n, 'compressed')
-            self.meshfile = File(self.s + '_mesh%d.xml' % n)
+            if self.eifile is None:  # error indicators
+                self.eifile = File(s + '_ei.pvd', 'compressed')
+            self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
+            self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
+            self.meshfile = File(s + '_mesh%d.xml' % n)
 
     def suffix(self, problem):
         import numpy as np
@@ -122,7 +129,7 @@ class Solver(SolverBase):
         if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
             s += 'Nz' + str(problem.Nz)
 
-        s += 'K' + str(int(1. / problem.k))
+        s += 'K' + str(problem.k)
 
         return s
 

@@ -9,64 +9,82 @@ from ASP import Solver as SolverBase
 class Solver(SolverBase):
 
     '''
-        Solver class for solving 2D Incompressible Navier-Stokes
+        Solver class for solving both 2D and 3D Incompressible Navier-Stokes
         equation.
     '''
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
 
+    def function_space(self, mesh):  # define functions spaces
+        V = VectorFunctionSpace(mesh, 'CG', 1)
+        Q = FunctionSpace(mesh, 'CG', 1)
+        W = MixedFunctionSpace([V, Q])
+
+        return W
+
     def strong_residual(self, W, w, w2):  # strong residual for cG(1)cG(1)
         (u, p) = (as_vector((w[0], w[1])), w[2])
-        (U, P) = (as_vector((w2[0], w2[1])), w2[2])
+        u2 = as_vector((w2[0], w2[1]))
 
-        R1 = grad(U) * u + grad(p)  # momentum equation
-        R2 = div(u)  # conservation equation
+        R1 = grad(u2) * u + grad(p)
+        R2 = div(u)
 
         return R1, R2
 
     # weak residual for cG(1)cG(1)
-    def weak_residual(self, problem, k, W, w, ww, w_, wt, ei_mode=False):
-        (u, p) = (as_vector((w[0], w[1])), w[2])
-        (U, P) = (as_vector((ww[0], ww[1])), ww[2])
-        (U_, P_) = (as_vector((w_[0], w_[1])), w_[2])
+    def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
+
+        (u, p) = (as_vector((w_theta[0], w_theta[1])), w_theta[2])
+        U = as_vector((w[0], w[1]))
+        U_ = as_vector((w_[0], w_[1]))
         (v, q) = (as_vector((wt[0], wt[1])), wt[2])
 
-        h = CellSize(W.mesh())  # mesh size
-        d1, d2 = self.stabilization_parameters(
-            U_, P_, k, h)  # stabilization parameters
+        nu = problem.nu
 
-        nu = problem.nu  # Reynolds Number
+        h = CellSize(W.mesh())
+        d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter
 
-        t0 = problem.t0
+        if ei_mode:  # turn off stabilization in ei_mode
+            d1 = Constant(0)
 
-        t = t0 + k
-        F = problem.F1(t)  # forcing and mass source/sink
+        f = problem.F1(problem.t0)  # forcing
 
-        # turn of least squares stabilization when ei_mode
-        if(ei_mode):
-            d1 = 0; d2 = 0
+        # Weak form
+        r = (1. / k * inner(U - U_, v)
+             + nu*inner(grad(u), grad(v))
+             + inner(grad(p) + grad(u) * u, v)
+             + div(u)*q) * dx
+        r -= inner(f, v) * dx
 
-        # weak form of the equations
-        r = (1. / k) * inner(U - U_, v) * dx \
-            + inner(grad(p) + grad(u) * u, v) * dx \
-            + nu * inner(grad(u), grad(v)) * dx  # momentum equation
-        r -= inner(F, v) * dx  # forcing of momentum equation
-        r += div(u) * q * dx  # continuity
-
-        # Galerkin Least-Squares stabilization
-        R1, R2 = self.strong_residual(W, w, w)
-        Rv1, Rv2 = self.strong_residual(W, wt, w)
-        r += (d1 * inner(R1 - F, Rv1) + d2 * R2 * Rv2) * dx
+        # GLS stabilization
+        R1, R2 = self.strong_residual(W, w_theta, w_theta)
+        Rv1, Rv2 = self.strong_residual(W, wt, w_theta)
+        r += d1 * (inner(R1 - f, Rv1) + R2 * Rv2) * dx
 
         return r
 
-    def stabilization_parameters(self, u, p, k, h):
-        K1 = 1.; K2 = 1.
-        d1 = K1 * h
-        d2 = K2 * h
+    def suffix(self, problem):
+        '''
+            Obtains the run specific data for file naming, e.g. Nx, k, etc.
+        '''
 
-        return d1, d2
+        try:
+            s = 'Re' + str(problem.Re)
+        except:
+            s = 'nu' + str(problem.nu)
+
+        s += 'T' + str(problem.T)
+        if problem.Nx is not None:
+            s += 'Nx' + str(problem.Nx)
+        if problem.Ny is not None:
+            s += 'Ny' + str(problem.Ny)
+        if problem.mesh.topology().dim() > 2 and problem.Nz is not None:
+            s += 'Nz' + str(problem.Nz)
+
+        s += 'K' + str(problem.k)
+
+        return s
 
     def __str__(self):
         return 'NSE'

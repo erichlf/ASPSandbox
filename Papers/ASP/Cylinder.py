@@ -5,11 +5,12 @@ __license__ = "GNU GPL version 3 or any later version"
 
 from ASP import *
 from ASP import Problem as ProblemBase
+from mshr import *
 
 # Constants related to the geometry
-bmarg = 1.e-3 + DOLFIN_EPS
-xmin = 0.0; xmax = 2.2; ymin = 0.0; ymax = 0.41;
-xcenter = 0.2; ycenter = 0.2
+bmarg = 1.E-3 + DOLFIN_EPS
+xmin, xmax, ymin, ymax = 0.0, 2.2, 0.0, 0.41
+xcenter, ycenter = 0.2, 0.2
 radius = 0.05
 Diameter = 2. * radius
 Um = 1.5  # max velocity
@@ -18,9 +19,7 @@ Um = 1.5  # max velocity
 class InitialConditions(Expression):
 
     def eval(self, values, x):
-        values[0] = 0.
-        values[1] = 0.
-        values[2] = 0.
+        values[0:3] = 0., 0., 0.
 
     def value_shape(self):
         return (3,)
@@ -35,8 +34,7 @@ class InflowBoundary(SubDomain):
 class NoSlipBoundary(SubDomain):
 
     def inside(self, x, on_boundary):
-        dx = x[0] - xcenter
-        dy = x[1] - ycenter
+        dx, dy = x[0] - xcenter, x[1] - ycenter
         r = sqrt(dx * dx + dy * dy)
 
         return on_boundary and (near(x[1], ymin) or near(x[1], ymax)
@@ -62,8 +60,9 @@ class Problem(ProblemBase):
         global xmax, xcenter, ycenter
 
         # Load mesh
+        options['Ny'], options['Nz'] = None, None
+        ProblemBase.__init__(self, options)
         self.Nx = options['Nx']
-        options['Ny'] = None; options['Nz'] = None
 
         try:
             self.nu = options['nu']
@@ -76,14 +75,15 @@ class Problem(ProblemBase):
         except:
             self.T = 10
 
-        ProblemBase.__init__(self, options)
-
         H = ymax
         # setup our domain and conditions
-        channel = Rectangle(xmin, ymin, xmax, ymax)
-        bluff = Circle(xcenter, ycenter, radius)
-        domain = channel - bluff
-        self.mesh = Mesh(domain, Nx)
+        try:
+            self.mesh = Mesh(options['initial_mesh'])
+        except:
+            channel = Rectangle(Point(xmin, ymin), Point(xmax, ymax))
+            bluff = Circle(Point(xcenter, ycenter), radius)
+            domain = channel - bluff
+            self.mesh = generate_mesh(domain, self.Nx)
 
         self.noSlip = Constant((0, 0))
         self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)*t*t/(1+t*t)',
@@ -131,19 +131,14 @@ class Problem(ProblemBase):
 
         return self.boundary_conditions(W, t)
 
-    def marker(self):  # provide a marker to indicate if we are on the object
-        return PsiMarker(self.dim, self.cube)
-
     def functional(self, W, w):
         '''
             This is the functional used for adaptivity.
             We assume the problem is much like NSE.
         '''
-        (u, p) = (as_vector((w[0], w[1])), w[2])
+        u = as_vector((w[0], w[1]))
 
-        M = u[0] * dx  # Mean of the x-velocity in the whole domain
-
-        return M
+        return u[0] * dx  # Mean of the x-velocity in the whole domain
 
     def __str__(self):
         return 'Cylinder'

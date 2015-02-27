@@ -309,7 +309,7 @@ conditions, and the weak form.
     where $\partial \Omega_1$ is the boundary of $\Omega_1$ and $\partial
     \Omega_2$ is the boundary of $\Omega_2$ (see \autoref{fig:ADRDomain}.
 
-    \begin{figure}[h!]
+    \begin{figure}[h]
         \centering
         \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
         \begin{tikzpicture}[scale=6]
@@ -320,7 +320,7 @@ conditions, and the weak form.
             \node (Omega_1) at (0.25,0.25) {$\Omega_1$};
             \node (dOmega_1) at (0.5,0.05) {$\partial\Omega_1$};
         \end{tikzpicture}
-        \caption{Problem Geometry for ADR, $\Omega$}
+        \caption{Problem Geometry, $\Omega$, for ADR small hole problem.}
         \label{fig:ADRDomain}
     \end{figure}
 
@@ -330,12 +330,12 @@ conditions, and the weak form.
     \begin{equation}
         g = \begin{cases}
             0   &\mathbf{x} \in \partial \Omega_1 \\
-            10  &\mathbf{x} \in \partial \Omega_2
+            5 + 5\, \sin \pi\, t  &\mathbf{x} \in \partial \Omega_2
         \end{cases}.
         \label{eq:ADRBCs}
     \end{equation}
     Finally we take the final time $T=10,\, \alpha=1,\, \beta = \left[ -1,
-    -0.61 \right]$, and $\kappa = 0.1$.
+    -0.61 \right]$, and $\kappa = 1\times10^{-5}$.
 
     We will discretize ADR using a Galerkin\slash Least-Squares (GLS) stabilized
     cG(1)cG(1) finite element, where the first cG(1) indicates that the test and
@@ -378,26 +378,62 @@ conditions, and the weak form.
     where
     \begin{equation}
         \delta = \begin{cases}
-            \frac{h^2}{2 \sqrt{1 + 1.61^2}} & \text{if } h \le \kappa \\
-            \frac{h}{2 \sqrt{1 + 1.61^2}} & \text{otherwise}
+            \frac{h^2}{\|\beta\|} & \text{if } h \le \kappa \\
+            \frac{h}{\|\beta\|} & \text{otherwise}
         \end{cases}
         \label{eq:ADRdelta}
     \end{equation}
     Additionally, we take the time-step to be
     \begin{equation*}
-    k = C_{CFL}\, \min_{\mathcal{T}_K}(h),
+        k = CFL\, \min_{\mathcal{T}_K}(h),
     \end{equation*}
-    where $C_{CFL}=100$.
+    where $CFL=100$.
 
     \lstinputlisting[firstline=5,
         caption={ADR Domain \texttt{Problem} subclass.}, label={lst:ADRDomain}
-    ]{Hole.py}
+    ]{SmallHole.py}
     \lstinputlisting[firstline=5,
         caption={ADR \texttt{Solver} subclass.}, label={lst:ADR}
     ]{ADR.py}
-    \begin{figure}[h!]
+    \begin{figure}[h]
         \centering
-        \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{Starting mesh.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveADRkappa1E-5_mesh0.png}
+            }
+            \subcaptionbox{Primal solution from starting mesh.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveADRkappa1E-5_u0.png}
+            }
+            \subcaptionbox{Error indicators from starting mesh.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveADRkappa1E-5_ei0.png}
+            }
+            \subcaptionbox{Dual solution from starting mesh.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveADRkappa1E-5_uDual0.png}
+            }
+        \end{minipage}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{$27^{th}$ adaptive mesh.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveADRkappa1E-5_mesh27.png}
+            }
+            \subcaptionbox{Primal solution after 27 adaptive iterations.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveADRkappa1E-5_u27.png}
+            }
+            \subcaptionbox{Error indicators after 27 adaptive iterations.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveADRkappa1E-5_ei27.png}
+            }
+            \subcaptionbox{Dual solution after 27 adaptive iterations.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveADRkappa1E-5_uDual27.png}
+            }
+        \end{minipage}
+        \caption{Results for ADR Small Hole problem with
+            $\kappa=1\times10^{-5}$.}
+    \end{figure}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-5.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
             for the ADR equation.}
         \label{fig:ADR_err}
@@ -457,19 +493,24 @@ conditions, and the weak form.
     Here $SD_{\delta}^n$ is the GLS stabilization and is given by
     \begin{equation}
         SD_{\delta}^n(\bar{U}^n, V) \equiv
-        \delta_1 (\left(\bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n
+        \delta \left[(\left(\bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n
             + \nabla p^n - \mathbf{f},
         \left(\bar{\mathbf{u}}^n \cdot \nabla \right) v + \nabla q)
-        + \delta_2 (\nabla \cdot \bar{\mathbf{U}}^n, \nabla \cdot v),
+            + (\nabla \cdot \bar{\mathbf{U}}^n, \nabla \cdot v)\right],
     \label{eqn:NSEStabilization}
     \end{equation}
-    where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}|^2\, h^{-2})^{-1/2}$, and
-    $\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem independent
-    constants of unit size. For each test case below we take the time-step to be
+    where
     \begin{equation*}
-    k = C_{CFL}\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
+        \delta = \begin{cases}
+            h^2 & \text{if } h < \nu \\
+            h & \text{otherwise}
+        \end{cases}
     \end{equation*}
-    where $C_{CFL}=10$.
+    For each test case below we take the time-step to be
+    \begin{equation*}
+    k = CFL\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
+    \end{equation*}
+    where $CFL=100$.
 
     This test case is based on a benchmark problem from Sch\"afer and Turek
     \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
@@ -483,7 +524,7 @@ conditions, and the weak form.
     viscosity we take $\nu = 10^{-3}\, \text{m}^2\text{/s}$, resulting in a
     Reynolds number of $Re=100$.
 
-    \begin{figure}[h!]
+    \begin{figure}[h]
         \centering
         \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
         \begin{tikzpicture}[scale=6]
@@ -521,26 +562,27 @@ conditions, and the weak form.
     \autoref{lst:Heat}.  Some differences come from the more complex geometry,
     time dependent boundary conditions, and stabilization. One additional
     complexity is the non-linearity inherent to the Navier-Stokes equations
-    which does not exist in the Heat equation. \texttt{ASP} assumes all problems are
-    non-linear, and therefore no changes must be made to take into account a
+    which does not exist in the Heat equation. \texttt{ASP} assumes all problems
+    are non-linear, and therefore no changes must be made to take into account a
     non-linear problem.  It should, however, be mentioned that this assumption
-    by \texttt{ASP} does tend to slow the calculations down for linear problem. As for
-    the other complexity added by flow around a cylinder, \texttt{ASP} handles the
-    additionally complexity in a straight forward manner that is similar to what
-    one would expect in the standard Python interface of FEniCS/DOLFIN.
+    by \texttt{ASP} does tend to slow the calculations down for linear problem.
+    As for the other complexity added by flow around a cylinder, \texttt{ASP}
+    handles the additionally complexity in a straight forward manner that is
+    similar to what one would expect in the standard Python interface of
+    FEniCS/DOLFIN.
 
     The first step we take is setting up problem specific parameters, including
     definition of geometric extent, maximum velocity, etc.
     \lstinputlisting[firstline=6,lastline=16,
-        caption={Importing \texttt{ASP} and problem specific parameter definitions for
-                flow around a cylinder.}
+        caption={Importing \texttt{ASP} and problem specific parameter
+                 definitions for flow around a cylinder.}
     ]{Cylinder.py}
-    \lstinputlisting[firstline=52, lastline=93, caption={Initialization of
+    \lstinputlisting[firstline=58, lastline=93, caption={Initialization of
         problem, which includes settings parameters and mesh creation.}
     ]{Cylinder.py}
     Then in the same way we did in the previous example we setup the initial
     conditions and send them to \texttt{Problem}
-    \lstinputlisting[firstline=18,lastline=28, label={lst:ICExpNSE},
+    \lstinputlisting[firstline=19,lastline=26, label={lst:ICExpNSE},
         caption={Expression for the initial conditions for Navier-Stokes
                 equations}
     ]{Cylinder.py}
@@ -551,7 +593,7 @@ conditions, and the weak form.
     Next we define the various boundaries, which include the inflow, outflow,
     and no-slip boundaries (the cylinder is considered a no-slip boundary), then
     we define the boundary conditions
-    \lstinputlisting[firstline=29,lastline=50, label={lst:SubDomainsNSE},
+    \lstinputlisting[firstline=28,lastline=48, label={lst:SubDomainsNSE},
         caption={Defining problem specific boundaries for flow around a
             cylinder.}
     ]{Cylinder.py}
@@ -581,7 +623,7 @@ conditions, and the weak form.
 
     Next we define the goal functional, \eqref{eq:NSEGoal}, to be used for goal
     oriented adaptivity.
-    \lstinputlisting[firstline=137,lastline=147, label={lst:Functional},
+    \lstinputlisting[firstline=134,lastline=141, label={lst:Functional},
         caption={Goal functional for the Cylinder problem.}
     ]{Cylinder.py}
 
@@ -597,42 +639,21 @@ conditions, and the weak form.
     \texttt{weak\_residual}, and \texttt{strong\_residual} to the
     \texttt{Solver} class is no longer needed.
 
-    \begin{remark}
-        \texttt{ASP} assumes the solver is a \texttt{MixedFunctionSpace}, $W =
-        V \times Q$, where $V$ is a \texttt{VectorFunctionSpace} and $Q$ is a
-        \texttt{FunctionSpace}. Thus, if the \texttt{Solver} uses this type of
-        function space the user need not redefine he function space. Thus, in
-        the implementation of this NSE, the reader should note that the function
-        space does not appear in the \texttt{Solver} subclass, because it has
-        already been defined by the \texttt{Solver} class.
-    \end{remark}
-
     First, we define initialize the \texttt{Solver} subclass
     \lstinputlisting[firstline=5,lastline=17,
         caption={Importing \texttt{ASP} and initializing the NSE
-                \texttt{Solver} subclass}
+                 \texttt{Solver} subclass}
     ]{NSE.py}
 
-    Next, we will define our \texttt{strong\_residual},
-    \texttt{stabilization\_parameters}, and \texttt{weak\_residual} functions.
-    \lstinputlisting[firstline=19,lastline=69,
-        caption={Defining the \texttt{strong\_residual},
-                \texttt{stabilization\_parameters}, and
-                \texttt{weak\_residual}.}
+    Next, we will define our \texttt{function\_space},
+    \texttt{strong\_residual}, and \texttt{weak\_residual} functions.
+    \lstinputlisting[firstline=19,lastline=65,
+        caption={Defining the \texttt{function\_space},
+                 \texttt{strong\_residual}, and \texttt{weak\_residual}.}
     ]{NSE.py}
-
-    \begin{remark}
-        \texttt{ASP} assumes the user is solving a system like NSE and thus,
-        the naming scheme of any resulting files includes the Reynolds number,
-        defined as $Re=1/\nu$. Additionally, \texttt{ASP} will assume the
-        solution is made up of a vector field, the velocity field, and a
-        scalar field, the pressure field. Thus, the solution is saved in two
-        separate sets of files: one set describing the velocity field, and the
-        other describing the pressure field.
-    \end{remark}
 
     Now, to set \texttt{ASP} to use adaptivity we must set the option for
-    adaptivity to true. This is easily done before initilizing the
+    adaptivity to true. This is easily done before initializing the
     \texttt{Solver} in one's script using the following code
     \begin{lstlisting}[label={lst:AdaptiveBool},
                        caption={Setting the the adaptive boolean to true.}]
@@ -655,9 +676,43 @@ conditions, and the weak form.
         caption={NSE \texttt{Solver} subclass.}
     ]{NSE.py}
 
-    \begin{figure}[h!]
+    \begin{figure}[h]
         \centering
-        \includegraphics[scale=0.5]{Figures/AdaptiveCylinder.png}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{Starting mesh.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderRe100_mesh0.png}
+            }
+            \subcaptionbox{Primal solution from starting mesh.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderRe100_u0.png}
+            }
+            \subcaptionbox{Error indicators from starting mesh.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderRe100_ei0.png}
+            }
+            \subcaptionbox{Dual solution from starting mesh.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveCylinder100_uDual0.png}
+            }
+        \end{minipage}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{$27^{th}$ adaptive mesh.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderRe100_mesh27.png}
+            }
+            \subcaptionbox{Primal solution after 27 adaptive iterations.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderRe100_u27.png}
+            }
+            \subcaptionbox{Error indicators after 27 adaptive iterations.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderRe100_ei27.png}
+            }
+            \subcaptionbox{Dual solution after 27 adaptive iterations.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderRe100_uDual27.png}
+            }
+        \end{minipage}
+        \caption{Results for NSE flow around a cylinder $Re=100$.}
+    \end{figure}
+    \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.5]{Figures/AdaptiveCylinderRe100.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
             of the NSE.}
         \label{fig:NSE_err}

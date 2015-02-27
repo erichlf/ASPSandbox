@@ -14,14 +14,10 @@ import sys
 
 # Constants related to the geometry
 bmarg = 1.e-3 + DOLFIN_EPS
-xmin = 0.0
-xmax = 2.2
-ymin = 0.0
-ymax = 0.41
-zmin = 0.0
-zmax = 0.41
-xcenter = 0.2
-ycenter = 0.2
+xmin, xmax = 0.0, 2.2
+ymin, ymax = 0.0, 0.41
+zmin, zmax = 0.0, 0.41
+xcenter, ycenter = 0.2, 0.2
 radius = 0.05
 Diameter = 2. * radius
 Um = 1.5  # max velocity
@@ -30,9 +26,7 @@ Um = 1.5  # max velocity
 class InitialConditions2D(Expression):
 
     def eval(self, values, x):
-        values[0] = 0.
-        values[1] = 0.
-        values[2] = 0.
+        values[0:3] = [0., 0., 0.]
 
     def value_shape(self):
         return (3,)
@@ -41,10 +35,7 @@ class InitialConditions2D(Expression):
 class InitialConditions3D(Expression):
 
     def eval(self, values, x):
-        values[0] = 0.
-        values[1] = 0.
-        values[2] = 0.
-        values[3] = 0.
+        values[0:4] = [0., 0., 0., 0.]
 
     def value_shape(self):
         return (4,)
@@ -112,8 +103,7 @@ class Problem(ProblemBase):
 
         global xmax, xcenter, ycenter
 
-        options['Ny'] = None
-        options['Nz'] = None
+        options['Ny'], options['Nz'] = None, None
         ProblemBase.__init__(self, options)
 
         self.load_options(options)
