@@ -1,4 +1,4 @@
-from AFES import *
+from ASP import *
 import sys
 from time import time
 
@@ -20,7 +20,7 @@ def boundary_conditions(self, V, t):  # Create boundary condition
     return DirichletBC(V, self.g, 'on_boundary')
 
 '''
-    The following will create our solver and tells AFES what to do with
+    The following will create our solver and tells ASP what to do with
     the solutions that you obtain.
 '''
 

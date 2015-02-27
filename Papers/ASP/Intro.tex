@@ -12,18 +12,18 @@ The FEniCS project\cite{Alnae2011} set out to address many of these issues, by
 offering various programming libraries (in both C++ and Python). However, the
 FEniCS project, as of yet, does not automate the time-stepping procedure for
 PDEs. Additionally, many of the required steps for implementing a FE solver in
-FEniCS are quite repetitive and could be automated. The AFES library sets out to
+FEniCS are quite repetitive and could be automated. The \ASP library sets out to
 further automate the solutions of PDEs and hopefully will simplify the process.
 Currently, the user is still required to do some basic programming, but we
 intend to reduce this to either none or a very minimal amount.
 
-The AFES software library offers a simple Python programming interface, built
+The \ASP software library offers a simple Python programming interface, built
 upon FEniCS, which will greatly reduce the amount of programming required by the
 user and completely eliminate the necessity for creating a simple time stepper.
 However, the user is required to setup the problem domain, boundary conditions,
 forcing functions, and weak residual using the FEniCS/DOLFIN Python interface.
 
-In addition to automating the solution to time dependent PDEs, AFES offers a
+In addition to automating the solution to time dependent PDEs, \ASP offers a
 novel automated goal oriented mesh adaptivity \cite{Foster2014e, Jansson2014a,
 Jansson2014b}.  The goal oriented mesh adaptivity code is based on solving a
 dual problem.  This dual problem is constructed and solved using DOLFIN-Adjoint

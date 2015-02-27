@@ -1,7 +1,7 @@
 import sys
 from time import time
 
-from AFES import *
+from ASP import *
 import Heat
 import Square
 

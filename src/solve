@@ -10,7 +10,7 @@ __license__ = "GNU GPL version 3 or any later version"
 import sys
 from time import time
 
-from AFES import *
+from ASP import *
 from problems import Problem, problems
 from solvers import Solver, solvers
 

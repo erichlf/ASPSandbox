@@ -7,8 +7,8 @@ __license__ = "GNU GPL version 3 or any later version"
 #   Anders Logg <logg@simula.no>
 #
 
-from AFES import *
-from AFES import Problem as ProblemBase
+from ASP import *
+from ASP import Problem as ProblemBase
 from mshr import *
 import sys
 

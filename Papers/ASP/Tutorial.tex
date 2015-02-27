@@ -1,25 +1,26 @@
-In this section we introduce the usage of \texttt{AFES} by the use of examples. The AFES
-api is written solely in Python (with the exception of UFL for the weak form)
-and thus the user is expected to have a basic knowledge of Python programming.
-However, since \texttt{AFES} is based on the FEniCS/DOLFIN Python interface it does not
-compromise on performance\cite{Alnae2011}. The use of DOLFIN's Python interface
-allows for greater ease of use, as compared to the C++ interface. Eventually, we
-intend to offer a GUI which would require the use of no programming and only
-entering the details for the domain, boundary conditions, and the weak form.
+In this section we introduce the usage of \texttt{ASP} by the use of examples.
+The \ASP api is written solely in Python (with the exception of UFL for the weak
+form) and thus the user is expected to have a basic knowledge of Python
+programming.  However, since \texttt{ASP} is based on the FEniCS/DOLFIN Python
+interface it does not compromise on performance\cite{Alnae2011}. The use of
+DOLFIN's Python interface allows for greater ease of use, as compared to the C++
+interface. Eventually, we intend to offer a GUI which would require the use of
+no programming and only entering the details for the domain, boundary
+conditions, and the weak form.
 
 \section{Solving a PDE} \label{sec:Solver}
 
     In this subsection we explain how to solve a basic time dependent PDE using
-    the \texttt{AFES} API. We choose to explain the API by example; we choose to
+    the \texttt{ASP} API. We choose to explain the API by example; we choose to
     make things quite simple at first and so the first example is the Heat
     equation.  Since, the FEM requires the weak form of any PDE we assume
     the user understands how to determine the weak form for a given PDE and thus
     no explanation of the weak form is given. For a very basic explanation of
     the weak form see \cite[Chapter 6.2.2]{Eriksson2009}.
 
-    Of course to be able to solve any PDE certain assumptions must be made. AFES
+    Of course to be able to solve any PDE certain assumptions must be made. \ASP
     makes the assumption that an $H^1$ FE is appropriate for solving the given
-    PDE, i.e. the FE discretization is stable. Additionally, \texttt{AFES} assumes the
+    PDE, i.e. the FE discretization is stable. Additionally, \texttt{ASP} assumes the
     PDE has the following form
     \begin{equation}
         R(u) = u_t - F(u;t) = 0,
@@ -40,7 +41,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     \end{equation}
     and the test function, respectively.
 
-    For AFES, a PDE is defined using the following required objects\slash
+    For \ASP, a PDE is defined using the following required objects\slash
     functions \texttt{Problem.T}, \texttt{Problem.t0}, \texttt{Problem.k},
     \texttt{Problem.mesh}, \texttt{Problem.initial\_condition},
     \texttt{Problem.boundary\_conditions}, \texttt{Solver.function\_space}, and
@@ -59,12 +60,12 @@ entering the details for the domain, boundary conditions, and the weak form.
     much clearer in the following subsection, where we will focus on the
     definition of these objects\slash functions and their use.
 
-    In the example that follows we will demonstrate the use of AFES through two
+    In the example that follows we will demonstrate the use of \ASP through two
     different programming styles: the first method will be by passing function
     handles to the \texttt{Problem} and \texttt{Solver} classes,
     \autoref{sss:FunctionHandles}. This method can be a bit long-winded and thus
     a second method will be demonstrated, which we believe demonstrates the true
-    strength of AFES. This method uses the definition of subclasses to define
+    strength of \ASP. This method uses the definition of subclasses to define
     both the \texttt{problem} and the \texttt{solver}, \autoref{sss:Subclasses}.
     With a short script one can easily mix and match problems and solvers. In
     the later sections this method will be the primary method used. In fact, all
@@ -126,7 +127,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     \texttt{Solver} classes, \autoref{sss:Subclasses}.
 
     \subsubsection{Function Handle Method} \label{sss:FunctionHandles}
-    Just as in the definition of the PDE \texttt{AFES} requires certain things
+    Just as in the definition of the PDE \texttt{ASP} requires certain things
     to be defined. First, we can define the mesh (we will use a
     \texttt{UnitSquareMesh} as our domain), and then the mesh must be passed to
     the \texttt{Problem} class. This can be done in the following way
@@ -142,12 +143,12 @@ entering the details for the domain, boundary conditions, and the weak form.
         caption={[Heat: ICs and BCs] Create the initial conditions and boundary
         conditions.}
     ]{Heat.py}
-    To be able to access these functions \texttt{AFES} needs them define. To do this we
-    must pass the functions to AFES' \texttt{Problem} class. This is done quite
+    To be able to access these functions \texttt{ASP} needs them define. To do this we
+    must pass the functions to \ASP' \texttt{Problem} class. This is done quite
     easily in the following way
     \lstinputlisting[firstline=73,lastline=74,
         caption={[Heat: Passing ICs and BCs] Send initial conditions and
-                boundary conditions to AFES.}
+                boundary conditions to \ASP.}
     ]{Heat.py}
     To define the heat source/sink things are actually a bit easier and the user
     need only to pass the function directly to the \texttt{Problem} class. This
@@ -155,7 +156,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     can be seen below
     \lstinputlisting[firstline=69,lastline=69, label={lst:IC+BC2Problem},
         caption={[Heat: Passing Forcing Fucntion] Send forcing function to
-                AFES.}
+                \ASP.}
     ]{Heat.py}
     In fact, this could be left out if the user does not require it in the weak
     form, but we include it here for completeness.
@@ -181,7 +182,7 @@ entering the details for the domain, boundary conditions, and the weak form.
 
     In addition to the standard functions above, we can define some auxiliary
     functions. Some examples are \texttt{Plot}, \texttt{Name}, and \texttt{Save}
-    functions; \texttt{AFES} assumes the equation given is similar to the Navier-Stokes
+    functions; \texttt{ASP} assumes the equation given is similar to the Navier-Stokes
     equation, i.e. the first variable is a vector function and the second
     variable is a scalar function, thus it may be necessary to override the
     built in functionality so as to fit your own specifics. For this example we
@@ -219,14 +220,14 @@ entering the details for the domain, boundary conditions, and the weak form.
     any of the above functionality, except for placing functions in an
     appropriate subclass. To this end we first present the \texttt{problem}
     which is a subclass of \texttt{ProblemBase}, where \texttt{ProblemBase} is
-    the \texttt{Problem} class provided by AFES.
+    the \texttt{Problem} class provided by \ASP.
     \lstinputlisting[firstline=5,
         caption={Square \texttt{Problem} subclass.}
     ]{
         Square.py
     }
     Now we define the \texttt{solver} which will be a subclass of
-    \text{SolverBase}, which is the \texttt{Solver} class provided by AFES.
+    \text{SolverBase}, which is the \texttt{Solver} class provided by \ASP.
     \lstinputlisting[firstline=4,
         caption={Heat \texttt{Solver} subclass.}, label={lst:HeatClass}
     ]{
@@ -242,7 +243,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     With the above method one can write a general script to run a variety of
     problem/solver combinations, thus allow for a very easy method to test
     hypothesis without changing much in the way of one's code. This is where the
-    main power/attraction lies in using an API such as AFES. Thus, all code
+    main power/attraction lies in using an API such as \ASP. Thus, all code
     which follows will be presented in this form and the script use to run the
     various problem will be assumed to be quite similar to the script presented
     in \autoref{lst:Script}.
@@ -250,7 +251,7 @@ entering the details for the domain, boundary conditions, and the weak form.
 \section{Goal Oriented Adaptivity} \label{sec:Adaptivity}
 
     In this subsection we will introduce Goal Oriented Adaptivity as used in
-    AFES.  The details for the goal oriented adaptivity algorithm used by AFES
+    \ASP.  The details for the goal oriented adaptivity algorithm used by \ASP
     can be seen in \cite{Foster2014e,Jansson2014a,Jansson2014b}. Again we will
     demonstrate this functionality by example. The following subsections will
     present two examples: the first example will present the
@@ -308,7 +309,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     where $\partial \Omega_1$ is the boundary of $\Omega_1$ and $\partial
     \Omega_2$ is the boundary of $\Omega_2$ (see \autoref{fig:ADRDomain}.
 
-    \begin{figure}[H]
+    \begin{figure}[h!]
         \centering
         \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
         \begin{tikzpicture}[scale=6]
@@ -394,7 +395,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     \lstinputlisting[firstline=5,
         caption={ADR \texttt{Solver} subclass.}, label={lst:ADR}
     ]{ADR.py}
-    \begin{figure}[H]
+    \begin{figure}[h!]
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
@@ -404,7 +405,7 @@ entering the details for the domain, boundary conditions, and the weak form.
 
 \subsection{Navier-Stokes Equations} \label{sse:NSE}
 
-    In this subsection we demonstrate the use of \texttt{AFES} on a more complicated
+    In this subsection we demonstrate the use of \texttt{ASP} on a more complicated
     example, one that includes a non-linear term, namely the Navier-Stokes
     equations for flow around a cylinder.  Again, we will discretize the
     Navier-Stokes equations using a GLS stabilized cG(1)cG(1) finite element.
@@ -482,7 +483,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     viscosity we take $\nu = 10^{-3}\, \text{m}^2\text{/s}$, resulting in a
     Reynolds number of $Re=100$.
 
-    \begin{figure}[H]
+    \begin{figure}[h!]
         \centering
         \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
         \begin{tikzpicture}[scale=6]
@@ -520,18 +521,18 @@ entering the details for the domain, boundary conditions, and the weak form.
     \autoref{lst:Heat}.  Some differences come from the more complex geometry,
     time dependent boundary conditions, and stabilization. One additional
     complexity is the non-linearity inherent to the Navier-Stokes equations
-    which does not exist in the Heat equation. \texttt{AFES} assumes all problems are
+    which does not exist in the Heat equation. \texttt{ASP} assumes all problems are
     non-linear, and therefore no changes must be made to take into account a
     non-linear problem.  It should, however, be mentioned that this assumption
-    by \texttt{AFES} does tend to slow the calculations down for linear problem. As for
-    the other complexity added by flow around a cylinder, \texttt{AFES} handles the
+    by \texttt{ASP} does tend to slow the calculations down for linear problem. As for
+    the other complexity added by flow around a cylinder, \texttt{ASP} handles the
     additionally complexity in a straight forward manner that is similar to what
     one would expect in the standard Python interface of FEniCS/DOLFIN.
 
     The first step we take is setting up problem specific parameters, including
     definition of geometric extent, maximum velocity, etc.
     \lstinputlisting[firstline=6,lastline=16,
-        caption={Importing \texttt{AFES} and problem specific parameter definitions for
+        caption={Importing \texttt{ASP} and problem specific parameter definitions for
                 flow around a cylinder.}
     ]{Cylinder.py}
     \lstinputlisting[firstline=52, lastline=93, caption={Initialization of
@@ -597,7 +598,7 @@ entering the details for the domain, boundary conditions, and the weak form.
     \texttt{Solver} class is no longer needed.
 
     \begin{remark}
-        \texttt{AFES} assumes the solver is a \texttt{MixedFunctionSpace}, $W =
+        \texttt{ASP} assumes the solver is a \texttt{MixedFunctionSpace}, $W =
         V \times Q$, where $V$ is a \texttt{VectorFunctionSpace} and $Q$ is a
         \texttt{FunctionSpace}. Thus, if the \texttt{Solver} uses this type of
         function space the user need not redefine he function space. Thus, in
@@ -608,7 +609,7 @@ entering the details for the domain, boundary conditions, and the weak form.
 
     First, we define initialize the \texttt{Solver} subclass
     \lstinputlisting[firstline=5,lastline=17,
-        caption={Importing \texttt{AFES} and initializing the NSE
+        caption={Importing \texttt{ASP} and initializing the NSE
                 \texttt{Solver} subclass}
     ]{NSE.py}
 
@@ -621,16 +622,16 @@ entering the details for the domain, boundary conditions, and the weak form.
     ]{NSE.py}
 
     \begin{remark}
-        \texttt{AFES} assumes the user is solving a system like NSE and thus,
+        \texttt{ASP} assumes the user is solving a system like NSE and thus,
         the naming scheme of any resulting files includes the Reynolds number,
-        defined as $Re=1/\nu$. Additionally, \texttt{AFES} will assume the
+        defined as $Re=1/\nu$. Additionally, \texttt{ASP} will assume the
         solution is made up of a vector field, the velocity field, and a
         scalar field, the pressure field. Thus, the solution is saved in two
         separate sets of files: one set describing the velocity field, and the
         other describing the pressure field.
     \end{remark}
 
-    Now, to set \texttt{AFES} to use adaptivity we must set the option for
+    Now, to set \texttt{ASP} to use adaptivity we must set the option for
     adaptivity to true. This is easily done before initilizing the
     \texttt{Solver} in one's script using the following code
     \begin{lstlisting}[label={lst:AdaptiveBool},
@@ -654,7 +655,7 @@ entering the details for the domain, boundary conditions, and the weak form.
         caption={NSE \texttt{Solver} subclass.}
     ]{NSE.py}
 
-    \begin{figure}[H]
+    \begin{figure}[h!]
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveCylinder.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution

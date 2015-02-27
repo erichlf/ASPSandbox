@@ -1,5 +1,5 @@
-from AFES import *
-from AFES import Solver as SolverBase
+from ASP import *
+from ASP import Solver as SolverBase
 
 
 class Solver(SolverBase):

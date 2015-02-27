@@ -1,4 +1,4 @@
-from AFES import *
+from ASP import *
 import sys
 from time import time
 
@@ -89,7 +89,7 @@ def update_problem(self, W, t):
 
 
 '''
-    The following will create our solver and tells AFES what to do with
+    The following will create our solver and tells ASP what to do with
     the solutions that you obtain.
 '''
 

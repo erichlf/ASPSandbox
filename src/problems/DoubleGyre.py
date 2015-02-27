@@ -1,8 +1,8 @@
 __author__ = "Erich L Foster <efoster@bcamath.org>"
 __date__ = "2014-01-26"
 
-from AFES import *
-from AFES import Problem as ProblemBase
+from ASP import *
+from ASP import Problem as ProblemBase
 
 '''
     This is the implementation for four-gyre problem with double-gyre forcing.

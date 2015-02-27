@@ -10,8 +10,8 @@ __license__ = "GNU GPL version 3 or any later version"
     creates a disturbance producing a wave.
 '''
 
-from AFES import *
-from AFES import Problem as ProblemBase
+from ASP import *
+from ASP import Problem as ProblemBase
 from dolfin_adjoint import *
 from math import factorial
 import numpy as np

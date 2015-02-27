@@ -2,6 +2,7 @@
 \PassOptionsToPackage{a4paper}{geometry}
 \PassOptionsToPackage{firstinits=true,isbn=false,url=false,doi=false,style=numeric}{biblatex}
 \usepackage{elf}
+\usepackage{fixltx2e}
 
 \addbibresource{Complete.bib}
 
@@ -20,7 +21,9 @@
 }}
 \def\endkeywords{\par}
 
-\title{AFES-- Automated Finite Element Solver}
+\newcommand{\ASP}{ASP\textsubscript{\scriptsize DE}}
+
+\title{\ASP-- Automated Solver for Partial Differential Equations}
 
 \author[1]{Erich L Foster}
 
@@ -57,7 +60,7 @@
     \chapter{Introduction} \label{ch:Intro}
     \input{Intro.tex}
 
-    \chapter{AFES Tutorial} \label{ch:Tutorial}
+    \chapter{\ASP Tutorial} \label{ch:Tutorial}
     \input{Tutorial.tex}
 
     \chapter{Conlcusions} \label{ch:Conclusions}

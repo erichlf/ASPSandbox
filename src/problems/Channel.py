@@ -6,8 +6,8 @@ __license__ = "GNU GPL version 3 or any later version"
 #   by Kent-Andre Mardal <kent-and@simula.no>
 #
 
-from AFES import *
-from AFES import Problem as ProblemBase
+from ASP import *
+from ASP import Problem as ProblemBase
 
 x0 = 0
 x1 = 6

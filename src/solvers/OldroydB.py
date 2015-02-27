@@ -2,8 +2,8 @@ __author__ = "Erich L Foster <erichlf@gmail.com>, Susanne Claus <susanne.claus@u
 __date__ = "2015-01-14"
 __license__ = "GNU GPL version 3 or any later version"
 
-from AFES import *
-from AFES import Solver as SolverBase
+from ASP import *
+from ASP import Solver as SolverBase
 
 
 class Solver(SolverBase):

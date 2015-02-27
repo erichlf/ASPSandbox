@@ -3,8 +3,8 @@ __date__ = "2014-08-12"
 __copyright__ = "Copyright (C) 2013-2014 " + __author__
 __license__ = "GNU GPL version 3 or any later version"
 
-from AFES import *
-from AFES import Problem as ProblemBase
+from ASP import *
+from ASP import Problem as ProblemBase
 
 # Constants related to the geometry
 bmarg = 1.e-3 + DOLFIN_EPS
