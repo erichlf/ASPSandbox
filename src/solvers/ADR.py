@@ -94,7 +94,8 @@ class Solver(SolverBase):
             self._uDualfile = File(s + '_uDual.pvd', 'compressed')
             self.meshfile = File(s + '_mesh.xml')
         else:
-            self.eifile = File(s + '_ei.pvd', 'compressed')
+            if self.eifile is None:  # error indicators
+                self.eifile = File(s + '_ei.pvd', 'compressed')
             self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
             self._uDualfile = File(s + '_uDual%d.pvd' % n, 'compressed')
             self.meshfile = File(s + '_mesh%d.xml' % n)

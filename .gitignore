@@ -25,6 +25,7 @@ latexSuiteTemp0.*
 
 #DOLFIN specific
 ffc_form_*.h
+*Forward.xml # DOLFIN-Adjoint checkpointing
 
 #mac crap
 .DS_Store
