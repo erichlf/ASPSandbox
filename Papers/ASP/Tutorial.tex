@@ -402,13 +402,13 @@ conditions, and the weak form.
             \subcaptionbox{Starting mesh.}{
                 \includegraphics[scale=0.16]{Figures/AdaptiveADRkappa1E-5_mesh0.png}
             }
-            \subcaptionbox{Primal solution from starting mesh.}{
+            \subcaptionbox{Primal solution from starting mesh at $t=10$.}{
                 \includegraphics[scale=0.16]{Figures/AdaptiveADRkappa1E-5_u0.png}
             }
             \subcaptionbox{Error indicators from starting mesh.}{
                 \includegraphics[scale=0.16]{Figures/AdaptiveADRkappa1E-5_ei0.png}
             }
-            \subcaptionbox{Dual solution from starting mesh.}{
+            \subcaptionbox{Dual solution from starting mesh at $t=0$.}{
                 \includegraphics[scale=0.16]{Figures/AdaptiveADRkappa1E-5_uDual0.png}
             }
         \end{minipage}
@@ -417,13 +417,15 @@ conditions, and the weak form.
             \subcaptionbox{$27^{th}$ adaptive mesh.}{
                 \includegraphics[scale=0.162]{Figures/AdaptiveADRkappa1E-5_mesh27.png}
             }
-            \subcaptionbox{Primal solution after 27 adaptive iterations.}{
+            \subcaptionbox{Primal solution after 27 adaptive iterations at
+            $t=10$.}{
                 \includegraphics[scale=0.162]{Figures/AdaptiveADRkappa1E-5_u27.png}
             }
             \subcaptionbox{Error indicators after 27 adaptive iterations.}{
                 \includegraphics[scale=0.162]{Figures/AdaptiveADRkappa1E-5_ei27.png}
             }
-            \subcaptionbox{Dual solution after 27 adaptive iterations.}{
+            \subcaptionbox{Dual solution after 27 adaptive iterations at
+            $t=0$.}{
                 \includegraphics[scale=0.162]{Figures/AdaptiveADRkappa1E-5_uDual27.png}
             }
         \end{minipage}
@@ -681,38 +683,40 @@ conditions, and the weak form.
         \begin{minipage}[t]{0.49\textwidth}
             \centering
             \subcaptionbox{Starting mesh.}{
-                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderRe100_mesh0.png}
+                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderDragRe100_mesh0.png}
             }
-            \subcaptionbox{Primal solution from starting mesh.}{
-                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderRe100_u0.png}
+            \subcaptionbox{Primal solution from starting mesh\\ at time $t = 10$.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderDragRe100_u0.png}
             }
             \subcaptionbox{Error indicators from starting mesh.}{
-                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderRe100_ei0.png}
+                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderDragRe100_ei0.png}
             }
-            \subcaptionbox{Dual solution from starting mesh.}{
-                \includegraphics[scale=0.16]{Figures/AdaptiveCylinder100_uDual0.png}
+            \subcaptionbox{Dual solution from starting mesh\\ at time $t = 0$.}{
+                \includegraphics[scale=0.16]{Figures/AdaptiveCylinderDragRe100_uDual0.png}
             }
         \end{minipage}
         \begin{minipage}[t]{0.49\textwidth}
             \centering
             \subcaptionbox{$27^{th}$ adaptive mesh.}{
-                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderRe100_mesh27.png}
+                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderDragRe100_mesh27.png}
             }
-            \subcaptionbox{Primal solution after 27 adaptive iterations.}{
-                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderRe100_u27.png}
+            \subcaptionbox{Primal solution after 27 adaptive iterations\\ at
+                time $t = 10$.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderDragRe100_u27.png}
             }
             \subcaptionbox{Error indicators after 27 adaptive iterations.}{
-                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderRe100_ei27.png}
+                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderDragRe100_ei27.png}
             }
-            \subcaptionbox{Dual solution after 27 adaptive iterations.}{
-                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderRe100_uDual27.png}
+            \subcaptionbox{Dual solution after 27 adaptive iterations\\ at time
+            $t = 0$.}{
+                \includegraphics[scale=0.162]{Figures/AdaptiveCylinderDragRe100_uDual27.png}
             }
         \end{minipage}
         \caption{Results for NSE flow around a cylinder $Re=100$.}
     \end{figure}
     \begin{figure}[h]
         \centering
-        \includegraphics[scale=0.5]{Figures/AdaptiveCylinderRe100.png}
+        \includegraphics[scale=0.5]{Figures/AdaptiveCylinderDragRe100.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
             of the NSE.}
         \label{fig:NSE_err}
