@@ -141,6 +141,57 @@ determine the effectivity of the adaptive algorithm.
     where $CFL=100$.
 
 \begin{test}[Diffusion Dominated, $\kappa = 0.1$] \label{tst:ADRk1E-1}
+    As a first test we take
+    \begin{align*}
+        \alpha &= 1, \\
+        \kappa &= 0.1, \\
+        \beta &= \begin{bmatrix} -1 \\ -1.61 \end{bmatrix}
+    \end{align*}
+    which corresponds to a diffusive solution.
+    \begin{figure}[h]
+        \centering
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{Initial mesh}{
+                \includegraphics[scale=0.09]{Figures/AdaptiveADRkappa1E-1_mesh0.png}
+            }
+            \subcaptionbox{Primal solution at $t=10$.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-1_u0.png}
+            }
+            \subcaptionbox{Error indicators}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-1_ei0.png}
+            }
+            \subcaptionbox{Dual solution at $t=0$.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-1_uDual0.png}
+            }
+        \end{minipage}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{$25^{th}$ adaptive mesh}{
+                \includegraphics[scale=0.09]{Figures/AdaptiveADRkappa1E-1_mesh25.png}
+            }
+            \subcaptionbox{Primal solution at $t=10$.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-1_u25.png}
+            }
+            \subcaptionbox{Error indicators}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-1_ei25.png}
+            }
+            \subcaptionbox{Dual solution at $t=0$.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-1_uDual25.png}
+            }
+        \end{minipage}
+        \caption{Comparison of the Initial Mesh (Left), $190$ DOFs, to the
+                 $25^{th}$ Adaptive mesh (Right), $7\, 906$ DoFs, for ADR Small
+                 Hole problem with $\kappa=0.1$.}
+    \end{figure}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
+        \caption{Adaptive error estimate versus ``true'' error for the solution
+            for the ADR equation with $\kappa=0.1$.}
+        \label{fig:ADRk1E-1_err}
+    \end{figure}
 \end{test}
 
 \begin{test}[Convection Dominated, $\kappa = 1\times10^{-5}$] \label{tst:ADRk1E-5}
@@ -149,44 +200,45 @@ determine the effectivity of the adaptive algorithm.
         \centering
         \begin{minipage}[t]{0.49\textwidth}
             \centering
-            \subcaptionbox{Initial mesh, $190$ DoFs.}{
+            \subcaptionbox{Initial mesh}{
                 \includegraphics[scale=0.09]{Figures/AdaptiveADRkappa1E-5_mesh0.png}
             }
-            \subcaptionbox{Primal solution, $190$ DoFs, at $t=10$.}{
+            \subcaptionbox{Primal solution at $t=10$.}{
                 \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_u0.png}
             }
             \subcaptionbox{Error indicators, $190$ DoFs.}{
                 \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_ei0.png}
             }
-            \subcaptionbox{Dual solution at $t=10$, $190$ DoFs.}{
+            \subcaptionbox{Dual solution at $t=0$.}{
                 \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_uDual0.png}
             }
         \end{minipage}
         \begin{minipage}[t]{0.49\textwidth}
             \centering
-            \subcaptionbox{$25^{th}$ mesh, $39\, 044$ DoFs.}{
+            \subcaptionbox{$25^{th}$ adaptive mesh}{
                 \includegraphics[scale=0.09]{Figures/AdaptiveADRkappa1E-5_mesh25.png}
             }
-            \subcaptionbox{Primal solution, $39\, 044$ DoFs, at $t=10$.}{
+            \subcaptionbox{Primal solution at $t=0$.}{
                 \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_u25.png}
             }
-            \subcaptionbox{Error indicators, $39\, 044$ DoFs.}{
+            \subcaptionbox{Error indicators}{
                 \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_ei25.png}
             }
-            \subcaptionbox{Dual solution, $39\, 044$ DoFs, at $t=10$.}{
+            \subcaptionbox{Dual solution at $t=0$.}{
                 \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_uDual25.png}
             }
         \end{minipage}
-        \caption{Results for ADR Small Hole problem with
-            $\kappa=1\times10^{-5}$.}
+        \caption{Comparison of the Initial Mesh (Left), $190$ DOFs, to the
+                 $25^{th}$ Adaptive mesh (Right), $39\, 044$ DoFs, for ADR Small
+                 Hole problem with $\kappa=1\times 10^{-5}$.}
     \end{figure}
 
     \begin{figure}[h]
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-5.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
-            for the ADR equation.}
-        \label{fig:ADR_err}
+            for the ADR equation with $\kappa=1\times 10^{-5}$.}
+        \label{fig:ADRk1E-5_err}
     \end{figure}
 
 \end{test}
