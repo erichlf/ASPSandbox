@@ -136,9 +136,9 @@ determine the effectivity of the adaptive algorithm.
     \end{equation}
     Additionally, we take the time-step to be
     \begin{equation*}
-        k = CFL\, \min_{\mathcal{T}_K}(h),
+        k = C_{CFL}\, \min_{\mathcal{T}_K}(h),
     \end{equation*}
-    where $CFL=100$.
+    where $C_{CFL}=100$.
 
 \begin{test}[Diffusion Dominated ARD, $\kappa = 0.1$] \label{tst:ADRk1E-1}
     As a first test we take
@@ -343,9 +343,9 @@ where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}|^2\, h^{-2})^{-1/2}$, and
 $\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem independent
 constants of unit size. For each test case below we take the time-step to be
 \begin{equation*}
-  k = CFL\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
+  k = C_{CFL}\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
 \end{equation*}
-where $CFL=100$.
+where $C_{CFL}=100$.
 
 This following test cases are based on a benchmark problem from Sch\"afer and
 Turek \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
