@@ -338,12 +338,12 @@ conditions, and the weak form.
     -0.61 \right]$, and $\kappa = 1\times10^{-5}$.
 
     We will discretize ADR using a Galerkin\slash Least-Squares (GLS) stabilized
-    cG(1)cG(1) finite element, where the first cG(1) indicates that the test and
+    $cG(1)cG(1)$ finite element, where the first cG(1) indicates that the test and
     trial functions are both piecewise linear, while the second cG(1) indicates
     that the test piecewise constants and the trial functions are continuous
     piecewise linear (see \cite{Hoffman2006a} for more details).
 
-    Given a step size $k$ and applying the cG(1)cG(1) finite element
+    Given a step size $k$ and applying the $cG(1)cG(1)$ finite element
     discretization to \eqref{eq:ADR} with $v \in X \subset H^1_0(\Omega)$ gives
     the following weak residual
     \begin{equation}
@@ -355,14 +355,14 @@ conditions, and the weak form.
     \label{eqn:WeakADR}
     \end{equation}
     where $\bar{u}^n = \frac{1}{2}\left(u^n + u^{n-1}\right)$. Given the
-    solution $u$, since the elements we are concerned with (cG(1)cG(1)) have
+    solution $u$, since the elements we are concerned with ($cG(1)cG(1)$) have
     test functions which are linear in space and constant in time the strong
     residual is given by
     \begin{equation}
         R(u) = \alpha u + \beta \cdot \nabla u - f
     \label{eqn:StrongADR}
     \end{equation}
-    Finally, the GLS stabilized cG(1)cG(1) discretization of \eqref{eq:ADR} is
+    Finally, the GLS stabilized $cG(1)cG(1)$ discretization of \eqref{eq:ADR} is
     given by
     \begin{equation}
         r(\bar{u}^n,v) + SD_{\delta}^n(\bar{u}^n,v) = 0,
@@ -446,7 +446,7 @@ conditions, and the weak form.
     In this subsection we demonstrate the use of \texttt{ASP} on a more complicated
     example, one that includes a non-linear term, namely the Navier-Stokes
     equations for flow around a cylinder.  Again, we will discretize the
-    Navier-Stokes equations using a GLS stabilized cG(1)cG(1) finite element.
+    Navier-Stokes equations using a GLS stabilized $cG(1)cG(1)$ finite element.
 
     For this problem we are concerned with modelling the incompressible
     Navier-Stokes equations (NSE) with constant kinematic viscosity, $\nu>0$, in
@@ -461,7 +461,7 @@ conditions, and the weak form.
         \end{split}
     \label{eqn:NSE}
     \end{equation}
-    Given a step size $k$ and applying the cG(1)cG(1) finite element discretization
+    Given a step size $k$ and applying the $cG(1)cG(1)$ finite element discretization
     to \eqref{eqn:NSE} with $V = (v, q) \in X \subset [H^1_0(\Omega)]^d \times
     H^1(\Omega)$ gives the following weak residual
     \begin{equation}
@@ -476,7 +476,7 @@ conditions, and the weak form.
     \end{equation}
     where $U^n = (\mathbf{u}, p)$ and $\bar{U}^n = \frac{1}{2}\left(U^n +
     U^{n-1}\right)$. Given the solution $U$, since the elements we are concerned
-    with (cG(1)cG(1)) have test functions which are linear in space and constant
+    with ($cG(1)cG(1)$) have test functions which are linear in space and constant
     in time the strong residual is given by
     \begin{equation}
         R(U,V) = \begin{cases}
@@ -486,7 +486,7 @@ conditions, and the weak form.
         \end{cases}
     \label{eqn:StrongNSE}
     \end{equation}
-    Finally, the GLS stabilized cG(1)cG(1) discretization of \eqref{eqn:NSE} is
+    Finally, the GLS stabilized $cG(1)cG(1)$ discretization of \eqref{eqn:NSE} is
     given by
     \begin{equation}
     r(\bar{U}^n,V) + SD_{\delta}^n(\bar{U}^n,V) = 0, \quad \forall V = (v,q) \in X.
