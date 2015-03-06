@@ -8,12 +8,12 @@ to a linear problem, first for a diffusion dominated problem,
 demonstrate the effectiveness of \autoref{alg:Adaptivity} on non-linear
 problems, where the error representation is no longer orthogonal. To this end,
 we apply the algorithm to a benchmark problem presented in Sch\"afer et
-al.\cite{Schaefer1996}, \autoref{tst:Cylinder2D}, where the equation of interest
-is the Icompressible Navier-Stokes equation and our particular focus is on flow
-around a bluff body.  Finally, in \autoref{tst:rhoNSE}, we apply our algorithm
-to the ever more complex problem of Variable Density Incompressible
-Navier-Stokes equation, where we focus on the solution to Rayleigh-Taylor
-instability.
+al.\cite{Schaefer1996}, \autoref{tst:Drag} and \autoref{tst:Velocity}, where the
+equation of interest is the Icompressible Navier-Stokes equation and our
+particular focus is on flow around a bluff body.  Finally, in
+\autoref{tst:rhoNSE}, we apply our algorithm to the ever more complex problem of
+Variable Density Incompressible Navier-Stokes equation, where we focus on the
+solution to Rayleigh-Taylor instability.
 
 For each test below we set the max number of iterations to $25$ and set the
 $TOL=-1$. In this way we will treat the solution obtained from the final
@@ -25,14 +25,14 @@ determine the effectivity of the adaptive algorithm.
     \autoref{alg:Adaptivity} on linear PDEs. That is, we demonstrate that
     \autoref{alg:Adaptivity}, performs better than the uniform refinement for
     linear problems. To that end we apply the adaptive algorithm to
-    the Advection-Reaction-Diffusion equation (ADR).
+    the Advection-Reaction-Diffusion equation (ARD).
 
 \subsubsection{Advection-Reaction-Diffusion Equation} \label{sss:ADR}
-    The ADR is a simple linear model of a reactive and diffusive flow.  In what
+    The ARD is a simple linear model of a reactive and diffusive flow.  In what
     follows the parameters $\alpha,\,\beta$, and $\kappa$ represent the
     reactivity, convective velocity vector, and diffusivity tensor,
     respectively. Thus, for $t\in [0,T]$ and a domain $\Omega$ with boundary
-    $\partial \Omega$, the ADR is given by
+    $\partial \Omega$, the ARD is given by
     \begin{equation}
         \begin{split}
             u_t + \nabla \left(\kappa\cdot \nabla u \right) + \beta \cdot \nabla
@@ -71,7 +71,7 @@ determine the effectivity of the adaptive algorithm.
             \node (Omega_1) at (0.25,0.25) {$\Omega_1$};
             \node (dOmega_1) at (0.5,0.05) {$\partial\Omega_1$};
         \end{tikzpicture}
-        \caption{Problem Geometry, $\Omega$, for ADR small hole problem.}
+        \caption{Problem Geometry, $\Omega$, for ARD small hole problem.}
         \label{fig:ADRDomain}
     \end{figure}
 
@@ -88,7 +88,7 @@ determine the effectivity of the adaptive algorithm.
     Finally we take the final time $T=10,\, \alpha=1,\, \beta = \left[ -1,
     -0.61 \right]$, and $\kappa = 1\times10^{-5}$.
 
-    We will discretize ADR using a Galerkin\slash Least-Squares (GLS) stabilized
+    We will discretize ARD using a Galerkin\slash Least-Squares (GLS) stabilized
     $cG(1)cG(1)$finite element, where the first cG(1) indicates that the test and
     trial functions are both piecewise linear, while the second cG(1) indicates
     that the test piecewise constants and the trial functions are continuous
@@ -140,7 +140,7 @@ determine the effectivity of the adaptive algorithm.
     \end{equation*}
     where $CFL=100$.
 
-\begin{test}[Diffusion Dominated, $\kappa = 0.1$] \label{tst:ADRk1E-1}
+\begin{test}[Diffusion Dominated ARD, $\kappa = 0.1$] \label{tst:ADRk1E-1}
     As a first test we take
     \begin{align*}
         \alpha &= 1, \\
@@ -185,7 +185,7 @@ determine the effectivity of the adaptive algorithm.
             }
         \end{minipage}
         \caption{Comparison of the Initial Mesh (Left), $190$ DOFs, to the
-                 $25^{th}$ Adaptive mesh (Right), $7\, 906$ DoFs, for ADR with
+                 $25^{th}$ Adaptive mesh (Right), $7\, 906$ DoFs, for ARD with
                  $\kappa=0.1$.}
     \end{figure}
 
@@ -193,13 +193,13 @@ determine the effectivity of the adaptive algorithm.
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
-            for the ADR equation with $\kappa=0.1$.}
+            for the ARD equation with $\kappa=0.1$.}
         \label{fig:ADRk1E-1_err}
     \end{figure}
 \end{test}
 
-\begin{test}[Convection Dominated, $\kappa = 1\times10^{-5}$] \label{tst:ADRk1E-5}
-    In this test we simulate the ADR using convection dominated parameters, i.e.
+\begin{test}[Convection Dominated ARD, $\kappa = 1\times10^{-5}$] \label{tst:ADRk1E-5}
+    In this test we simulate the ARD using convection dominated parameters, i.e.
     \begin{align*}
         \alpha &= 1, \\
         \kappa &= 1\time 10^{-5}, \\
@@ -237,7 +237,7 @@ determine the effectivity of the adaptive algorithm.
             \subcaptionbox{Primal solution at $t=10$.}{
                 \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_u0.png}
             }
-            \subcaptionbox{Error indicators, $190$ DoFs.}{
+            \subcaptionbox{Error indicators}{
                 \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_ei0.png}
             }
             \subcaptionbox{Dual solution at $t=0$.}{
@@ -260,7 +260,7 @@ determine the effectivity of the adaptive algorithm.
             }
         \end{minipage}
         \caption{Comparison of the Initial Mesh (Left), $190$ DOFs, to the
-                 $25^{th}$ Adaptive mesh (Right), $39\, 044$ DoFs, for ADR with
+                 $25^{th}$ Adaptive mesh (Right), $39\, 044$ DoFs, for ARD with
                  $\kappa=1\times 10^{-5}$.}
     \end{figure}
 
@@ -268,7 +268,7 @@ determine the effectivity of the adaptive algorithm.
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-5.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
-            for the ADR equation with $\kappa=1\times 10^{-5}$.}
+            for the ARD equation with $\kappa=1\times 10^{-5}$.}
         \label{fig:ADRk1E-5_err}
     \end{figure}
 
@@ -287,10 +287,10 @@ element, where the first cG(1) indicates that the test and trial functions are
 both piecewise linear, while the second cG(1) indicates that the test piecewise
 constants and the trial functions are continuous piecewise linear.
 
-For the test problem \ref{tst:Cylinder2D} we are concerned with the
-Incompressible Navier-Stokes with constant kinematic viscosity, $\nu>0$, in a
-domain $\Omega\subset \R^d$, with boundary $\partial \Omega$, i.e.  where the
-strong residual is given by
+For the test problems \ref{tst:Drag} and \ref{tst:Velocity} we are concerned
+with the Incompressible Navier-Stokes with constant kinematic viscosity,
+$\nu>0$, in a domain $\Omega\subset \R^d$, with boundary $\partial \Omega$, i.e.
+where the strong residual is given by
 \begin{equation}
     \begin{split}
       \mathbf{u}_t + \left( \mathbf{u} \cdot \nabla \right) \mathbf{u} - \nu\,
@@ -343,25 +343,23 @@ where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}|^2\, h^{-2})^{-1/2}$, and
 $\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem independent
 constants of unit size. For each test case below we take the time-step to be
 \begin{equation*}
-  k = C_{CFL}\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
+  k = CFL\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
 \end{equation*}
-where $C_{CFL}=100$.
+where $CFL=100$.
 
-\begin{test}[Flow Around a Cylinder] \label{tst:Cylinder2D}
-
-  This test case is based on a benchmark problem from Sch\"afer and Turek
-  \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
-  rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For
-  the inlet boundary condition we take
-  \begin{equation}
+This following test cases are based on a benchmark problem from Sch\"afer and
+Turek \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
+rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For the
+inlet boundary condition we take
+\begin{equation}
     u(0,y,t) = (4\, U_m\,y\, (H - y)/H^2, 0),
     \label{eqn:2DInlet}
-  \end{equation}
-  where $U_m = 1.5\, \text{m/s}$, $H = 0.41\, \text{m}$. For the kinematic
-  viscosity we take $\nu = 10^{-3}\, \text{m}^2\text{/s}$, resulting in a
-  Reynolds number of $Re=100$.
+\end{equation}
+where $U_m = 1.5\, \text{m/s}$, $H = 0.41\, \text{m}$. For the kinematic
+viscosity we take $\nu = 10^{-3}\, \text{m}^2\text{/s}$, resulting in a
+Reynolds number of $Re=100$.
 
-  \begin{figure}[h]
+\begin{figure}[h]
     \centering
     \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
     \begin{tikzpicture}[scale=6]
@@ -384,15 +382,123 @@ where $C_{CFL}=100$.
         \draw[next] (NoFlow) to [out=-45,in=45] (1.1,0);
         \draw[next] (NoFlow) to [out=-135,in=-35] (0.25,0.15);
     \end{tikzpicture}
-    \caption{Geometry of \autoref{tst:Cylinder2D}}
+    \caption{Geometry for \autoref{tst:Drag} and \autoref{tst:Velocity}}
     \label{fig:2DCylinder}
-  \end{figure}
+\end{figure}
 
-  In this test we choose the functional
-  \begin{equation}
-      M(\bar{U}^n) := \int_I\! \int_{\Omega}\! u\, d\mathbf{x}\, dt.
-      \label{eq:NSEFunctional}
-  \end{equation}
+\begin{test}[NSE, Drag Functional] \label{tst:Drag}
+    \begin{equation}
+        M(\bar{U}^n) := \int_I\! C_D\, dt,
+        \label{eq:DragFunctional}
+    \end{equation}
+    where
+    \begin{equation*}
+        C_D = \frac{2}{\bar{u}^2\, D}F_D,
+    \end{equation*}
+    and
+    \begin{equation*}
+        \begin{bmatrix} F_D \\ F_L \end{bmatrix} =
+            \int_{\partial \Omega_1}\! (p\, \mathbf{I} - \nu \nabla
+                \mathbf{u})\cdot \mathbf{n}\, ds.
+    \end{equation*}
+
+    \begin{figure}[h]
+        \centering
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{Initial mesh}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_mesh0.png}
+            }
+            \subcaptionbox{Primal solution at $t=10$.}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_u0.png}
+            }
+            \subcaptionbox{Error indicators}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_ei0.png}
+            }
+            \subcaptionbox{Dual solution at $t=0$.}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_uDual0.png}
+            }
+        \end{minipage}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{$25^{th}$ adaptive mesh}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_mesh25.png}
+            }
+            \subcaptionbox{Primal solution at $t=10$.}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_u25.png}
+            }
+            \subcaptionbox{Error indicators}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_ei25.png}
+            }
+            \subcaptionbox{Dual solution at $t=0$.}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_uDual25.png}
+            }
+        \end{minipage}
+        \caption{Comparison of the Initial Mesh (Left), $170$ DOFs, to the
+                 $25^{th}$ Adaptive mesh (Right), $17\, 456$ DoFs, for NSE with
+                 Drag Functional.}
+    \end{figure}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.5]{Figures/AdaptiveNSEDragRe100.png}
+        \caption{Adaptive error estimate versus ``true'' error for the solution
+            for the NSE with Drag Functional.}
+        \label{fig:NSEDrag_err}
+    \end{figure}
+\end{test}
+
+\begin{test}[NSE, Velocity Functional] \label{tst:Velocity}
+    For this test we choose the functional
+    \begin{equation}
+        M(\bar{U}^n) := \int_I\! \int_{\Omega}\! u\, d\mathbf{x}\, dt.
+        \label{eq:VelocityFunctional}
+    \end{equation}
+
+    \begin{figure}[h]
+        \centering
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{Initial mesh}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_mesh0.png}
+            }
+            \subcaptionbox{Primal solution at $t=10$.}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_u0.png}
+            }
+            \subcaptionbox{Error indicators}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_ei0.png}
+            }
+            \subcaptionbox{Dual solution at $t=0$.}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_uDual0.png}
+            }
+        \end{minipage}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{$25^{th}$ adaptive mesh}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_mesh25.png}
+            }
+            \subcaptionbox{Primal solution at $t=10$.}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_u25.png}
+            }
+            \subcaptionbox{Error indicators}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_ei25.png}
+            }
+            \subcaptionbox{Dual solution at $t=0$.}{
+                \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_uDual25.png}
+            }
+        \end{minipage}
+        \caption{Comparison of the Initial Mesh (Left), $170$ DOFs, to the
+                 $25^{th}$ Adaptive mesh (Right), $20\, 183$ DoFs, for NSE with
+                 Velocity Functional.}
+    \end{figure}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.5]{Figures/AdaptiveNSEVelocityRe100.png}
+        \caption{Adaptive error estimate versus ``true'' error for the solution
+            for the NSE equation with Velocity Functional.}
+        \label{fig:NSEVelocity_err}
+    \end{figure}
 
 \end{test}
 
