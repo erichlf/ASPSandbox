@@ -1,9 +1,10 @@
 In this section we present a detailed computational study of the automated
 goal-oriented adaptive algorithm presented in \autoref{sec:Algorithm} applied to
 some time-dependent test problems. To this end we first we apply our algorithm
-to a linear problem, \autoref{tst:Heat}, where the error representation is
-orthogonal due to Galerkin orthogonality. Namely, we demonstrate the
-effectiveness of \autoref{alg:Adaptivity} on the heat equation. Next we
+to a linear problem, first for a diffusion dominated problem,
+\autoref{tst:ADRk1E-1}, and then for a convection dominated problem,
+\autoref{tst:ADRk1E-5}.  Namely, we demonstrate the effectiveness of
+\autoref{alg:Adaptivity} on the Advection-Reaction-Diffusion equation. Next we
 demonstrate the effectiveness of \autoref{alg:Adaptivity} on non-linear
 problems, where the error representation is no longer orthogonal. To this end,
 we apply the algorithm to a benchmark problem presented in Sch\"afer et
@@ -14,82 +15,194 @@ to the ever more complex problem of Variable Density Incompressible
 Navier-Stokes equation, where we focus on the solution to Rayleigh-Taylor
 instability.
 
-For each test below we set the max number of iterations to $30$ and set the
-$TOL=0$. In this way we will treat the solution obtained from the final adaptive
-mesh as the so-called 'true solution' and use this solution to determine the
-effectivity of the adaptive algorithm.
+For each test below we set the max number of iterations to $25$ and set the
+$TOL=-1$. In this way we will treat the solution obtained from the final
+adaptive mesh as the so-called 'true solution' and use this solution to
+determine the effectivity of the adaptive algorithm.
 
-\subsection{Orthogonal Error Representation}
+\subsection{Linear Problems}
+    In this subsection we demonstrate the effectiveness of
+    \autoref{alg:Adaptivity} on linear PDEs. That is, we demonstrate that
+    \autoref{alg:Adaptivity}, performs better than the uniform refinement for
+    linear problems. To that end we apply the adaptive algorithm to
+    the Advection-Reaction-Diffusion equation (ADR).
 
-In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
-for problems where the global error representation is orthogonal. In these types
-of problems the traditional thought is that the error representation doesn't
-provide information about the error. However, in \autoref{tst:Heat}, we show
-that the local error representation does, indeed, contain significant
-information about the error and thus is an effective way of controlling the
-error.
+\subsubsection{Advection-Reaction-Diffusion Equation} \label{sss:ADR}
+    The ADR is a simple linear model of a reactive and diffusive flow.  In what
+    follows the parameters $\alpha,\,\beta$, and $\kappa$ represent the
+    reactivity, convective velocity vector, and diffusivity tensor,
+    respectively. Thus, for $t\in [0,T]$ and a domain $\Omega$ with boundary
+    $\partial \Omega$, the ADR is given by
+    \begin{equation}
+        \begin{split}
+            u_t + \nabla \left(\kappa\cdot \nabla u \right) + \beta \cdot \nabla
+                u + \alpha u = f,& \quad \mathbf{x} \in \omega, \\
+            u = g,& \quad \mathbf{x} \in \partial \omega, \\
+            u = 0,& \quad t = 0,\, \mathbf{x} \in \partial \omega,
+        \end{split}
+        \label{eq:ADR}
+    \end{equation}
+    where $f$ is the external forcing.
 
-\begin{test}[Anisotropic Heat Equation] \label{tst:Heat}
+    For this particular example we take the domain to be a square domain with a
+    center square removed. That is we take the outer square to be $\Omega_1$ and
+    the inner square to be $\Omega_2$ and the resulting domain $\Omega$ is given
+    by
+    \begin{equation}
+        \Omega = \Omega_1\setminus \Omega_2,
+        \label{eq:ADRDomain}
+    \end{equation}
+    and then the boundary $\partial \Omega$ is defined as
+    \begin{equation}
+        \partial \Omega = \partial \Omega_1 + \partial \Omega_2,
+        \label{eq:ADRBoundary}
+    \end{equation}
+    where $\partial \Omega_1$ is the boundary of $\Omega_1$ and $\partial
+    \Omega_2$ is the boundary of $\Omega_2$ (see \autoref{fig:ADRDomain}.
 
-  The heat equation is a purely parabolic linear partial differential equation
-  and therefore the global error representation is zero due to Galerkin
-  Orthogonality.  Thus it is an excellent choice to demonstrate the
-  effectiveness of the algorithm described in \autoref{sec:Algorithm}.
+    \begin{figure}[h]
+        \centering
+        \tikzstyle{next}=[->, thick, shorten <=1pt, shorten >=1pt]
+        \begin{tikzpicture}[scale=6]
+            \draw (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+            \draw (0.4,0.4) -- (0.6,0.4) -- (0.6,0.6) -- (0.4,0.6) -- cycle;
+            \node (Omega_2) at (0.5,0.5) {$\Omega_2$};
+            \node (dOmega_2) at (0.5,0.65) {$\partial\Omega_2$};
+            \node (Omega_1) at (0.25,0.25) {$\Omega_1$};
+            \node (dOmega_1) at (0.5,0.05) {$\partial\Omega_1$};
+        \end{tikzpicture}
+        \caption{Problem Geometry, $\Omega$, for ADR small hole problem.}
+        \label{fig:ADRDomain}
+    \end{figure}
 
-  In this test problem we extend the test given by Li et al.
-  \cite[Example 5.1]{Li2010}, i.e. the anisotropic diffusion equation, to the
-  time dependent case. Thus we are concerned with the numerical solution of the
-  anisotropic heat equation on a domain with a hole given by
-  \begin{equation} \label{eqn:Heat}
+    Furthermore, in this example we will take the subdomains to be $\Omega_1 =
+    [0,1]^2$ and $\Omega_2 = [0.48,0.52]^2$. With these subdomains defined we
+    take the boundary condition to be
+    \begin{equation}
+        g = \begin{cases}
+            0   &\mathbf{x} \in \partial \Omega_1 \\
+            5 + 5\, \sin \pi\, t  &\mathbf{x} \in \partial \Omega_2
+        \end{cases}.
+        \label{eq:ADRBCs}
+    \end{equation}
+    Finally we take the final time $T=10,\, \alpha=1,\, \beta = \left[ -1,
+    -0.61 \right]$, and $\kappa = 1\times10^{-5}$.
+
+    We will discretize ADR using a Galerkin\slash Least-Squares (GLS) stabilized
+    $cG(1)cG(1)$finite element, where the first cG(1) indicates that the test and
+    trial functions are both piecewise linear, while the second cG(1) indicates
+    that the test piecewise constants and the trial functions are continuous
+    piecewise linear (see \cite{Hoffman2006a} for more details).
+
+    Given a step size $k$ and applying the $cG(1)cG(1)$finite element
+    discretization to \eqref{eq:ADR} with $v \in X \subset H^1_0(\Omega)$ gives
+    the following weak residual
+    \begin{equation}
     \begin{split}
-      u_t - \nabla \cdot (\kappa \nabla u) &= f, \quad \text{in } \Omega \\
-      u &= g, \quad \text{on } \partial \Omega \\
-      u(x,y,0) &= u_0(x,y)
+        r(\bar{u}^n; v) &= \left(u^n - u^{n-1}\right)\,k^{-1}
+            + (\kappa \nabla \bar{u}^n, \nabla v)
+            + (\beta \cdot \nabla \bar{u}^n, v) + (\alpha u, v) - (f, v) = 0
     \end{split}
-  \end{equation}
-  where $\Omega = \Omega_1\setminus~\Omega_2$ is the physical domain, $f$ is the
-  forcing function, $g$ is the function describing the boundary condition, and
-  $\kappa$ is the diffusion tensor. For this test we take $\Omega_1 = [0,
-  1]^2$, $\Omega_2 = [\frac{4}{9}, \frac{5}{9}]^2$, $f = 0$
-  \begin{equation}
-    g = \begin{cases}
-        0 & \text{if } (x,y) \in \partial \Omega_1 \\
-        0.5 - 0.5\, \cos(10\, t) & \text{if } (x,y) \in \partial \Omega_2,
-    \end{cases}
-    \label{eqn:BCFunction}
-  \end{equation}
-  and the diffusion tensor to be
-  \begin{equation}
-    \kappa = \begin{bmatrix} 500.5 & 499.5 \\ 499.5 & 500.5 \end{bmatrix}.
-    \label{eqn:DiffusionTensor}
-  \end{equation}
-  The above diffusion tensor results in a diffusion process which is
-  preferential along the line $x = y$.
+    \label{eqn:WeakADR}
+    \end{equation}
+    where $\bar{u}^n = \frac{1}{2}\left(u^n + u^{n-1}\right)$. Given the
+    solution $u$, since the elements we are concerned with (cG(1)cG(1)) have
+    test functions which are linear in space and constant in time the strong
+    residual is given by
+    \begin{equation}
+        R(u) = \alpha u + \beta \cdot \nabla u - f
+    \label{eqn:StrongADR}
+    \end{equation}
+    Finally, the GLS stabilized $cG(1)cG(1)$discretization of \eqref{eq:ADR} is
+    given by
+    \begin{equation}
+        r(\bar{u}^n,v) + SD_{\delta}^n(\bar{u}^n,v) = 0,
+            \quad \forall v \in X.
+        \label{eqn:G2ADR}
+    \end{equation}
+    Here $SD_{\delta}^n$ is the GLS stabilization and is given by
+    \begin{equation}
+        SD_{\delta}^n(\bar{u}^n, v) \equiv \delta \left(R(\bar{u}^n), R(v)
+            + f\right)
+    \label{eq:ADRStabilization}
+    \end{equation}
+    where
+    \begin{equation}
+        \delta = \begin{cases}
+            \frac{h^2}{\|\beta\|} & \text{if } h \le \kappa \\
+            \frac{h}{\|\beta\|} & \text{otherwise}
+        \end{cases}
+        \label{eq:ADRdelta}
+    \end{equation}
+    Additionally, we take the time-step to be
+    \begin{equation*}
+        k = CFL\, \min_{\mathcal{T}_K}(h),
+    \end{equation*}
+    where $CFL=100$.
 
-  Taking $u^n \in H^1_g(\Omega)$ and applying a cG(1) finite element
-  discretization, i.e. piecewise linear test and trial functions, with implicit
-  Euler time-stepping to \eqref{eqn:Heat} results in the following weak residual
-  \begin{equation}
-    r(u^n, v) = (u^n - u^{n-1})\, k^{-1} + (\kappa \nabla u^n, \nabla v)
-      - (f, v) = 0, \quad \forall v \in H^1_0(\Omega)
-    \label{eqn:HeatWeak}
-  \end{equation}
+\begin{test}[Diffusion Dominated, $\kappa = 0.1$] \label{tst:ADRk1E-1}
+\end{test}
+
+\begin{test}[Convection Dominated, $\kappa = 1\times10^{-5}$] \label{tst:ADRk1E-5}
+
+    \begin{figure}[h]
+        \centering
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{Initial mesh, $190$ DoFs.}{
+                \includegraphics[scale=0.09]{Figures/AdaptiveADRkappa1E-5_mesh0.png}
+            }
+            \subcaptionbox{Primal solution, $190$ DoFs, at $t=10$.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_u0.png}
+            }
+            \subcaptionbox{Error indicators, $190$ DoFs.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_ei0.png}
+            }
+            \subcaptionbox{Dual solution at $t=10$, $190$ DoFs.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_uDual0.png}
+            }
+        \end{minipage}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{$25^{th}$ mesh, $39\, 044$ DoFs.}{
+                \includegraphics[scale=0.09]{Figures/AdaptiveADRkappa1E-5_mesh25.png}
+            }
+            \subcaptionbox{Primal solution, $39\, 044$ DoFs, at $t=10$.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_u25.png}
+            }
+            \subcaptionbox{Error indicators, $39\, 044$ DoFs.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_ei25.png}
+            }
+            \subcaptionbox{Dual solution, $39\, 044$ DoFs, at $t=10$.}{
+                \includegraphics[scale=0.1]{Figures/AdaptiveADRkappa1E-5_uDual25.png}
+            }
+        \end{minipage}
+        \caption{Results for ADR Small Hole problem with
+            $\kappa=1\times10^{-5}$.}
+    \end{figure}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-5.png}
+        \caption{Adaptive error estimate versus ``true'' error for the solution
+            for the ADR equation.}
+        \label{fig:ADR_err}
+    \end{figure}
 
 \end{test}
 
-\subsection{Non-Orthogonal Error Representation}
+\subsection{Non-Linear Problems}
+
+\subsubsection{Navier-Stokes}
 
 In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
-applied to problems where the global error representation is no longer
-orthogonal. In particular, we look at applying \autoref{alg:Adaptivity} to the
-Incompressible Navier-Stokes and the Variable Density Incompressible
-Navier-Stokes. In both cases, we solve each test case using a
-Galerkin\slash~Least-Squares (GLS) stabilized cG(1)cG(1) finite element, where
-the first cG(1) indicates that the test and trial functions are both piecewise
-linear, while the second cG(1) indicates that the test piecewise constants and
-the trial functions are continuous piecewise linear.
-
-\subsubsection{Incompressible Navier-Stokes}
+applied to problems where the with non-linear terms. In particular, we look at
+applying \autoref{alg:Adaptivity} to the Incompressible Navier-Stokes and the
+Variable Density Incompressible Navier-Stokes. In both cases, we solve each test
+case using a Galerkin\slash~Least-Squares (GLS) stabilized $cG(1)cG(1)$finite
+element, where the first cG(1) indicates that the test and trial functions are
+both piecewise linear, while the second cG(1) indicates that the test piecewise
+constants and the trial functions are continuous piecewise linear.
 
 For the test problem \ref{tst:Cylinder2D} we are concerned with the
 Incompressible Navier-Stokes with constant kinematic viscosity, $\nu>0$, in a
@@ -103,7 +216,7 @@ strong residual is given by
     \end{split}
   \label{eqn:NSE}
 \end{equation}
-Given a step size $k$ and applying the cG(1)cG(1) finite element discretization
+Given a step size $k$ and applying the $cG(1)cG(1)$finite element discretization
 to \autoref{eqn:NSE} with $V = (v, q) \in X \subset [H^1_0(\Omega)]^d \times
 H^1(\Omega)$ gives the following weak residual
 \begin{equation}
@@ -222,7 +335,7 @@ fluid velocity in 2D, $p$ is the fluid pressure, $\mathbf{f}$ is the
 external forcing, and $\nu := \nicefrac{\mu}{\rho}$ is the kinematic viscosity,
 which we will assume to be constant for these tests.
 
-Again, we take a step size of $k$ and apply the cG(1)cG(1) finite
+Again, we take a step size of $k$ and apply the $cG(1)cG(1)$finite
 element to \autoref{eq:DensityNSE}, however this time we use a different
 stabilization scheme. For the variable density Navier-Stokes equations we
 choose to use artificial viscosity as our stabilization scheme. Thus, taking
