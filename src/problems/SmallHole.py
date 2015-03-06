@@ -52,8 +52,8 @@ class Problem(ProblemBase):
             domain = options['initial_mesh']
             self.mesh = Mesh(domain)
         except:
-            outerRect = Rectangle(Xmin, Ymin, Xmax, Ymax)
-            innerRect = Rectangle(xmin, ymin, xmax, ymax)
+            outerRect = Rectangle(Point(Xmin, Ymin), Point(Xmax, Ymax))
+            innerRect = Rectangle(Point(xmin, ymin), Point(xmax, ymax))
             domain = outerRect - innerRect
             self.mesh = generate_mesh(domain, self.Nx)
 
