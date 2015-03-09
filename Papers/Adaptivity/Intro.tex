@@ -1,0 +1,69 @@
+Systems of \emph{Partial Differential Equations} (PDEs) describe the world we
+live in, however obtaining accurate solutions to such systems can be quite
+challenging. Thus, it is pivotal to be able to determine the quality of computed
+solutions. Due to the challenging nature of automatically accessing the quality
+of such solutions it is very typical for the quality to be accessed manually by
+the scientist/engineer running the simulation. Not only is this approach
+unreliable, but is also time consuming.
+
+\emph{Goal oriented mesh adaptivity} has the potential to mitigate such
+problems.  Goal oriented mesh adaptivity is based on an {\it a posteriori} error
+estimates, where the error in a output quantity of interest (goal functional) is
+minimized using duality techniques. The method of using {\it a posteriori} error
+estimation using a duality argument has been developed since the 1970s and 1980s
+(see \cite{Babuska1978, Babuska1981, Verfurth1989} for some examples).  In this
+technique the adaptive algorithm will attempt to optimize the mesh so as to
+minimize the error in some goal functional, thus minimizing the computational
+cost while minimizing errors in the quantity of interest. Typically this is
+accomplished by iteritively refining the mesh in areas where \emph{error
+indicators}, which characterises the contribution of the global error to some
+goal functional, are greatest. To obtain the error indicators one solves an
+auxilary problem, based on the linear dual (adjoint) problem.
+
+Although, adaptive finite elements are becoming more and more widespread
+across many different fields \cite{Eriksson1995, Behrens1998, Becker2001,
+Rognes2010, Hoffman2011, Izarra2014, Jansson2014a}, the simplicity and
+generality of the method is still lacking. That is, the current state of goal
+oriented adaptivity is relegated to experts, because an {\it a posteriori}
+analysis must be performed on each problem. This {\it a posteriori} error
+estimate takes the form of an inner product of a dual problem, which the
+\emph{Finite Element Method} (FEM) is adapted well to. However, due to Galerkin
+orthogonality the inner product representing the error vanishes, which seems to
+suggest the global error is zero. However, this is clearly not the case. To
+avoid this problem one can use one of two different standard approaches:
+\begin{inparaenum}[(i)]
+    \item \label{enu:Spaces} by taking the dual and primal problems to be
+        in different spaces, or
+    \item \label{enu:CS} by projecting the dual problem onto the finite
+        element space and then using Cauchy-Schwarz inequality together with
+        interpolation error estimates to bound the local error on each
+        element.
+\end{inparaenum}
+Each of these methods present their own drawbacks and both present a lack of
+simplicity and generality: (\ref{enu:Spaces}) results in increased computational
+cost and therefore less efficient, and (\ref{enu:CS}) lacks sharpnesss and
+therefore results in a method which is less efficiency and less reliable
+\cite{Jansson2014b}.
+
+In \cite{Jansson2014a, Jansson2014b} they present a novel approach to goal
+oriented mesh adaptivity for stationary problems, which uses the {\it a
+posteriori} error representation directly with the dual and primal problems in
+the same space. The error representation has typically been considered to
+contain no real information with respect to the {a posteriori} error, however
+they show that, in fact, the error representation does contain valuable
+information. Additionally, this approach avoids the drawbacks of both
+(\ref{enu:Spaces}) and (\ref{enu:CS}), while offering a general and simple
+method. Thereby, offering a method which is efficient and accessible to
+non-experts.
+
+It is our goal in this paper to extend the novel approach for stationary
+problems developed in \cite{Jansson2014a, Jansson2014b} to time-dependent
+problem, whereby goal oriented adaptivity can be automated, requiring minimal
+user input, thus  saving scientists/engineers many hours of times. Therefore, we
+will make goal oriented mesh adaptivity accessible by scientists/engineers who
+are not experts in this area. To this end we present our algorithm in
+\autoref{sec:Algorithm}, and then we present a few numerical experiments in
+\autoref{sec:Results}, based in DOLFIN\cite{Alnae2011} and using
+DOLFIN-Adjoint\cite{Ham2012} for the automated calculation of the adjoint
+problem, to demonstrate the effectiveness of the algorithm. Finally, we make our
+concluding remarks and observations in \autoref{sec:Conclusions}.

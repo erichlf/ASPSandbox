@@ -7,13 +7,10 @@ to a linear problem, first for a diffusion dominated problem,
 \autoref{alg:Adaptivity} on the Advection-Reaction-Diffusion equation. Next we
 demonstrate the effectiveness of \autoref{alg:Adaptivity} on non-linear
 problems, where the error representation is no longer orthogonal. To this end,
-we apply the algorithm to a benchmark problem presented in Sch\"afer et
+we apply the algorithm to a benchmark problem presented in Sch{\"a}fer et
 al.\cite{Schaefer1996}, \autoref{tst:Drag} and \autoref{tst:Velocity}, where the
 equation of interest is the Icompressible Navier-Stokes equation and our
-particular focus is on flow around a bluff body.  Finally, in
-\autoref{tst:rhoNSE}, we apply our algorithm to the ever more complex problem of
-Variable Density Incompressible Navier-Stokes equation, where we focus on the
-solution to Rayleigh-Taylor instability.
+particular focus is on flow around a bluff body.
 
 For each test below we set the max number of iterations to $25$ and set the
 $TOL=-1$. In this way we will treat the solution obtained from the final
@@ -25,14 +22,14 @@ determine the effectivity of the adaptive algorithm.
     \autoref{alg:Adaptivity} on linear PDEs. That is, we demonstrate that
     \autoref{alg:Adaptivity}, performs better than the uniform refinement for
     linear problems. To that end we apply the adaptive algorithm to
-    the Advection-Reaction-Diffusion equation (ARD).
+    the Advection-Reaction-Diffusion equation (ADR).
 
 \subsubsection{Advection-Reaction-Diffusion Equation} \label{sss:ADR}
-    The ARD is a simple linear model of a reactive and diffusive flow.  In what
+    The ADR is a simple linear model of a reactive and diffusive flow.  In what
     follows the parameters $\alpha,\,\beta$, and $\kappa$ represent the
     reactivity, convective velocity vector, and diffusivity tensor,
     respectively. Thus, for $t\in [0,T]$ and a domain $\Omega$ with boundary
-    $\partial \Omega$, the ARD is given by
+    $\partial \Omega$, the ADR is given by
     \begin{equation}
         \begin{split}
             u_t + \nabla \left(\kappa\cdot \nabla u \right) + \beta \cdot \nabla
@@ -71,7 +68,7 @@ determine the effectivity of the adaptive algorithm.
             \node (Omega_1) at (0.25,0.25) {$\Omega_1$};
             \node (dOmega_1) at (0.5,0.05) {$\partial\Omega_1$};
         \end{tikzpicture}
-        \caption{Problem Geometry, $\Omega$, for ARD small hole problem.}
+        \caption{Problem Geometry, $\Omega$, for ADR small hole problem.}
         \label{fig:ADRDomain}
     \end{figure}
 
@@ -88,7 +85,7 @@ determine the effectivity of the adaptive algorithm.
     Finally we take the final time $T=10,\, \alpha=1,\, \beta = \left[ -1,
     -0.61 \right]$, and $\kappa = 1\times10^{-5}$.
 
-    We will discretize ARD using a Galerkin\slash Least-Squares (GLS) stabilized
+    We will discretize ADR using a Galerkin\slash Least-Squares (GLS) stabilized
     $cG(1)cG(1)$finite element, where the first cG(1) indicates that the test and
     trial functions are both piecewise linear, while the second cG(1) indicates
     that the test piecewise constants and the trial functions are continuous
@@ -140,7 +137,7 @@ determine the effectivity of the adaptive algorithm.
     \end{equation*}
     where $C_{CFL}=100$.
 
-\begin{test}[Diffusion Dominated ARD, $\kappa = 0.1$] \label{tst:ADRk1E-1}
+\begin{test}[Diffusion Dominated ADR, $\kappa = 0.1$] \label{tst:ADRk1E-1}
     As a first test we take
     \begin{align*}
         \alpha &= 1, \\
@@ -185,7 +182,7 @@ determine the effectivity of the adaptive algorithm.
             }
         \end{minipage}
         \caption{Comparison of the Initial Mesh (Left), $190$ DOFs, to the
-                 $25^{th}$ Adaptive mesh (Right), $7\, 906$ DoFs, for ARD with
+                 $25^{th}$ Adaptive mesh (Right), $7\, 906$ DoFs, for ADR with
                  $\kappa=0.1$.}
     \end{figure}
 
@@ -193,13 +190,13 @@ determine the effectivity of the adaptive algorithm.
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
-            for the ARD equation with $\kappa=0.1$.}
+            for the ADR equation with $\kappa=0.1$.}
         \label{fig:ADRk1E-1_err}
     \end{figure}
 \end{test}
 
-\begin{test}[Convection Dominated ARD, $\kappa = 1\times10^{-5}$] \label{tst:ADRk1E-5}
-    In this test we simulate the ARD using convection dominated parameters, i.e.
+\begin{test}[Convection Dominated ADR, $\kappa = 1\times10^{-5}$] \label{tst:ADRk1E-5}
+    In this test we simulate the ADR using convection dominated parameters, i.e.
     \begin{align*}
         \alpha &= 1, \\
         \kappa &= 1\time 10^{-5}, \\
@@ -260,7 +257,7 @@ determine the effectivity of the adaptive algorithm.
             }
         \end{minipage}
         \caption{Comparison of the Initial Mesh (Left), $190$ DOFs, to the
-                 $25^{th}$ Adaptive mesh (Right), $39\, 044$ DoFs, for ARD with
+                 $25^{th}$ Adaptive mesh (Right), $39\, 044$ DoFs, for ADR with
                  $\kappa=1\times 10^{-5}$.}
     \end{figure}
 
@@ -268,7 +265,7 @@ determine the effectivity of the adaptive algorithm.
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-5.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
-            for the ARD equation with $\kappa=1\times 10^{-5}$.}
+            for the ADR equation with $\kappa=1\times 10^{-5}$.}
         \label{fig:ADRk1E-5_err}
     \end{figure}
 
@@ -276,7 +273,7 @@ determine the effectivity of the adaptive algorithm.
 
 \subsection{Non-Linear Problems}
 
-\subsubsection{Navier-Stokes}
+\subsubsection{Incompressible Navier-Stokes}
 
 In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
 applied to problems where the with non-linear terms. In particular, we look at
@@ -332,7 +329,7 @@ Finally, the GLS-cG(1)cG(1) discretization of \eqref{eqn:NSE} is given by
 \end{equation}
 Here $SD_{\delta}^n$ is the GLS stabilization and is given by
 \begin{equation}
-  SD_{\delta}^n \equiv
+    SD_{\delta}^n(\bar{u}^n, V) \equiv
     \delta_1 (\left(\bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n
         + \nabla p^n - \mathbf{f},
       \left(\bar{\mathbf{u}}^n \cdot \nabla \right) v + \nabla q)
@@ -347,7 +344,7 @@ constants of unit size. For each test case below we take the time-step to be
 \end{equation*}
 where $C_{CFL}=100$.
 
-This following test cases are based on a benchmark problem from Sch\"afer and
+The following test cases are based on a benchmark problem from Sch\"afer and
 Turek \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
 rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For the
 inlet boundary condition we take
@@ -387,6 +384,8 @@ Reynolds number of $Re=100$.
 \end{figure}
 
 \begin{test}[NSE, Drag Functional] \label{tst:Drag}
+    In this first test for NSE, we look at the drag functional as our quantity
+    of interest, i.e.
     \begin{equation}
         M(\bar{U}^n) := \int_I\! C_D\, dt,
         \label{eq:DragFunctional}
@@ -401,36 +400,54 @@ Reynolds number of $Re=100$.
             \int_{\partial \Omega_1}\! (p\, \mathbf{I} - \nu \nabla
                 \mathbf{u})\cdot \mathbf{n}\, ds.
     \end{equation*}
+    Drag is a very localized quantity and thus we expect most of the refinement
+    to occur around the bluff body (the cylinder), which is clearly the result
+    of the goal oriented refinement and can be seen in when comparing
+    \autoref{sfig:NSEDrag_mesh0} and \autoref{sfig:NSEDrag_mesh25}.
+    Additionally, we see that the error in the goal functional is smaller for
+    our adaptive refinement algorithm as compared to uniform refinement (see
+    \autoref{fig:NSEDrag_err}).
+
+    However, we must note that the K\'arm\'an Vortex Street expected for these
+    types of flows did not form (see \autoref{sfig:NSEDrag_u25}. This is due to
+    the fact there was essentially no refinement downstream of the bluff body,
+    resulting in a higher viscosity (lower Reynolds number) downstream due to
+    the stabilization used. Recall, the stabilization terms add viscosity
+    proportional to the mesh size, and thus we see that in areas with a large
+    mesh size we have more diffusion and a vortex street is unable to form. We
+    can test this by looking at a different functional, such as the horizontal
+    velocity (see \autoref{tst:Velocity}).
 
     \begin{figure}[h]
         \centering
         \begin{minipage}[t]{0.49\textwidth}
             \centering
-            \subcaptionbox{Initial mesh}{
+            \subcaptionbox{Initial mesh\label{sfig:NSEDrag_mesh0}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_mesh0.png}
             }
-            \subcaptionbox{Primal solution at $t=10$.}{
+            \subcaptionbox{Primal solution at $t=10$. \label{sfig:NSEDrag_u0}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_u0.png}
             }
-            \subcaptionbox{Error indicators}{
+            \subcaptionbox{Error indicators \label{sfig:NSEDrag_ei0}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_ei0.png}
             }
-            \subcaptionbox{Dual solution at $t=0$.}{
+            \subcaptionbox{Dual solution at $t=0$. \label{sfig:NSEDrag_uDual0}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_uDual0.png}
             }
         \end{minipage}
         \begin{minipage}[t]{0.49\textwidth}
             \centering
-            \subcaptionbox{$25^{th}$ adaptive mesh}{
+            \subcaptionbox{$25^{th}$ adaptive mesh \label{sfig:NSEDrag_mesh25}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_mesh25.png}
             }
-            \subcaptionbox{Primal solution at $t=10$.}{
+            \subcaptionbox{Primal solution at $t=10$.\label{sfig:NSEDrag_u25}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_u25.png}
             }
-            \subcaptionbox{Error indicators}{
+            \subcaptionbox{Error indicators \label{sfig:NSEDrag_ei25}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_ei25.png}
             }
-            \subcaptionbox{Dual solution at $t=0$.}{
+            \subcaptionbox{Dual solution at $t=0$.
+                \label{sfig:NSEDrag_uDual25}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEDragRe100_uDual25.png}
             }
         \end{minipage}
@@ -454,36 +471,53 @@ Reynolds number of $Re=100$.
         M(\bar{U}^n) := \int_I\! \int_{\Omega}\! u\, d\mathbf{x}\, dt.
         \label{eq:VelocityFunctional}
     \end{equation}
+    This functional is not considered to be a localized quantity and thus we
+    expect the adaptive refinement to be quite similar to the uniform
+    refinement, which indeed it is quite similar as can be seen by comparing
+    \autoref{sfig:NSEVelocity_mesh0} and \autoref{sfig:NSEVelocity_mesh25}.
+    Additionally, due to the non-local nature of the velocity functional
+    we expect that the error associated with the adaptive refinement to
+    not be significantly different from the error associated with
+    uniform refinement, which can be seen in \autoref{fig:NSEVelocity_err}.
+    However, this functionally does produce the expected K\'arm\'an Vortex
+    Street as can be seen in \autoref{sfig:NSEVelocity_u25}, however this vortex
+    street is not present in the initial solution (see
+    \autoref{sfig:NSEVelocity_u0}.
 
     \begin{figure}[h]
         \centering
         \begin{minipage}[t]{0.49\textwidth}
             \centering
-            \subcaptionbox{Initial mesh}{
+            \subcaptionbox{Initial mesh \label{sfig:NSEVelocity_mesh0}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_mesh0.png}
             }
-            \subcaptionbox{Primal solution at $t=10$.}{
+            \subcaptionbox{Primal solution at $t=10$.
+                \label{sfig:NSEVelocity_u0}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_u0.png}
             }
-            \subcaptionbox{Error indicators}{
+            \subcaptionbox{Error indicators \label{sfig:NSEVelocity_ei0}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_ei0.png}
             }
-            \subcaptionbox{Dual solution at $t=0$.}{
+            \subcaptionbox{Dual solution at $t=0$.
+                \label{sfig:NSEVelocity_uDual0}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_uDual0.png}
             }
         \end{minipage}
         \begin{minipage}[t]{0.49\textwidth}
             \centering
-            \subcaptionbox{$25^{th}$ adaptive mesh}{
+            \subcaptionbox{$25^{th}$ adaptive mesh
+            \label{sfig:NSEVelocity_mesh25}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_mesh25.png}
             }
-            \subcaptionbox{Primal solution at $t=10$.}{
+            \subcaptionbox{Primal solution at $t=10$.
+                \label{sfig:NSEVelocity_u25}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_u25.png}
             }
-            \subcaptionbox{Error indicators}{
+            \subcaptionbox{Error indicators \label{sfig:NSEVelocity_ei25}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_ei25.png}
             }
-            \subcaptionbox{Dual solution at $t=0$.}{
+            \subcaptionbox{Dual solution at $t=0$.
+                \label{sfig:NSEVelocity_uDual25}}{
                 \includegraphics[scale=0.15]{Figures/AdaptiveNSEVelocityRe100_uDual25.png}
             }
         \end{minipage}
@@ -502,88 +536,3 @@ Reynolds number of $Re=100$.
 
 \end{test}
 
-\subsubsection{Variable Density Incompressible Navier-Stokes}
-
-In this subsection we again will demonstrate the effectiveness of
-\autoref{alg:Adaptivity}, but this time we apply the algorithm to a density
-dependent problem. More specifically, in \autoref{tst:rhoNSE} we look at the
-effectiveness of \autoref{alg:Adaptivity} applied to Rayleigh-Taylor instability
-modelled by the variable density incompressible Navier-Stokes equations, i.e.
-\begin{equation}
-    \begin{split}
-        &\rho_t + \nabla \cdot \left( \rho \mathbf{u} \right) = 0 \\
-        &\rho \left( \mathbf{u}_t
-            + \left( \mathbf{u}\cdot \nabla \right) \mathbf{u} \right)
-            - \nu \Delta \mathbf{u} + \nabla p = \rho\, \mathbf{f} \\
-        &\nabla \cdot \mathbf{u} = 0,
-    \end{split}
-    \label{eq:DensityNSE}
-\end{equation}
-where $\rho$ is the fluid density, $\mathbf{u} = \left[ u, v \right]^T$ is the
-fluid velocity in 2D, $p$ is the fluid pressure, $\mathbf{f}$ is the
-external forcing, and $\nu := \nicefrac{\mu}{\rho}$ is the kinematic viscosity,
-which we will assume to be constant for these tests.
-
-Again, we take a step size of $k$ and apply the $cG(1)cG(1)$finite
-element to \autoref{eq:DensityNSE}, however this time we use a different
-stabilization scheme. For the variable density Navier-Stokes equations we
-choose to use artificial viscosity as our stabilization scheme. Thus, taking
-$V = (v, q, \chi) \in X = \left[ H^1_0(\Omega) \right]^2 \times H^1(\Omega)
-\times H^1(\Omega)$ results in the following weak residual
-\begin{equation}
-    \begin{split}
-        r(\bar{U}^n; V) &= (\rho^n - \rho^{n-1}, \chi)
-            + (\nabla \cdot \left( \bar{\rho}^n \bar{\mathbf{u}}^n \right), \chi) \\
-        &\qquad+  \rho\, \left(\left(\mathbf{u}^n
-                - \mathbf{u}^{n-1}, v\right)\,k^{-1}
-            + (\left( \bar{\mathbf{u}}^n \cdot \nabla \right)
-                \bar{\mathbf{u}}^n, v)\right) \\
-        &\qquad+ \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
-            + (\nabla p^n, v) - \rho\, (\mathbf{f}, v) \\
-        &\qquad+ (\nabla \cdot \bar{\mathbf{u}}^n, v) = 0
-    \end{split}
-    \label{eq:WeakRhoNSE}
-\end{equation}
-
-\begin{test}[Rayleigh-Taylor Instability] \label{tst:rhoNSE}
-
-    Variable density flows are valid for a wide range of natural phenomena such
-    as, but not limited to: astrophysical flows, oceanic flows, atmospheric
-    flows, and combustion. When the fluid is accelerated against the density
-    gradient fluid instability is generated and small perturbations in the fluid
-    interface grow and interact non-linearly resulting in turbulence.  This
-    process is known as Rayleigh-Taylor (RT) instability and will be the focus of
-    this particular test.
-
-    For RT flows the primary non-dimensional parameter characterizing
-    differential acceleration effects is the Atwood number:
-    \begin{equation}
-        A := \frac{\rho_2 - \rho_1}{\rho_2 + \rho_1}.
-        \label{eq:Atwood}
-    \end{equation}
-    Thus for $\rho_1 = 1$ and $\rho_2 = 3$ the corresponding Atwood number would
-    be $A = 0.5$. In addition to the Atwood number we can define two additional
-    non-dimensional parameters, such as the Reynolds number, $Re$, and the
-    Froude number, $Fr$:
-    \begin{equation}
-        Re = \frac{L U}{\nu}, \qquad Fr = \frac{U}{\sqrt{g\, L}},
-        \label{eq:Re+Fr}
-    \end{equation}
-    where $g$ is the acceleration due to gravity, $L$ is the characteristic
-    wavelength, $U$ is the reference velocity, $\nu$ again is the kinematic
-    viscosity. With these scales defined as above we can then define the
-    characteristic time scale, $\tau = \sqrt{\nicefrac{L}{(A\, g)}}$.
-
-    For this test we must be careful when choosing our goal functional. Certain
-    functionals may provide no useful information. For this reason we choose the
-    following functional
-    \begin{equation}
-        M(\bar{U}^n) := \int_I\! \int_{\Omega}\! u + v\, d\mathbf{x}\, dt,
-        \label{eq:FunctionalRhoNSE}
-    \end{equation}
-    which was shown to be as effective as $\int_I \int_{\Omega} \rho\,
-    d\mathbf{x}\, dt$ in \cite{Izarra2014}. This is important since the scheme
-    above is mass preserving and thus no information is gained from the density
-    functional.
-
-\end{test}
