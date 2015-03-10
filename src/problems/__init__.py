@@ -10,6 +10,7 @@ problems = [
     'Cube',
     'Cylinder',
     'Dam',
+    'DamBreak',
     'DoubleGyre',
     'Drop',
     'Duct',
