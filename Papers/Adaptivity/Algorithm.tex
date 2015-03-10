@@ -1,3 +1,57 @@
+In this section we initially assume a general linear variational problem of the
+form:
+\begin{equation}
+    \begin{split}
+        &\text{find } u \in V \text{ such that} \\
+        r(u, v) &:= a(u, v) - L(v) = 0 \quad \forall v \in V,
+    \end{split}
+    \label{eq:WeakResidual}
+\end{equation}
+where $a(\cdot, \cdot)$ and $L(v)$ are the bilinear and linear forms associated
+with the variational problem, while $r(\cdot, \cdot)$ is the weak-residual.
+While we assume the forms are linear the extension to non-linear problems is
+quite straightforward.
+
+Additionally, given the primal problem, \eqref{eq:WeakResidual}, then we assume
+the dual solution is given by:
+\begin{equation*}
+    \begin{split}
+        &\text{find } \Phi \in V^* \text{ such that} \\
+        r(v, \Phi) &:= a(v, \Phi) - (v, \psi) = 0 \quad \forall v \in V,
+    \end{split}
+\end{equation*}
+where $\psi$ is the projection of the goal functional $M(\cdot) = (\cdot, \psi)$
+onto the finite element space $V$. In other words, given the solution $u$ to
+\eqref{eq:WeakResidual} we solve the problem
+\begin{equation}
+    \begin{split}
+        &\text{find } \Phi \in V^* \text{ such that} \\
+        r(v, \Phi) &:= a(v, \Phi) - M(u) = 0 \quad \forall v \in V.
+    \end{split}
+    \label{eq:Dual}
+\end{equation}
+
+Given the solution $u$ to the primal problem and $u^h$ the solution to the
+discrete primal problem, while $\Phi$ is the solution to the dual problem then
+taking $v$ and $v^h$ to be $u$ and $u^h$, respectively, we can determine the
+error in the goal functional in the following manner
+\begin{align}
+    M(u) - M(u^h) &= a(u, \Phi) - a(u^h, \Phi) \nonumber \\
+    M(u - u^h) &= a(u - u^h, \Phi) \nonumber \\
+    M(e) &= 0 \label{eq:DualError}
+\end{align}
+where the last line, \eqref{eq:DualError} is due to Galerkin orthogonality. On
+the other hand we see
+\begin{align}
+    M(e) & = \cancelto{0}{a(u, \Phi) - L(\Phi)}
+             - \left( a(u^h, \Phi) - L(\Phi) \right) \nonumber \\
+    &= -r(u^h, \Phi). \label{eq:ErrorRepresentation}
+\end{align}
+Thus, it appears that the determining the error in a goal functional, $M(e)$, is
+equivalent to evaluating the weak residual, \eqref{eq:WeakResidual}, using the
+primal and dual solutions. However, due to Galerkin orthogonality the error
+representation, \eqref{eq:ErrorRepresntation} evaluates to zeo if the
+dual solution, $\Phi$, and the primal solution, $u^h$, are in the same space.
 
 \begin{algorithm}[!htp]
 \begin{minipage}[t]{\columnwidth} %this minipage is a hack to use footenotes
@@ -8,7 +62,7 @@
   \While{ $\left|\sum_{j=1}^M \mathcal{E}^{cG(1)}_{K_j}\right| > TOL$
     \footnote{Use $\left|M(U^k) - M(U^{k-1}\right| > \gamma TOL$ for orthogonal
     error representation.}}{
-      \nl For the mesh $\mathcal{T}_k$: compute the primal problem and the dual 
+      \nl For the mesh $\mathcal{T}_k$: compute the primal problem and the dual
             problem. \\
       \nl Mark some chosen percentage of the elements with highest
         $\mathcal{E}^{cG(1)}_{K_j}$ for refinement.\\
