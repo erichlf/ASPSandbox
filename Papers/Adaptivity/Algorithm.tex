@@ -64,13 +64,15 @@ and the primal solution, $u^h$, are in the same space.
     discretization of $r(u^h ,v^h) = (u^h_t, v^h) + a(u^h, v^h) - L(v^h)$.}
     \vspace{0.5em}
   \SetAlgoLined
-  \While{ $\left|\sum_{j=1}^M \mathcal{E}^{cG(1)}_{K_j}\right| > TOL$
+  \While{ $\left|\frac{1}{k} \sum\limits_{n=0}^{N} \sum\limits_{j=1}^M
+        \mathcal{E}^{cG(1)}_{K_j, n}\right| > TOL$
     \footnote{Use $\left|M(u^h) - M(u^{h-1})\right| > \gamma TOL$ for orthogonal
     error representation.}}{
       \nl For the mesh $\mathcal{T}_h$: compute the primal problem and the dual
             problem. \\
       \nl Mark some chosen percentage of the elements with highest
-        $\mathcal{E}^{cG(1)}_{K_j}$ for refinement.\\
+        $\frac{1}{k} \sum\limits_{n=0}^N \mathcal{E}^{cG(1)}_{K_j, n}$ for
+        refinement.\\
       \nl Generate the refined mesh $\mathcal{T}_{h+1}$, set $h = h + 1$
   }
 \end{minipage}
