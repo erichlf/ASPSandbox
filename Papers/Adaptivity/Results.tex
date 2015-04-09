@@ -86,41 +86,46 @@ determine the effectivity of the adaptive algorithm.
     -0.61 \right]$, and $\kappa = 1\times10^{-5}$.
 
     We will discretize ADR using a Galerkin\slash Least-Squares (GLS) stabilized
-    $cG(1)cG(1)$finite element, where the first cG(1) indicates that the test and
-    trial functions are both piecewise linear, while the second cG(1) indicates
-    that the test piecewise constants and the trial functions are continuous
-    piecewise linear (see \cite{Hoffman2006a} for more details).
+    $cG(1)cG(1)$ finite element, i.e. space-time finite elements with where the
+    first $cG(1)$ indicates that the test and trial functions are both piecewise
+    linear, while the second $cG(1)$ indicates that the test piecewise constants
+    and the trial functions are continuous piecewise linear (see
+    \cite{Hoffman2006a} for more details).
 
-    Given a step size $k$ and applying the $cG(1)cG(1)$finite element
-    discretization to \eqref{eq:ADR} with $v \in X \subset H^1_0(\Omega)$ gives
-    the following weak residual
+    Therefore given a time step $k$ and applying the $cG(1)cG(1)$ finite element
+    discretization to \eqref{eq:ADR} with test function $v^n_h \in W^h_n \subset
+    H^1_0(\Omega)$ we have the following finite element discretization
+    in residual form
     \begin{equation}
     \begin{split}
-        r(\bar{u}^n; v) &= \left(u^n - u^{n-1}\right)\,k^{-1}
-            + (\kappa \nabla \bar{u}^n, \nabla v)
-            + (\beta \cdot \nabla \bar{u}^n, v) + (\alpha u, v) - (f, v) = 0
+        &\hspace{8em}\text{Find } u^n_h \in W^h_n \text{ such that} \\
+        r(u^n_h; v^n_h) &= \left(u^n_h - u^{n-1}_h\right)\,k^{-1}
+            + (\kappa \nabla \bar{u}^n_h, \nabla v^n_h)
+            + (\beta \cdot \nabla \bar{u}^n_h, v^n_h)
+            + (\alpha \bar{u}^n_h, v^n_h) - (f, v^n_h) = 0
     \end{split}
     \label{eqn:WeakADR}
     \end{equation}
     where $\bar{u}^n = \frac{1}{2}\left(u^n + u^{n-1}\right)$. Given the
-    solution $u$, since the elements we are concerned with (cG(1)cG(1)) have
-    test functions which are linear in space and constant in time the strong
-    residual is given by
+    solution $u^n_h$, since the elements we are concerned with, $cG(1)cG(1)$
+    finite elements, have test functions which are linear in space and constant
+    in time the strong residual is given by
     \begin{equation}
-        R(u) = \alpha u + \beta \cdot \nabla u - f
+        R(u^n_h) = \alpha u^n_h + \beta \cdot \nabla u^n_h - f, \quad \forall
+            u^n_h \in W^h_n.
     \label{eqn:StrongADR}
     \end{equation}
-    Finally, the GLS stabilized $cG(1)cG(1)$discretization of \eqref{eq:ADR} is
+    Finally, the GLS stabilized $cG(1)cG(1)$ discretization of \eqref{eq:ADR} is
     given by
     \begin{equation}
-        r(\bar{u}^n,v) + SD_{\delta}^n(\bar{u}^n,v) = 0,
-            \quad \forall v \in X.
+        r(u^n_h, v^n_h) + SD_{\delta}^n(\bar{u}^n_h,v^n_h) = 0,
+            \quad \forall v^n_h \in W^h_n.
         \label{eqn:G2ADR}
     \end{equation}
     Here $SD_{\delta}^n$ is the GLS stabilization and is given by
     \begin{equation}
-        SD_{\delta}^n(\bar{u}^n, v) \equiv \delta \left(R(\bar{u}^n), R(v)
-            + f\right)
+        SD_{\delta}^n(\bar{u}^n_h, v^n_h) \equiv
+            \delta \left(R(\bar{u}^n_h), R(v^n_h) + f\right)
     \label{eq:ADRStabilization}
     \end{equation}
     where
@@ -279,7 +284,7 @@ In this subsection we demonstrate the effectiveness of \autoref{alg:Adaptivity}
 applied to problems where the with non-linear terms. In particular, we look at
 applying \autoref{alg:Adaptivity} to the Incompressible Navier-Stokes and the
 Variable Density Incompressible Navier-Stokes. In both cases, we solve each test
-case using a Galerkin\slash~Least-Squares (GLS) stabilized $cG(1)cG(1)$finite
+case using a Galerkin\slash~Least-Squares (GLS) stabilized $cG(1)cG(1)$ finite
 element, where the first cG(1) indicates that the test and trial functions are
 both piecewise linear, while the second cG(1) indicates that the test piecewise
 constants and the trial functions are continuous piecewise linear.
@@ -296,63 +301,68 @@ where the strong residual is given by
     \end{split}
   \label{eqn:NSE}
 \end{equation}
-Given a step size $k$ and applying the $cG(1)cG(1)$finite element discretization
-to \autoref{eqn:NSE} with $V = (v, q) \in X \subset [H^1_0(\Omega)]^d \times
-H^1(\Omega)$ gives the following weak residual
+Given a step size $k$ and applying the $cG(1)cG(1)$ finite element
+discretization to \autoref{eqn:NSE} with $V^n_h = (v^n_h, q^n_h) \in W^h_n
+\subset [H^1_0(\Omega)]^d \times H^1(\Omega)$ gives the following finite element
+formulation in weak residual form
 \begin{equation}
   \begin{split}
-    r(\bar{U}^n; V) &= \left(\mathbf{u}^n - \mathbf{u}^{n-1}, v\right)\,k^{-1}
-        + (\left( \bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n, v) \\
-        &\quad+ \nu\, (\nabla \bar{\mathbf{u}}^n, \nabla v)
-        + (\nabla p^n, v) - (\mathbf{f}, v)
-        + (\nabla \cdot \bar{\mathbf{u}}^n, v) = 0
+    &\text{Find } U^n_h = (\mathbf{u}^n_h, p^n_h) \in W^h_n \text{ such that} \\
+    r(\bar{U}^n_h; V^n_h) =& (\mathbf{u}^n_h - \mathbf{u}^{n-1}_h, v^n_h)\,k^{-1}
+        + (( \bar{\mathbf{u}}^n_h \cdot \nabla ) \bar{\mathbf{u}}^n_h, v^n_h) \\
+    &\quad+ \nu\, (\nabla \bar{\mathbf{u}}^n_h, \nabla v^n_h)
+        + (\nabla \bar{p}^n_h, v^n_h) - (\mathbf{f}, v^n_h)
+        + (\nabla \cdot \bar{\mathbf{u}}^n_h, v^n_h) = 0
   \end{split}
   \label{eqn:WeakNSE}
 \end{equation}
-where $\bar{U}^n = (\bar{\mathbf{u}}^n,p)$, and $\bar{\mathbf{u}}^n =
-\frac{1}{2}\left(\mathbf{u}^n + \mathbf{u}^{n-1}\right)$. Given the solution
-$U=(\mathbf{u},p)$, since the elements we are concerned with (cG(1)cG(1)) have
+where $\bar{\mathbf{U}}^n_h = \frac{1}{2}\left(\mathbf{U}^n_h +
+\mathbf{U}^{n-1}_h\right)$. Given the solution $U^n_h = (\mathbf{u}^n_h,
+\bar{p}^n_h)$, since the elements we are concerned with, $cG(1)cG(1)$, have
 test functions which are linear in space and constant in time the strong
 residual is given by
 \begin{equation}
-    R(\bar{U}^n,U) = \begin{cases}
-      \left(\mathbf{u} \cdot \nabla \right) \bar{\mathbf{u}}^n
-        + \nabla p^n - \mathbf{f} = 0 \\
-      \nabla \cdot \bar{\mathbf{u}}^n = 0.
-    \end{cases}
+    R(\bar{U}^n_h, U) = \begin{cases}
+      \left(\mathbf{u} \cdot \nabla \right) \bar{\mathbf{u}}^n_h
+        + \nabla \bar{p}^n_h - \mathbf{f} = 0 \\
+      \nabla \cdot \bar{\mathbf{u}}^n_h = 0,
+    \end{cases} \quad \forall U^n_h \in W^h_n
   \label{eqn:StrongNSE}
 \end{equation}
-Finally, the GLS-cG(1)cG(1) discretization of \eqref{eqn:NSE} is given by
+Finally, the GLS-$cG(1)cG(1)$ discretization of \eqref{eqn:NSE} is given by
 \begin{equation}
-  r(\bar{U}^n,V) + SD_{\delta}^n(\bar{U}^n,V) = 0, \quad \forall V=(v,q) \in X.
+  r(\bar{U}^n_h, V^n_h) + SD_{\delta}^n(\bar{U}^n_h, V^n_h) = 0, \quad \forall
+    V^n_h = (v^n_h, q^n_h) \in W^h_n.
   \label{eqn:G2}
 \end{equation}
 Here $SD_{\delta}^n$ is the GLS stabilization and is given by
 \begin{equation}
-    SD_{\delta}^n(\bar{u}^n, V) \equiv
-    \delta_1 (\left(\bar{\mathbf{u}}^n \cdot \nabla \right) \bar{\mathbf{u}}^n
-        + \nabla p^n - \mathbf{f},
-      \left(\bar{\mathbf{u}}^n \cdot \nabla \right) v + \nabla q)
-      + \delta_2 (\nabla \cdot \bar{\mathbf{U}}^n, \nabla \cdot v),
+    SD_{\delta}^n(\bar{U}^n_h, V^n_h) \equiv
+        \delta_1\,(\left(\bar{\mathbf{u}}^n_h \cdot \nabla \right)
+            \bar{\mathbf{u}}^n_h + \nabla \bar{p}^n_h - \mathbf{f},
+        \left(\bar{\mathbf{u}}^n_h \cdot \nabla \right) v^n_h + \nabla q^n_h)
+            + \delta_2\,(\nabla \cdot \bar{\mathbf{U}}^n_h, \nabla \cdot v^n_h),
   \label{eqn:NSEStabilization}
 \end{equation}
-where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}|^2\, h^{-2})^{-1/2}$, and
-$\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem independent
-constants of unit size. For each test case below we take the time-step to be
+where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}_h|^2\, h^{-2})^{-1/2}$,
+and $\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem
+independent constants of unit size. For each test case below we take the
+time-step to be
 \begin{equation*}
-  k = C_{CFL}\, \frac{\min_{\mathcal{T}_K}(h)}{|U_m|},
+    k = C_{CFL}\, \frac{\min_{\mathcal{T}_K}(h)}{|u_m|},
 \end{equation*}
-where $C_{CFL}=100$.
+where $u_m = 1.5$ m/s is the horizontal velocity at $y = 0.2$, and
+$C_{CFL}=100$.
 
 The following test cases are based on a benchmark problem from Sch\"afer and
 Turek \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
 rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For the
 inlet boundary condition we take
 \begin{equation}
-    u(0,y,t) = (4\, U_m\,y\, (H - y)/H^2, 0),
+    u(0,y,t) = (4\, u_m\,y\, (H - y)/H^2, 0),
     \label{eqn:2DInlet}
 \end{equation}
-where $U_m = 1.5\, \text{m/s}$, $H = 0.41\, \text{m}$. For the kinematic
+where $H = 0.41\, \text{m}$. For the kinematic
 viscosity we take $\nu = 10^{-3}\, \text{m}^2\text{/s}$, resulting in a
 Reynolds number of $Re=100$.
 
@@ -387,12 +397,12 @@ Reynolds number of $Re=100$.
     In this first test for NSE, we look at the drag functional as our quantity
     of interest, i.e.
     \begin{equation}
-        M(\bar{U}^n) := \int_I\! C_D\, dt,
+        M(U) := \int_I\! C_D\, dt,
         \label{eq:DragFunctional}
     \end{equation}
     where
     \begin{equation*}
-        C_D = \frac{2}{\bar{u}^2\, D}F_D,
+        C_D = \frac{2}{u^2\, D}F_D,
     \end{equation*}
     and
     \begin{equation*}
@@ -468,7 +478,7 @@ Reynolds number of $Re=100$.
 \begin{test}[NSE, Velocity Functional] \label{tst:Velocity}
     For this test we choose the functional
     \begin{equation}
-        M(\bar{U}^n) := \int_I\! \int_{\Omega}\! u\, d\mathbf{x}\, dt.
+        M(U) := \int_I\! \int_{\Omega}\! u\, d\mathbf{x}\, dt.
         \label{eq:VelocityFunctional}
     \end{equation}
     This functional is not considered to be a localized quantity and thus we

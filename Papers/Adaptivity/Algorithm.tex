@@ -1,79 +1,105 @@
-In this section we initially assume a general linear time-dependent variational
-problem of the form:
+In this section we develop the theoretical framework for the goal oriented mesh
+adaptivity, including the space-time finite element formulation, \emph{a priori}
+error estimation, the dual problem, \emph{a posteriori} error estimation,
+adaptive error control, and the error estimate. To this end we begin by
+describing a general residual based space-time finite element discretization for
+the linear variational problem.
+
+\subsection{Residual Based Space-Time Finite Elements} \label{sse:STFE}
+In this sub-section we initially assume a general linear time-dependent
+variational problem. Let
+\begin{equation*}
+    I = \{0\} \cup I_1 \cup I_2 \cup \cdots \cup I_{M-1} \cup I_M
+\end{equation*}
+be a partition of the time interval $I = [0, T]$ with $I_n = (t_{n-1}, t_n]$,
+where $0=t_0 < t_1 < \ldots < t_N = T$, and step size, $k_n = t_n - t_{n-1}$.
+Then we can descretize our domain into space-time slabs $S_n = \Omega \times
+I_n$. Furthermore, for each $n$ let $\mathcal{T}_n= \{K\}$ be a triangulation
+of the spacial domain, $\Omega$, then we take $W_n^h$ an appropriate finite
+element space with $h_n(x)$ the mesh size associated with the triangulation
+$\mathcal{T}_n$. Then the finite element method in weak-residual form is given
+by
 \begin{equation}
     \begin{split}
-        &\text{find } u \in V \text{ such that} \\
-        r(u, v) &:= (u_t, v) + a(u, v) - L(v) = 0 \quad \forall v \in V,
+        &\text{Find } w^h \in W^h_n \text{ such that} \\
+        r(w^h, v^h) &:= (w^h_t, v^h) + a(w^h, v^h) - L(v^h) = 0 \quad \forall
+            v^h \in W^h_n,
     \end{split}
     \label{eq:WeakResidual}
 \end{equation}
-where $a(\cdot, \cdot)$ and $L(v)$ are the bilinear and linear forms associated
-with the variational problem, while $r(\cdot, \cdot)$ is the weak-residual.
+where $a(\cdot, \cdot)$ and $L(v)$ are the bilinear and linear forms,
+respectively, associated with the variational problem, while $r(\cdot, \cdot)$
+is the weak-residual.
 
-Additionally, given the primal problem, \eqref{eq:WeakResidual}, then we assume
-the dual solution is given by:
+\subsection{Dual Problem} \label{sse:Dual}
+In this sub-section we describe a general dual problem associated with the
+general residual based space-time finite element introduced in the previous
+subsection. Namely, we introduce the dual solution $\Phi$ associated with the
+problem \eqref{eq:WeakResidual}. To this end, given the primal problem,
+\eqref{eq:WeakResidual}, then we assume the dual solution is given by:
 \begin{equation*}
     \begin{split}
-        &\text{find } \Phi \in V^* \text{ such that} \\
-        r(v, \Phi) &:= (u_t, \Phi) + a(v, \Phi) - (v, \psi) = 0
-                       \quad \forall v \in V,
+        &\text{Find } \Phi \in (W^h_n)^* \text{ such that} \\
+        r^*(\Phi, v^h) := r(v^h, \Phi) &= (v^h_t, \Phi) + a(v^h, \Phi)
+            - (v^h, \psi) = 0 \quad \forall v^h \in W^h_n,
     \end{split}
 \end{equation*}
 where $\psi$ is the projection of the goal functional $M(\cdot) = (\cdot, \psi)$
-onto the finite element space $V$. In other words, given the solution $u$ to
-\eqref{eq:WeakResidual} we solve the problem
+onto the finite element space $W^h_n$. In other words, given the solution $w^h$
+to \eqref{eq:WeakResidual} we solve the problem
 \begin{equation}
     \begin{split}
-        &\text{find } \Phi \in V^* \text{ such that} \\
-        r(v, \Phi) &:= (u_t, \Phi) + a(v, \Phi) - M(u) = 0
-                       \quad \forall v \in V.
+        &\text{Find } \Phi \in (W^h_n)^* \text{ such that} \\
+        r(v^h, \Phi) &:= (v^h_t, \Phi) + a(v^h, \Phi) - M(w^h) = 0
+                       \quad \forall v^h \in W^h.
     \end{split}
     \label{eq:Dual}
 \end{equation}
 
-Given the solutions $u,\, u^h$ to the primal and discrete primal problems,
+Given the solutions $w,\, w^h$ to the primal and discrete primal problems,
 respectively, while $\Phi$ is the solution to the dual problem then
-taking $v$ and $v^h$ to be $u$ and $u^h$, respectively, we can determine the
+taking $v$ and $v^h$ to be $w$ and $w^h$, respectively, we can determine the
 error in the goal functional in the following manner
 \begin{align}
-    M(u) - M(u^h) &= \left((u_t, \Phi) + a(u, \Phi)\right)
-                      - \left( (u^h_t, \Phi) + a(u^h, \Phi) \right) \nonumber \\
-    M(u - u^h) &= (u_t - u^h_t, \Phi) + a(u - u^h, \Phi) \nonumber \\
+    M(w) - M(w^h) &= \left((w_t, \Phi) + a(w, \Phi)\right)
+                      - \left( (w^h_t, \Phi) + a(w^h, \Phi) \right) \nonumber \\
+    M(w - w^h) &= (w_t - w^h_t, \Phi) + a(w - w^h, \Phi) \nonumber \\
     M(e) &= 0 \label{eq:DualError}
 \end{align}
 where the last line, \eqref{eq:DualError} is due to Galerkin orthogonality. On
 the other hand we have
 \begin{align}
-    M(e) & = \left((u_t, \Phi) + a(u, \Phi) - L(\Phi)\right)
-             - \left((u^h_t, \Phi) + a(u^h, \Phi) - L(\Phi) \right) \nonumber \\
-    &= -\left((u^h_t, \Phi) + a(u^h, \Phi) - L(\Phi) \right) \nonumber \\
-    &= -r(u^h, \Phi) \label{eq:ErrorRepresentation} \\
-    |M(e)| &= |r(u^h, \Phi)| \label{eq:ErrorEstimate}
+    M(e) & = \left((w_t, \Phi) + a(w, \Phi) - L(\Phi)\right)
+             - \left((w^h_t, \Phi) + a(w^h, \Phi) - L(\Phi) \right) \nonumber \\
+    &= -\left((w^h_t, \Phi) + a(w^h, \Phi) - L(\Phi) \right) \nonumber \\
+    &= -r(w^h, \Phi) \label{eq:ErrorRepresentation} \\
+    |M(e)| &= |r(w^h, \Phi)| \label{eq:ErrorEstimate}
 \end{align}
 Thus, we have an error estimate, \eqref{eq:ErrorEstimate}, and it appears that
-the determining the error in a goal functional, $M(e)$, is equivalent to
+determining the error in a goal functional, $M(e)$, is equivalent to
 evaluating the weak residual, \eqref{eq:WeakResidual}, using the primal and dual
-solutions. However, due to Galerkin orthogonality the error representation,
-\eqref{eq:ErrorRepresentation} evaluates to zero if the dual solution, $\Phi$,
-and the primal solution, $u^h$, are in the same space.
+solutions.
 
 \begin{algorithm}[!htp]
 \begin{minipage}[t]{\columnwidth} %this minipage is a hack to use footenotes
   \caption{Adaptive mesh refinement} \label{alg:Adaptivity}
-  \KwData{Let $(\mathcal{T}_h, V^h,\mathcal{P})$ be a finite element
-    discretization of $r(u^h ,v^h) = (u^h_t, v^h) + a(u^h, v^h) - L(v^h)$.}
-    \vspace{0.5em}
+  \KwData{Let $(\mathcal{T}_m, W^{h_m}_n,\mathcal{P})$ be a finite element
+    discretization of
+    \begin{equation*}
+        r(w^{h_m} ,v^{h_m}) = (w^{h_m}_t, v^{h_m}) + a(w^{h_m}, v^{h_m}) -
+            L(v^{h_m}).
+    \end{equation*}}
   \SetAlgoLined
   \While{ $\left|\frac{1}{k} \sum\limits_{n=0}^{N} \sum\limits_{j=1}^M
         \mathcal{E}^{cG(1)}_{K_j, n}\right| > TOL$
-    \footnote{Use $\left|M(u^h) - M(u^{h-1})\right| > \gamma TOL$ for orthogonal
-    error representation.}}{
-      \nl For the mesh $\mathcal{T}_h$: compute the primal problem and the dual
+      \footnote{Use $\left|M(w^{h_m}) - M(w^{h_{m-1}})\right| > \gamma TOL$ for
+        orthogonal error representation.}}{
+      \nl For the mesh $\mathcal{T}$: compute the primal problem and the dual
             problem. \\
       \nl Mark some chosen percentage of the elements with highest
-        $\frac{1}{k} \sum\limits_{n=0}^N \mathcal{E}^{cG(1)}_{K_j, n}$ for
-        refinement.\\
-      \nl Generate the refined mesh $\mathcal{T}_{h+1}$, set $h = h + 1$
+        $\frac{1}{k} \sum\limits_{n=0}^N \sum\limits_{j=1}^M
+        \mathcal{E}^{cG(1)}_{K_j, n}$ for refinement.\\
+      \nl Generate the refined mesh $\mathcal{T}_{m+1}$, set $m = m + 1$
   }
 \end{minipage}
 \end{algorithm}
