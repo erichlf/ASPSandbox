@@ -5,9 +5,9 @@ adaptive error control, and the error estimate. To this end we begin by
 describing a general residual based space-time finite element discretization for
 the linear variational problem.
 
-\subsection{Residual Based Space-Time Finite Elements} \label{sse:STFE}
-In this sub-section we initially assume a general linear time-dependent
-variational problem. Let
+We initially assume a general linear time-dependent variational problem and
+develop a space-time finite element discretization based on the weak residual.
+To this end we let
 \begin{equation*}
     I = \{0\} \cup I_1 \cup I_2 \cup \cdots \cup I_{M-1} \cup I_M
 \end{equation*}
@@ -31,11 +31,10 @@ where $a(\cdot, \cdot)$ and $L(v)$ are the bilinear and linear forms,
 respectively, associated with the variational problem, while $r(\cdot, \cdot)$
 is the weak-residual.
 
-\subsection{Dual Problem} \label{sse:Dual}
-In this sub-section we describe a general dual problem associated with the
-general residual based space-time finite element introduced in the previous
-subsection. Namely, we introduce the dual solution $\Phi$ associated with the
-problem \eqref{eq:WeakResidual}. To this end, given the primal problem,
+Now we can describe a general dual problem associated with the general residual
+based space-time finite element introduced previously, \eqref{eq:WeakResidual}.
+Namely, we introduce the dual solution $\Phi$ associated with the problem
+\eqref{eq:WeakResidual}. To this end, given the primal problem,
 \eqref{eq:WeakResidual}, then we assume the dual solution is given by:
 \begin{equation*}
     \begin{split}
@@ -59,7 +58,7 @@ to \eqref{eq:WeakResidual} we solve the problem
 Given the solutions $w,\, w^h$ to the primal and discrete primal problems,
 respectively, while $\Phi$ is the solution to the dual problem then
 taking $v$ and $v^h$ to be $w$ and $w^h$, respectively, we can determine the
-error in the goal functional in the following manner
+error in the goal functional at time $t$ in the following manner
 \begin{align}
     M(w) - M(w^h) &= \left((w_t, \Phi) + a(w, \Phi)\right)
                       - \left( (w^h_t, \Phi) + a(w^h, \Phi) \right) \nonumber \\
@@ -72,17 +71,80 @@ the other hand we have
     M(e) & = \left((w_t, \Phi) + a(w, \Phi) - L(\Phi)\right)
              - \left((w^h_t, \Phi) + a(w^h, \Phi) - L(\Phi) \right) \nonumber \\
     &= -\left((w^h_t, \Phi) + a(w^h, \Phi) - L(\Phi) \right) \nonumber \\
-    &= -r(w^h, \Phi) \label{eq:ErrorRepresentation} \\
-    |M(e)| &= |r(w^h, \Phi)| \label{eq:ErrorEstimate}
+    M(e) &= -r(w^h, \Phi) \label{eq:ErrorRepresentation} \\
 \end{align}
-Thus, we have an error estimate, \eqref{eq:ErrorEstimate}, and it appears that
-determining the error in a goal functional, $M(e)$, is equivalent to
+
+However, we must consider the contribution from each indiviudal element to
+the total error. To this end we multiply the the weak residual, $r(\cdot,
+\cdot)$, by a discontinuous constant $\Theta_{K_j}$ where
+\begin{equation}
+    \Theta_K = \begin{cases}
+        1 & \text{if } x \in K \\
+        0 & \text{otherwise}
+    \end{cases}
+    \label{eq:DGTest}
+\end{equation}
+allowing for the error to be partitioned into its contribution from each element
+$K_j$.
+Therefore, we see that the error at time $t$ is given by
+\begin{equation}
+    M(e) = \sum_{j=1}^M r(w^h, \Phi) \, \Theta_{K_j},
+         = \sum_{j=1}^M r(w^h, \Phi\, \Theta_{K_j}).
+    \label{eq:ErrorSum}
+\end{equation}
+The rightmost equality being a result of linearity in the test function of
+$r(\cdot, \cdot)$.  For simplicity we take
+\begin{equation*}
+    r(w^h, \Phi\, \Theta_{K_j}) = r_{K_j}(w^h, \Phi)
+\end{equation*}
+and therefore \eqref{eq:ErrorSum} becomes
+\begin{equation}
+    M(e) = \sum_{j=1}^M r_{K_j}(w^h, \Phi).
+    \label{eq:TotalError}
+\end{equation}
+To determine the error over time we then integrate over the time interval $I$
+\begin{equation*}
+    \int_I\! M(e)\, dt = \int_I\! r_{K_j}(w^h, \Phi)\, dt.
+\end{equation*}
+Finally, given a time step $k$ and using a trapezoid rule we can approximate the
+time integration and determine a computable total error
+\begin{equation}
+    \int_I\! M(e)\, dt = \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h, \Phi).
+    \label{eq:TotalErrorEstimate}
+\end{equation}
+
+Thus, if we want to control the total error after all time step in our
+functional using adaptive mesh refinement we would want
+\begin{equation}
+    \begin{split}
+        \int_I\! M(e)\, dt &= \int_I\! r(w^h, \Phi)\, dt \\
+            &= \int_I\! \sum_{j=1}^M r_{K_j}(w^h, \Phi)\, dt \\
+            &= \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h, \Phi) < TOL.
+    \end{split}
+    \label{eq:Tol}
+\end{equation}
+we have an error estimate, \eqref{eq:TotalErrorEstimate}, and it appears
+that determining the error in a goal functional, $M(e)$, is equivalent to
 evaluating the weak residual, \eqref{eq:WeakResidual}, using the primal and dual
 solutions.
 
+Taking $\mathcal{E}$ to be the cellwise error indicator at the end of our time
+interval $I$, while taking $\mathcal{E}_{K_j, n}$ to be
+the error indicator for cell $K_j$ at time $t_n$ then our error indicator is
+given by
+\begin{equation}
+    \begin{split}
+    \mathcal{E}(x) &= \frac{1}{k} \sum_{n=0}^N \sum_{j=0}^M r_{K_j}(w^h, \Phi) \\
+                &= \frac{1}{k} \sum_{n=0}^N \sum_{j=0}^M \mathcal{E}_{K_j, n}(x)
+    \end{split}
+    \label{eq:ErrorIndicator}
+\end{equation}
+
+With this in place our goal oriented adaptive algorithm is then given by
+\autoref{alg:Adaptivity}.
 \begin{algorithm}[!htp]
-\begin{minipage}[t]{\columnwidth} %this minipage is a hack to use footenotes
   \caption{Adaptive mesh refinement} \label{alg:Adaptivity}
+\begin{minipage}[t]{\columnwidth} %this minipage is a hack to use footenotes
   \KwData{Let $(\mathcal{T}_m, W^{h_m}_n,\mathcal{P})$ be a finite element
     discretization of
     \begin{equation*}
