@@ -13,16 +13,17 @@ To this end we let
 \end{equation*}
 be a partition of the time interval $I = [0, T]$ with $I_n = (t_{n-1}, t_n]$,
 where $0=t_0 < t_1 < \ldots < t_N = T$, and step size, $k_n = t_n - t_{n-1}$.
-Then we can descretize our domain into space-time slabs $S_n = \Omega \times
-I_n$. Furthermore, for each $n$ let $\mathcal{T}_n= \{K\}$ be a triangulation
-of the spacial domain, $\Omega$, then we take $W_n^h$ an appropriate finite
-element space with $h_n(x)$ the mesh size associated with the triangulation
-$\mathcal{T}_n$. Then the finite element method in weak-residual form is given
-by
+Furthermore, for each $n$ let $\mathcal{T}_n= \{K\}$ be a triangulation of the
+spacial domain, $\Omega$, then we can descretize our domain into space-time
+slabs $S_n^h = \mathcal{T}_n \times I_n$. Taking $W_n^h = V_n^h \times Q_n$ an
+appropriate space-time finite element discretization of $S_n^h$, with $h_n(x)$
+the mesh size associated with the triangulation $\mathcal{T}_n$. Then the finite
+element method in weak-residual form is given by
 \begin{equation}
     \begin{split}
-        &\text{Find } w^h \in W^h_n \text{ such that} \\
-        r(w^h, v^h) &:= (w^h_t, v^h) + a(w^h, v^h) - L(v^h) = 0 \quad \forall
+        &\text{Find } w^h(t_n) \in W^h_n \text{ such that} \\
+        r(w^h(t_n), v^h(t_n)) &:= (w^h_t(t_n), v^h(t_n)) + a(w^h(t_n),
+            v^h(t_n)) - L(v^h(t_n)) = 0 \quad \forall
             v^h \in W^h_n,
     \end{split}
     \label{eq:WeakResidual}
@@ -31,15 +32,15 @@ where $a(\cdot, \cdot)$ and $L(v)$ are the bilinear and linear forms,
 respectively, associated with the variational problem, while $r(\cdot, \cdot)$
 is the weak-residual.
 
-Now we can describe a general dual problem associated with the general residual
-based space-time finite element introduced previously, \eqref{eq:WeakResidual}.
-Namely, we introduce the dual solution $\Phi$ associated with the problem
-\eqref{eq:WeakResidual}. To this end, given the primal problem,
-\eqref{eq:WeakResidual}, then we assume the dual solution is given by:
+Now we can describe dual problem associated with the general residual based
+space-time finite element introduced previously, \eqref{eq:WeakResidual}.
+Namely, we introduce the discrete dual solution $\Phi^h$ associated with the
+problem \eqref{eq:WeakResidual}. To this end, given the primal problem,
+\eqref{eq:WeakResidual}, then we the dual solution is given by:
 \begin{equation*}
     \begin{split}
-        &\text{Find } \Phi \in (W^h_n)^* \text{ such that} \\
-        r^*(\Phi, v^h) := r(v^h, \Phi) &= (v^h_t, \Phi) + a(v^h, \Phi)
+        &\text{Find } \Phi^h \in (W^h_n)^* \text{ such that} \\
+        r^*(\Phi^h, v^h) := r(v^h, \Phi) &= (v^h_t, \Phi^h) + a(v^h, \Phi^h)
             - (v^h, \psi) = 0 \quad \forall v^h \in W^h_n,
     \end{split}
 \end{equation*}
@@ -48,15 +49,15 @@ onto the finite element space $W^h_n$. In other words, given the solution $w^h$
 to \eqref{eq:WeakResidual} we solve the problem
 \begin{equation}
     \begin{split}
-        &\text{Find } \Phi \in (W^h_n)^* \text{ such that} \\
-        r(v^h, \Phi) &:= (v^h_t, \Phi) + a(v^h, \Phi) - M(w^h) = 0
+        &\text{Find } \Phi^h \in (W^h_n)^* \text{ such that} \\
+        r(v^h, \Phi^h) &:= (v^h_t, \Phi^h) + a(v^h, \Phi^h) - M(w^h) = 0
                        \quad \forall v^h \in W^h.
     \end{split}
     \label{eq:Dual}
 \end{equation}
 
 Given the solutions $w,\, w^h$ to the primal and discrete primal problems,
-respectively, while $\Phi$ is the solution to the dual problem then
+respectively, while $\Phi$ is the exact dual solution then
 taking $v$ and $v^h$ to be $w$ and $w^h$, respectively, we can determine the
 error in the goal functional at time $t$ in the following manner
 \begin{align}
@@ -93,7 +94,7 @@ Therefore, we see that the error at time $t$ is given by
     \label{eq:ErrorSum}
 \end{equation}
 The rightmost equality being a result of linearity in the test function of
-$r(\cdot, \cdot)$.  For simplicity we take
+$r(\cdot, \cdot)$.  For simplicity we will write
 \begin{equation*}
     r(w^h, \Phi\, \Theta_{K_j}) = r_{K_j}(w^h, \Phi)
 \end{equation*}
@@ -123,10 +124,20 @@ functional using adaptive mesh refinement we would want
     \end{split}
     \label{eq:Tol}
 \end{equation}
-we have an error estimate, \eqref{eq:TotalErrorEstimate}, and it appears
+Thus we have an error estimate, \eqref{eq:TotalErrorEstimate}, and it appears
 that determining the error in a goal functional, $M(e)$, is equivalent to
 evaluating the weak residual, \eqref{eq:WeakResidual}, using the primal and dual
 solutions.
+
+However, due to Galerkin orthogonality when taking the dual solution to be
+the discrete dual $\Phi^h$ we would still see that
+\begin{equation*}
+    \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h, \Phi^h) = 0.
+\end{equation*}
+While this seems impractical we see that the per element error is still useful
+for indicating where mesh refinement should take place. On the other hand for
+non-Galerkin orthogonal discretizations\slash~problems, such as the $cG(1)cG(1)$
+discretizations.
 
 Taking $\mathcal{E}$ to be the cellwise error indicator at the end of our time
 interval $I$, while taking $\mathcal{E}_{K_j, n}$ to be
