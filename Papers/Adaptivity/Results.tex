@@ -32,7 +32,7 @@ determine the effectivity of the adaptive algorithm.
     $\partial \Omega$, the ADR is given by
     \begin{equation}
         \begin{split}
-            u_t + \nabla \left(\kappa\cdot \nabla u \right) + \beta \cdot \nabla
+            \dot{u} + \nabla \left(\kappa\cdot \nabla u \right) + \beta \cdot \nabla
                 u + \alpha u = f,& \quad \mathbf{x} \in \omega, \\
             u = g,& \quad \mathbf{x} \in \partial \omega, \\
             u = 0,& \quad t = 0,\, \mathbf{x} \in \partial \omega,
@@ -93,39 +93,39 @@ determine the effectivity of the adaptive algorithm.
     \cite{Hoffman2006a} for more details).
 
     Therefore given a time step $k$ and applying the $cG(1)cG(1)$ finite element
-    discretization to \eqref{eq:ADR} with test function $v^n_h \in W^h_n \subset
+    discretization to \eqref{eq:ADR} with test function $v^h \in W^h_n \subset
     H^1_0(\Omega)$ we have the following finite element discretization
     in residual form
     \begin{equation}
     \begin{split}
-        &\hspace{8em}\text{Find } u^n_h \in W^h_n \text{ such that} \\
-        r(u^n_h; v^n_h) &= \left(u^n_h - u^{n-1}_h\right)\,k^{-1}
-            + (\kappa \nabla \bar{u}^n_h, \nabla v^n_h)
-            + (\beta \cdot \nabla \bar{u}^n_h, v^n_h)
-            + (\alpha \bar{u}^n_h, v^n_h) - (f, v^n_h) = 0
+        &\hspace{8em}\text{Find } u^h_n \in W^h_n \text{ such that} \\
+        r(u^h_n; v^h) &= \left(u^h_n - u^h_{n-1}\right)\,k^{-1}
+            + (\kappa \nabla \bar{u}^h_n, \nabla v^h)
+            + (\beta \cdot \nabla \bar{u}^h_n, v^h)
+            + (\alpha \bar{u}^h_n, v^h) - (f, v^h) = 0
     \end{split}
     \label{eqn:WeakADR}
     \end{equation}
     where $\bar{u}^n = \frac{1}{2}\left(u^n + u^{n-1}\right)$. Given the
-    solution $u^n_h$, since the elements we are concerned with, $cG(1)cG(1)$
+    solution $u^h_n$, since the elements we are concerned with, $cG(1)cG(1)$
     finite elements, have test functions which are linear in space and constant
     in time the strong residual is given by
     \begin{equation}
-        R(u^n_h) = \alpha u^n_h + \beta \cdot \nabla u^n_h - f, \quad \forall
-            u^n_h \in W^h_n.
+        R(u^h_n) = \alpha u^h_n + \beta \cdot \nabla u^h_n - f, \quad \forall
+            u^h_n \in W^h_n.
     \label{eqn:StrongADR}
     \end{equation}
     Finally, the GLS stabilized $cG(1)cG(1)$ discretization of \eqref{eq:ADR} is
     given by
     \begin{equation}
-        r(u^n_h, v^n_h) + SD_{\delta}^n(\bar{u}^n_h,v^n_h) = 0,
-            \quad \forall v^n_h \in W^h_n.
+        r(u^h_n, v^h) + SD_{\delta}^n(\bar{u}^h_n,v^h) = 0,
+            \quad \forall v^h \in W^h_n.
         \label{eqn:G2ADR}
     \end{equation}
     Here $SD_{\delta}^n$ is the GLS stabilization and is given by
     \begin{equation}
-        SD_{\delta}^n(\bar{u}^n_h, v^n_h) \equiv
-            \delta \left(R(\bar{u}^n_h), R(v^n_h) + f\right)
+        SD_{\delta}^n(\bar{u}^h_n, v^h) \equiv
+            \delta \left(R(\bar{u}^h_n), R(v^h) + f\right)
     \label{eq:ADRStabilization}
     \end{equation}
     where
@@ -142,13 +142,76 @@ determine the effectivity of the adaptive algorithm.
     \end{equation*}
     where $C_{CFL}=100$.
 
-\begin{test}[Diffusion Dominated ADR, $\kappa = 0.1$] \label{tst:ADRk1E-1}
+\begin{test}[Pure Diffusion, i.e. Heat Equation, $\kappa = 0.1$]
+    \label{tst:Heatk1E-1}
     As a first test we take
-    \begin{align*}
-        \alpha &= 1, \\
-        \kappa &= 0.1, \\
-        \beta &= \begin{bmatrix} -1 \\ -0.61 \end{bmatrix}
-    \end{align*}
+    \begin{equation*}
+        \alpha = 0, \quad
+        \kappa = 0.1, \quad
+        \beta = \begin{bmatrix} 0 \\ 0 \end{bmatrix}
+    \end{equation*}
+    which corresponds to the heat equation and therefore a Galerkin orthogonal
+    problem/discretization, since the strong residual,
+    \eqref{eq:ADRStabilization} is zero. Similar to what we expect for the
+    diffusion dominated problem, goal oriented adaptivity is not expected to
+    perform much better than uniform refinement, due to the non-locality of the
+    concentration, $u$. This is clearly observed when looking at the comparison
+    of error for the goal oriented adapted and uniform adaptivity in
+    \autoref{fig:Heatk1E-1_err}.
+    \begin{figure}[h]
+        \centering
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{Initial mesh}{
+%                \includegraphics[scale=0.09]{Figures/AdaptiveHeatkappa1E-1_mesh0.png}
+            }
+            \subcaptionbox{Primal solution at $t=10$.}{
+%                \includegraphics[scale=0.1]{Figures/AdaptiveHeatkappa1E-1_u0.png}
+            }
+            \subcaptionbox{Error indicators}{
+%                \includegraphics[scale=0.1]{Figures/AdaptiveHeatkappa1E-1_ei0.png}
+            }
+            \subcaptionbox{Dual solution at $t=0$.}{
+%                \includegraphics[scale=0.1]{Figures/AdaptiveHeatkappa1E-1_uDual0.png}
+            }
+        \end{minipage}
+        \begin{minipage}[t]{0.49\textwidth}
+            \centering
+            \subcaptionbox{$25^{th}$ adaptive mesh}{
+%                \includegraphics[scale=0.09]{Figures/AdaptiveHeatkappa1E-1_mesh25.png}
+            }
+            \subcaptionbox{Primal solution at $t=10$.}{
+%                \includegraphics[scale=0.1]{Figures/AdaptiveHeatkappa1E-1_u25.png}
+            }
+            \subcaptionbox{Error indicators}{
+%                \includegraphics[scale=0.1]{Figures/AdaptiveHeatkappa1E-1_ei25.png}
+            }
+            \subcaptionbox{Dual solution at $t=0$.}{
+%                \includegraphics[scale=0.1]{Figures/AdaptiveHeatkappa1E-1_uDual25.png}
+            }
+        \end{minipage}
+        \caption{Comparison of the Initial Mesh (Left), $190$ DOFs, to the
+                 $25^{th}$ Adaptive mesh (Right), $7\, 906$ DoFs, for ADR with
+             $\alpha = 0,\, \beta = [0, 0]^T$, and $\kappa=0.1$.}
+    \end{figure}
+
+    \begin{figure}[h]
+        \centering
+%        \includegraphics[scale=0.5]{Figures/AdaptiveHeatkappa1E-1.png}
+        \caption{Adaptive error estimate for the solution to ADR with
+             $\alpha = 0,\, \beta = [0, 0]^T$, and $\kappa=0.1$.}
+        \label{fig:Heatk1E-1_err}
+    \end{figure}
+
+\end{test}
+
+\begin{test}[Diffusion Dominated ADR, $\kappa = 0.1$] \label{tst:ADRk1E-1}
+    For our second test we take
+    \begin{equation*}
+        \alpha = 1, \quad
+        \kappa = 0.1, \quad
+        \beta = \begin{bmatrix} -1 \\ -0.61 \end{bmatrix}
+    \end{equation*}
     which corresponds to a diffusive solution. Goal oriented adaptivity for
     the diffusion dominated problem is not expected to perform much better than
     uniform refine, due to the non-locality of the concentration, $u$. This is
@@ -195,18 +258,18 @@ determine the effectivity of the adaptive algorithm.
         \centering
         \includegraphics[scale=0.5]{Figures/AdaptiveADRkappa1E-1.png}
         \caption{Adaptive error estimate versus ``true'' error for the solution
-            for the ADR equation with $\kappa=0.1$.}
+            to ADR with $\kappa=0.1$.}
         \label{fig:ADRk1E-1_err}
     \end{figure}
 \end{test}
 
 \begin{test}[Convection Dominated ADR, $\kappa = 1\times10^{-5}$] \label{tst:ADRk1E-5}
     In this test we simulate the ADR using convection dominated parameters, i.e.
-    \begin{align*}
-        \alpha &= 1, \\
-        \kappa &= 1\time 10^{-5}, \\
-        \beta &= \begin{bmatrix} -1 \\ -0.61 \end{bmatrix}.
-    \end{align*}
+    \begin{equation*}
+        \alpha = 1, \quad
+        \kappa = 1\times 10^{-5}, \quad
+        \beta = \begin{bmatrix} -1 \\ -0.61 \end{bmatrix}.
+    \end{equation*}
     This will result in a concentration, $u$, which is more localized and thus
     the goal oriented adaptivity will perform much better compared to the
     uniform refinement.  As expected this can be observed when looking at the
@@ -295,56 +358,56 @@ $\nu>0$, in a domain $\Omega\subset \R^d$, with boundary $\partial \Omega$, i.e.
 where the strong residual is given by
 \begin{equation}
     \begin{split}
-      \mathbf{u}_t + \left( \mathbf{u} \cdot \nabla \right) \mathbf{u} - \nu\,
+      \dot{\mathbf{u}} + \left( \mathbf{u} \cdot \nabla \right) \mathbf{u} - \nu\,
           \Delta \mathbf{u} + \nabla p = \mathbf{f}, \quad \mathbf{x} \in \Omega \\
           \nabla \cdot \mathbf{u} = 0, \quad \mathbf{x} \in \Omega
     \end{split}
   \label{eqn:NSE}
 \end{equation}
 Given a step size $k$ and applying the $cG(1)cG(1)$ finite element
-discretization to \autoref{eqn:NSE} with $V^n_h = (v^n_h, q^n_h) \in W^h_n
+discretization to \autoref{eqn:NSE} with $V^h_n = (v^h, q^h_n) \in W^h_n
 \subset [H^1_0(\Omega)]^d \times H^1(\Omega)$ gives the following finite element
 formulation in weak residual form
 \begin{equation}
   \begin{split}
-    &\text{Find } U^n_h = (\mathbf{u}^n_h, p^n_h) \in W^h_n \text{ such that} \\
-    r(\bar{U}^n_h; V^n_h) =& (\mathbf{u}^n_h - \mathbf{u}^{n-1}_h, v^n_h)\,k^{-1}
-        + (( \bar{\mathbf{u}}^n_h \cdot \nabla ) \bar{\mathbf{u}}^n_h, v^n_h) \\
-    &\quad+ \nu\, (\nabla \bar{\mathbf{u}}^n_h, \nabla v^n_h)
-        + (\nabla \bar{p}^n_h, v^n_h) - (\mathbf{f}, v^n_h)
-        + (\nabla \cdot \bar{\mathbf{u}}^n_h, v^n_h) = 0
+    &\text{Find } U^h_n = (\mathbf{u}^h_n, p^h_n) \in W^h_n \text{ such that} \\
+    r(\bar{U}^h_n; V^h_n) =& (\mathbf{u}^h_n - \mathbf{u}^h_{n-1}, v^h)\,k^{-1}
+        + (( \bar{\mathbf{u}}^h_n \cdot \nabla ) \bar{\mathbf{u}}^h_n, v^h) \\
+    &\quad+ \nu\, (\nabla \bar{\mathbf{u}}^h_n, \nabla v^h)
+        + (\nabla \bar{p}^h_n, v^h) - (\mathbf{f}, v^h)
+        + (\nabla \cdot \bar{\mathbf{u}}^h_n, v^h) = 0
   \end{split}
   \label{eqn:WeakNSE}
 \end{equation}
-where $\bar{\mathbf{U}}^n_h = \frac{1}{2}\left(\mathbf{U}^n_h +
-\mathbf{U}^{n-1}_h\right)$. Given the solution $U^n_h = (\mathbf{u}^n_h,
-\bar{p}^n_h)$, since the elements we are concerned with, $cG(1)cG(1)$, have
+where $\bar{\mathbf{U}}^h_n = \frac{1}{2}\left(\mathbf{U}^h_n +
+\mathbf{U}^h_{n-1}\right)$. Given the solution $U^h_n = (\mathbf{u}^h_n,
+\bar{p}^h_n)$, since the elements we are concerned with, $cG(1)cG(1)$, have
 test functions which are linear in space and constant in time the strong
 residual is given by
 \begin{equation}
-    R(\bar{U}^n_h, U) = \begin{cases}
-      \left(\mathbf{u} \cdot \nabla \right) \bar{\mathbf{u}}^n_h
-        + \nabla \bar{p}^n_h - \mathbf{f} = 0 \\
-      \nabla \cdot \bar{\mathbf{u}}^n_h = 0,
-    \end{cases} \quad \forall U^n_h \in W^h_n
+    R(\bar{U}^h_n, U) = \begin{cases}
+      \left(\mathbf{u} \cdot \nabla \right) \bar{\mathbf{u}}^h_n
+        + \nabla \bar{p}^h_n - \mathbf{f} = 0 \\
+      \nabla \cdot \bar{\mathbf{u}}^h_n = 0,
+    \end{cases} \quad \forall U^h_n \in W^h_n
   \label{eqn:StrongNSE}
 \end{equation}
 Finally, the GLS-$cG(1)cG(1)$ discretization of \eqref{eqn:NSE} is given by
 \begin{equation}
-  r(\bar{U}^n_h, V^n_h) + SD_{\delta}^n(\bar{U}^n_h, V^n_h) = 0, \quad \forall
-    V^n_h = (v^n_h, q^n_h) \in W^h_n.
+  r(\bar{U}^h_n, V^h_n) + SD_{\delta}^n(\bar{U}^h_n, V^h_n) = 0, \quad \forall
+    V^h_n = (v^h, q^h_n) \in W^h_n.
   \label{eqn:G2}
 \end{equation}
 Here $SD_{\delta}^n$ is the GLS stabilization and is given by
 \begin{equation}
-    SD_{\delta}^n(\bar{U}^n_h, V^n_h) \equiv
-        \delta_1\,(\left(\bar{\mathbf{u}}^n_h \cdot \nabla \right)
-            \bar{\mathbf{u}}^n_h + \nabla \bar{p}^n_h - \mathbf{f},
-        \left(\bar{\mathbf{u}}^n_h \cdot \nabla \right) v^n_h + \nabla q^n_h)
-            + \delta_2\,(\nabla \cdot \bar{\mathbf{U}}^n_h, \nabla \cdot v^n_h),
+    SD_{\delta}^n(\bar{U}^h_n, V^h_n) \equiv
+        \delta_1\,(\left(\bar{\mathbf{u}}^h_n \cdot \nabla \right)
+            \bar{\mathbf{u}}^h_n + \nabla \bar{p}^h_n - \mathbf{f},
+        \left(\bar{\mathbf{u}}^h_n \cdot \nabla \right) v^h + \nabla q^h_n)
+            + \delta_2\,(\nabla \cdot \bar{\mathbf{U}}^h_n, \nabla \cdot v^h),
   \label{eqn:NSEStabilization}
 \end{equation}
-where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^{n-1}_h|^2\, h^{-2})^{-1/2}$,
+where $\delta_1 = \kappa_1 (k^{-1} + |\mathbf{u}^h_{n-1}|^2\, h^{-2})^{-1/2}$,
 and $\delta_2 = \kappa_2 h$, while $\kappa_1$ and $\kappa_2$ are problem
 independent constants of unit size. For each test case below we take the
 time-step to be
@@ -359,7 +422,7 @@ Turek \cite[Test case 2D-2]{Schaefer1996}. Thus, we define the domain to be a
 rectangular domain with a circle removed (see \autoref{fig:2DCylinder}). For the
 inlet boundary condition we take
 \begin{equation}
-    u(0,y,t) = (4\, u_m\,y\, (H - y)/H^2, 0),
+    u(0, y, t) = (4\, u_m\,y\, (H - y)/H^2, 0),
     \label{eqn:2DInlet}
 \end{equation}
 where $H = 0.41\, \text{m}$. For the kinematic
@@ -397,7 +460,7 @@ Reynolds number of $Re=100$.
     In this first test for NSE, we look at the drag functional as our quantity
     of interest, i.e.
     \begin{equation}
-        M(U) := \int_I\! C_D\, dt,
+        \mathcal{M}(U) := \int_I\! C_D\, dt,
         \label{eq:DragFunctional}
     \end{equation}
     where
@@ -478,7 +541,7 @@ Reynolds number of $Re=100$.
 \begin{test}[NSE, Velocity Functional] \label{tst:Velocity}
     For this test we choose the functional
     \begin{equation}
-        M(U) := \int_I\! \int_{\Omega}\! u\, d\mathbf{x}\, dt.
+        \mathcal{M}(U) := \int_I\! \int_{\Omega}\! u\, d\mathbf{x}\, dt.
         \label{eq:VelocityFunctional}
     \end{equation}
     This functional is not considered to be a localized quantity and thus we

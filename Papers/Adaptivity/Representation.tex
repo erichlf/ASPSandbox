@@ -15,64 +15,67 @@ be a partition of the time interval $I = [0, T]$ with $I_n = (t_{n-1}, t_n]$,
 where $0=t_0 < t_1 < \ldots < t_N = T$, and step size, $k_n = t_n - t_{n-1}$.
 Furthermore, for each $n$ let $\mathcal{T}_n= \{K\}$ be a triangulation of the
 spacial domain, $\Omega$, then we can descretize our domain into space-time
-slabs $S_n^h = \mathcal{T}_n \times I_n$. Taking $W_n^h = V_n^h \times Q_n$ an
-appropriate space-time finite element discretization of $S_n^h$, with $h_n(x)$
+slabs $S^h_n = \mathcal{T}_n \times I_n$. Taking $W^h_n = V^h_n \times Q_n$ an
+appropriate space-time finite element discretization of $S^h_n$, with $h_n(x)$
 the mesh size associated with the triangulation $\mathcal{T}_n$. Then the finite
 element method in weak-residual form is given by
 \begin{equation}
     \begin{split}
-        &\text{Find } w^h(t_n) \in W^h_n \text{ such that} \\
-        r(w^h(t_n), v^h(t_n)) &:= (w^h_t(t_n), v^h(t_n)) + a(w^h(t_n),
-            v^h(t_n)) - L(v^h(t_n)) = 0 \quad \forall
-            v^h \in W^h_n,
+        &\text{Find } w^h_n \in W^h_n \text{ such that} \\
+        r(w^h_n, v^h) &:= (\dot{w}^h_n, v^h)
+            + a(w^h_n, v^h) - L(v^h) = 0 \quad \forall v^h \in W^h_n,
     \end{split}
     \label{eq:WeakResidual}
 \end{equation}
-where $a(\cdot, \cdot)$ and $L(v)$ are the bilinear and linear forms,
-respectively, associated with the variational problem, while $r(\cdot, \cdot)$
-is the weak-residual.
+where $\dot{w}^h_n$ indicates the time derivative of the discrete
+trial function $w^h_n$, $a(\cdot, \cdot)$ and $L(v)$ are the bilinear and linear
+forms, respectively, associated with the variational problem, while $r(\cdot,
+\cdot)$ is the weak-residual.
 
 Now we can describe dual problem associated with the general residual based
 space-time finite element introduced previously, \eqref{eq:WeakResidual}.
-Namely, we introduce the discrete dual solution $\Phi^h$ associated with the
+Namely, we introduce the discrete dual solution $\Phi^h_n$ associated with the
 problem \eqref{eq:WeakResidual}. To this end, given the primal problem,
-\eqref{eq:WeakResidual}, then we the dual solution is given by:
+\eqref{eq:WeakResidual}, and the goal functional $\psi$ we the dual solution is
+given by:
 \begin{equation*}
     \begin{split}
-        &\text{Find } \Phi^h \in (W^h_n)^* \text{ such that} \\
-        r^*(\Phi^h, v^h) := r(v^h, \Phi) &= (v^h_t, \Phi^h) + a(v^h, \Phi^h)
-            - (v^h, \psi) = 0 \quad \forall v^h \in W^h_n,
+        &\text{Find } \Phi^h_n \in (W^h_n)^* \text{ such that} \\
+        r^*(\Phi^h_n, v^h) := r(v^h, \Phi^h_n) &= (\dot{v}^h, \Phi^h_n)
+            + a(v^h, \Phi^h_n) - (v^h, \psi_n) = 0 \quad
+            \forall v^h \in W^h_n,
     \end{split}
 \end{equation*}
-where $\psi$ is the projection of the goal functional $M(\cdot) = (\cdot, \psi)$
-onto the finite element space $W^h_n$. In other words, given the solution $w^h$
-to \eqref{eq:WeakResidual} we solve the problem
+where $\psi$ is the projection of the goal functional $\mathcal{M}(\cdot) =
+(\cdot, \psi)$ onto the finite element space $W^h_n$. In other words, given the
+solution $w^h_n$ to \eqref{eq:WeakResidual} we solve the problem
 \begin{equation}
     \begin{split}
-        &\text{Find } \Phi^h \in (W^h_n)^* \text{ such that} \\
-        r(v^h, \Phi^h) &:= (v^h_t, \Phi^h) + a(v^h, \Phi^h) - M(w^h) = 0
-                       \quad \forall v^h \in W^h.
+        &\text{Find } \Phi^h_n \in (W^h_n)^* \text{ such that} \\
+        r(v^h, \Phi^h_n) &:= (\dot{v}^h, \Phi^h_n)
+            + a(v^h, \Phi^h_n) - \mathcal{M}(w^h_n) = 0 \quad \forall v^h \in W^h_n.
     \end{split}
     \label{eq:Dual}
 \end{equation}
 
-Given the solutions $w,\, w^h$ to the primal and discrete primal problems,
-respectively, while $\Phi$ is the exact dual solution then
-taking $v$ and $v^h$ to be $w$ and $w^h$, respectively, we can determine the
-error in the goal functional at time $t$ in the following manner
+Given the solutions $w,\, w^h_n$ to the continuous and discrete primal problems,
+respectively, while $\Phi, \Phi^h_n$ are the continuous and discrete dual
+solutions, respectively, then taking $v$ and $v^h$ to be $w$ and $w^h_n$,
+respectively, we can determine the error in the goal functional at time $t$ in
+the following manner
 \begin{align}
-    M(w) - M(w^h) &= \left((w_t, \Phi) + a(w, \Phi)\right)
-                      - \left( (w^h_t, \Phi) + a(w^h, \Phi) \right) \nonumber \\
-    M(w - w^h) &= (w_t - w^h_t, \Phi) + a(w - w^h, \Phi) \nonumber \\
-    M(e) &= 0 \label{eq:DualError}
+    \mathcal{M}(w) - \mathcal{M}(w^h_n) &= \left((\dot{w}, \Phi) + a(w, \Phi)\right)
+                      - \left( (\dot{w}^h_n, \Phi) + a(w^h_n, \Phi) \right) \nonumber \\
+    \mathcal{M}(w - w^h_n) &= (\dot{w} - \dot{w}^h_n, \Phi) + a(w - w^h_n, \Phi) \nonumber \\
+    \mathcal{M}(e) &= 0 \label{eq:DualError}
 \end{align}
 where the last line, \eqref{eq:DualError} is due to Galerkin orthogonality. On
 the other hand we have
 \begin{align}
-    M(e) & = \left((w_t, \Phi) + a(w, \Phi) - L(\Phi)\right)
-             - \left((w^h_t, \Phi) + a(w^h, \Phi) - L(\Phi) \right) \nonumber \\
-    &= -\left((w^h_t, \Phi) + a(w^h, \Phi) - L(\Phi) \right) \nonumber \\
-    M(e) &= -r(w^h, \Phi) \label{eq:ErrorRepresentation} \\
+    \mathcal{M}(e) & = \left((\dot{w}, \Phi) + a(w, \Phi) - L(\Phi)\right)
+             - \left((\dot{w}^h_n, \Phi) + a(w^h_n, \Phi) - L(\Phi) \right) \nonumber \\
+    &= -\left((\dot{w}^h_n, \Phi) + a(w^h_n, \Phi) - L(\Phi) \right) \nonumber \\
+    \mathcal{M}(e) &= -r(w^h_n, \Phi) \label{eq:ErrorRepresentation} \\
 \end{align}
 
 However, we must consider the contribution from each indiviudal element to
@@ -89,28 +92,28 @@ allowing for the error to be partitioned into its contribution from each element
 $K_j$.
 Therefore, we see that the error at time $t$ is given by
 \begin{equation}
-    M(e) = \sum_{j=1}^M r(w^h, \Phi) \, \Theta_{K_j},
-         = \sum_{j=1}^M r(w^h, \Phi\, \Theta_{K_j}).
+    \mathcal{M}(e) = \sum_{j=1}^M r(w^h_n, \Phi) \, \Theta_{K_j},
+         = \sum_{j=1}^M r(w^h_n, \Phi\, \Theta_{K_j}).
     \label{eq:ErrorSum}
 \end{equation}
 The rightmost equality being a result of linearity in the test function of
 $r(\cdot, \cdot)$.  For simplicity we will write
 \begin{equation*}
-    r(w^h, \Phi\, \Theta_{K_j}) = r_{K_j}(w^h, \Phi)
+    r(w^h_n, \Phi\, \Theta_{K_j}) = r_{K_j}(w^h_n, \Phi)
 \end{equation*}
 and therefore \eqref{eq:ErrorSum} becomes
 \begin{equation}
-    M(e) = \sum_{j=1}^M r_{K_j}(w^h, \Phi).
+    \mathcal{M}(e) = \sum_{j=1}^M r_{K_j}(w^h_n, \Phi).
     \label{eq:TotalError}
 \end{equation}
 To determine the error over time we then integrate over the time interval $I$
 \begin{equation*}
-    \int_I\! M(e)\, dt = \int_I\! r_{K_j}(w^h, \Phi)\, dt.
+    \int_I\! \mathcal{M}(e)\, dt = \int_I\! r_{K_j}(w^h_n, \Phi)\, dt.
 \end{equation*}
 Finally, given a time step $k$ and using a trapezoid rule we can approximate the
 time integration and determine a computable total error
 \begin{equation}
-    \int_I\! M(e)\, dt = \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h, \Phi).
+    \int_I\! \mathcal{M}(e)\, dt = \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h_n, \Phi).
     \label{eq:TotalErrorEstimate}
 \end{equation}
 
@@ -118,38 +121,56 @@ Thus, if we want to control the total error after all time step in our
 functional using adaptive mesh refinement we would want
 \begin{equation}
     \begin{split}
-        \int_I\! M(e)\, dt &= \int_I\! r(w^h, \Phi)\, dt \\
-            &= \int_I\! \sum_{j=1}^M r_{K_j}(w^h, \Phi)\, dt \\
-            &= \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h, \Phi) < TOL.
+        \int_I\! \mathcal{M}(e)\, dt &= \int_I\! r(w^h_n, \Phi)\, dt \\
+            &= \int_I\! \sum_{j=1}^M r_{K_j}(w^h_n, \Phi)\, dt \\
+            &= \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h_n, \Phi) < TOL.
     \end{split}
     \label{eq:Tol}
 \end{equation}
 Thus we have an error estimate, \eqref{eq:TotalErrorEstimate}, and it appears
-that determining the error in a goal functional, $M(e)$, is equivalent to
+that determining the error in a goal functional, $\mathcal{M}(e)$, is equivalent to
 evaluating the weak residual, \eqref{eq:WeakResidual}, using the primal and dual
 solutions.
 
 However, due to Galerkin orthogonality when taking the dual solution to be
-the discrete dual $\Phi^h$ we would still see that
+the discrete dual $\Phi^h_n$ we would still see that
 \begin{equation*}
-    \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h, \Phi^h) = 0.
+    \frac{1}{k} \sum_{n=0}^N \sum_{j=1}^M r_{K_j}(w^h_n, \Phi^h_n) = 0.
 \end{equation*}
 While this seems impractical we see that the per element error is still useful
 for indicating where mesh refinement should take place. On the other hand for
-non-Galerkin orthogonal discretizations\slash~problems, such as the $cG(1)cG(1)$
+non-Galerkin orthogonal discretizations/problems, such as the $cG(1)cG(1)$
 discretizations.
 
 Taking $\mathcal{E}$ to be the cellwise error indicator at the end of our time
 interval $I$, while taking $\mathcal{E}_{K_j, n}$ to be
-the error indicator for cell $K_j$ at time $t_n$ then our error indicator is
+the error indicator for cell $K_j$ at time $t_n$ then our cellwise error
+indicator is given by
+\begin{equation}
+    \begin{split}
+        \mathcal{E}_{K_j} &= \frac{1}{k} \sum_{n=0}^N r_{K_j}(w^h_n, \Phi^h_n) \\
+                &= \frac{1}{k} \sum_{n=0}^N \mathcal{E}_{K_j, n}
+    \end{split}
+    \label{eq:CellErrorIndicator}
+\end{equation}
+while for non-Galerkin orthogonal discretization/problems the error indicator is
 given by
 \begin{equation}
     \begin{split}
-    \mathcal{E}(x) &= \frac{1}{k} \sum_{n=0}^N \sum_{j=0}^M r_{K_j}(w^h, \Phi) \\
-                &= \frac{1}{k} \sum_{n=0}^N \sum_{j=0}^M \mathcal{E}_{K_j, n}(x)
+        \mathcal{E} &= \frac{1}{k} \sum_{n=0}^N \sum_{j=0}^M r_{K_j}(w^h_n, \Phi^h_n) \\
+            &= \frac{1}{k} \sum_{n=0}^N \sum_{j=0}^M  \mathcal{E}_{K_j, n}.
     \end{split}
     \label{eq:ErrorIndicator}
 \end{equation}
+To determine a stopping criterion for orthogonal discretizations/problems we
+will have to look at the difference in goal functions from one mesh
+discretization to another, i.e.
+\begin{equation}
+     \left|\mathcal{M}(w^{h_m}_n) - \mathcal{M}(w^{h_{m-1}}_n)\right|
+        < \gamma\, TOL,
+    \label{eq:OrthogonalError}
+\end{equation}
+where $\gamma>0$ is a problem specific constant.
 
 With this in place our goal oriented adaptive algorithm is then given by
 \autoref{alg:Adaptivity}.
@@ -159,13 +180,14 @@ With this in place our goal oriented adaptive algorithm is then given by
   \KwData{Let $(\mathcal{T}_m, W^{h_m}_n,\mathcal{P})$ be a finite element
     discretization of
     \begin{equation*}
-        r(w^{h_m} ,v^{h_m}) = (w^{h_m}_t, v^{h_m}) + a(w^{h_m}, v^{h_m}) -
-            L(v^{h_m}).
+        r(w^{h_m}_n ,v^{h_m}_n) = (\dot{w}^{h_m}_n, v^{h_m}_n) + a(w^{h_m}_n, v^{h_m}_n) -
+            L(v^{h_m}_n).
     \end{equation*}}
   \SetAlgoLined
   \While{ $\left|\frac{1}{k} \sum\limits_{n=0}^{N} \sum\limits_{j=1}^M
         \mathcal{E}^{cG(1)}_{K_j, n}\right| > TOL$
-      \footnote{Use $\left|M(w^{h_m}) - M(w^{h_{m-1}})\right| > \gamma TOL$ for
+      \footnote{Use $\left|\mathcal{M}(w^{h_m}_n) -
+                \mathcal{M}(w^{h_{m-1}}_n)\right| > \gamma\, TOL$ for
         orthogonal error representation.}}{
       \nl For the mesh $\mathcal{T}$: compute the primal problem and the dual
             problem. \\
