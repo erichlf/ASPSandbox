@@ -61,6 +61,12 @@ class Problem(ProblemBase):
         self.t0 = 0.
         self.T = options['T']
         self.Ubar = 1.0
+        try:
+            self.CFL = options['CFL']
+        except:
+            self.CFL = 100
+
+        self.dt = options['k']
         self.k = self.time_step(self.Ubar, self.mesh)
 
         try:  # set up heat coefficient
@@ -108,9 +114,10 @@ class Problem(ProblemBase):
         return M
 
     def time_step(self, Ubar, mesh):
-        CFL = 100
-
-        k = CFL*mesh.hmin()
+        if CFL == 0:
+            k = self.dt
+        else:
+            k = CFL*mesh.hmin()
 
         return k
 
