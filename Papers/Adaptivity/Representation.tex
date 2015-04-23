@@ -139,7 +139,7 @@ the discrete dual $\Phi^h_n$ we would still see that
 \end{equation*}
 While this seems impractical we see that the per element error is still useful
 for indicating where mesh refinement should take place. On the other hand for
-non-Galerkin orthogonal discretizations/problems, such as the $cG(1)cG(1)$
+non-Galerkin orthogonal discretizations/problems, such as the $cG(1)cG(1)-GLS$
 discretizations.
 
 Taking $\mathcal{E}$ to be the cellwise error indicator at the end of our time
@@ -180,8 +180,8 @@ With this in place our goal oriented adaptive algorithm is then given by
   \KwData{Let $(\mathcal{T}_m, W^{h_m}_n,\mathcal{P})$ be a finite element
     discretization of
     \begin{equation*}
-        r(w^{h_m}_n ,v^{h_m}_n) = (\dot{w}^{h_m}_n, v^{h_m}_n) + a(w^{h_m}_n, v^{h_m}_n) -
-            L(v^{h_m}_n).
+        r(w^{h_m}_n ,v^{h_m}_n) = (\dot{w}^{h_m}_n, v^{h_m}_n)
+            + a(w^{h_m}_n, v^{h_m}_n) - L(v^{h_m}_n).
     \end{equation*}}
   \SetAlgoLined
   \While{ $\left|\frac{1}{k} \sum\limits_{n=0}^{N} \sum\limits_{j=1}^M
@@ -198,3 +198,39 @@ With this in place our goal oriented adaptive algorithm is then given by
   }
 \end{minipage}
 \end{algorithm}
+
+\subsection{Stabilized Methods}
+For stabilized methods, such as the $cG(1)cG(1)-GLS$ method presented in
+\autoref{sec:Results}, we no-longer have Galerkin orthogonality and thus we can
+say a bit more about the error in our goal functional, $\mathcal{M}$.
+
+First, we introduce a general stabilized finite element discretization; use
+the same space-time finite element discretization presented for
+\eqref{eq:WeakResidual} then we can write a general stabilized finite element
+discretization as the sum of a weak residual and stabilization terms
+\begin{equation}
+    r(w^h_n, v^h) + S_{\delta}(w^h_n, v^h) = 0,
+    \label{eq:StableWeakResidual}
+\end{equation}
+where $r(w^h_n, v^h)$ is the discretized weak residual, $S_{\delta}(w^h_n, v^h)$
+is the stabilization and $\delta$ is a stabilization parameter depending on the
+mesh size, $h$. With the stabilization parameter depending on the mesh size,
+$h$, one can control the amount of stabilization used in various regions of the
+computational domain. This allows one to minimize the error, through
+mesh refinement, associated to the stabilization, where it contributes most to a
+goal functional.
+
+To do this we will solve both the primal and dual problems,
+\eqref{eq:WeakResidual} and \eqref{eq:Dual}, respectively, with the
+stabilization terms present, however when calculating the error indicator
+$\mathcal{E}^{S_{\delta}}$ we will eliminate the stabilization terms, i.e.
+\begin{equation}
+    \begin{split}
+        \mathcal{E}^{S_{\delta}}
+        &= \frac{1}{k} \sum_{n=0}^N \sum_{j=0}^M  \mathcal{E}^{S_{\delta}}_{K_j, n} \\
+        &= \frac{1}{k} \sum_{n=0}^N \sum_{j=0}^M r_{K_j}(w^h_n, \Phi^h_n) \\
+        &= \frac{1}{k} \sum_{n=0}^N r(w^h_n, \Phi^h_n) \\
+        &= -\frac{1}{k} \sum_{n=0}^N S_{\delta}(w^h_n, \Phi^h_n)
+    \end{split}
+    \label{eq:StableErrorIndicator}
+\end{equation}
