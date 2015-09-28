@@ -8,6 +8,7 @@ __license__ = "GNU GPL version 3 or any later version"
 
 from ASP import *
 from ASP import Problem as ProblemBase
+from mshr import *
 
 
 class InitialConditions2D(Expression):
@@ -74,13 +75,13 @@ class Problem(ProblemBase):
         if self.dim == 3:
             self.uNoSlip = Expression(('0', '0', '0'))
             self.uLid = Expression(('1', '0', '0'))
-            domain = Box(0, 0, 0, 1, 1, 1)
+            domain = Box(Point(0, 0, 0), Point(1, 1, 1))
         else:
             self.uNoSlip = Expression(('0', '0'))
             self.uLid = Expression(('1', '0'))
-            domain = Rectangle(0, 0, 1, 1)
+            domain = Rectangle(Point(0, 0), Point(1, 1))
 
-        self.mesh = Mesh(domain, self.Nx)
+        self.mesh = generate_mesh(domain, self.Nx)
 
         self.t0 = 0.
         self.T = options['T']

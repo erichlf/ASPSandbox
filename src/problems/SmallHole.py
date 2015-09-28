@@ -4,6 +4,8 @@ __license__ = "GNU GPL version 3 or any later version"
 
 from ASP import *
 from ASP import Problem as ProblemBase
+from mshr import *
+
 
 # outer square dimensions
 Xmin, Xmax, Ymin, Ymax = 0., 1., 0., 1.
@@ -51,11 +53,10 @@ class Problem(ProblemBase):
             domain = options['initial_mesh']
             self.mesh = Mesh(domain)
         except:
-            from mshr import *
-
             outerRect = Rectangle(Point(Xmin, Ymin), Point(Xmax, Ymax))
             innerRect = Rectangle(Point(xmin, ymin), Point(xmax, ymax))
             domain = outerRect - innerRect
+            self.Nx = options['Nx']
             self.mesh = generate_mesh(domain, self.Nx)
 
         self.t0 = 0.
@@ -114,10 +115,10 @@ class Problem(ProblemBase):
         return M
 
     def time_step(self, Ubar, mesh):
-        if CFL == 0:
+        if self.CFL == 0:
             k = self.dt
         else:
-            k = CFL*mesh.hmin()
+            k = self.CFL*mesh.hmin()
 
         return k
 
