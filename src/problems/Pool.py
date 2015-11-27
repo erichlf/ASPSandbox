@@ -15,7 +15,6 @@ from ASP import Problem as ProblemBase
 from dolfin_adjoint import *
 from math import factorial
 import numpy as np
-from mshr import *
 
 x0 = -6.
 x1 = 60.
@@ -276,11 +275,6 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
-        try:
-            self.optimize = Options['Optimize']
-        except:
-            self.optimize = False
-
         # Scaling Parameters
         self.sigma = Constant(h0 / lambda0)
         self.epsilon = Constant(a0 / h0)
@@ -288,8 +282,7 @@ class Problem(ProblemBase):
         # Create mesh
         self.Nx = options['Nx']
         self.Ny = options['Ny']
-        domain = Rectangle(Point(x0, y0), Point(x1, y1))
-        self.mesh = generate_mesh(domain, self.Nx)
+        self.mesh = RectangleMesh(Point(x0, y0), Point(x1, y1), self.Nx, self.Ny)
 
         try:
             refine = options['refine']
@@ -338,7 +331,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, W):
         w0 = InitialConditions(self.epsilon, self.params)
-        w0 = project(w0, W, annotate=self.optimize)
+        w0 = project(w0, W, annotate=True)
 
         return w0
 
@@ -370,14 +363,13 @@ class Problem(ProblemBase):
             Shape optimization for Peregrine System.
         '''
         (eta, zeta) = (w[2], w[3])
-        params = self.params
 
         # Functionnal to be minimized: L2 norm over a subdomain
         J = Functional(- inner(eta, eta) * dx * dt[FINISH_TIME]
                        + zeta * zeta * dx * dt[FINISH_TIME])
 
         # shape parameters
-        Jhat = ReducedFunctional(J, [Control(p) for p in params])
+        Jhat = ReducedFunctional(J, [Control(p) for p in self.params])
         opt_params = minimize(Jhat)
         '''
         opt_object = project(self.object_init(opt_params), solver.Q)
