@@ -122,6 +122,7 @@ class Solver(SolverBase):
         Rv1, Rv2, z1, z2 = self.strong_residual(problem, w_theta, wt, zeta_t,
                                                 zeta_tt)
         r += (d1 * inner(R1 + z1, Rv1) + d2 * (R2 + z2) * Rv2) * dx
+        r += Constant(0) * sum(problem.params) * xi * dx
         # streamline diffusion
         # r += d * (inner(grad(u), grad(v)) + inner(grad(eta), grad(chi))) * dx
 

@@ -15,6 +15,7 @@ from ASP import Problem as ProblemBase
 from dolfin_adjoint import *
 from math import factorial
 import numpy as np
+from mshr import *
 
 x0 = -6.
 x1 = 60.
@@ -275,6 +276,11 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
+        try:
+            self.optimize = Options['Optimize']
+        except:
+            self.optimize = False
+
         # Scaling Parameters
         self.sigma = Constant(h0 / lambda0)
         self.epsilon = Constant(a0 / h0)
@@ -282,7 +288,8 @@ class Problem(ProblemBase):
         # Create mesh
         self.Nx = options['Nx']
         self.Ny = options['Ny']
-        self.mesh = RectangleMesh(x0, y0, x1, y1, self.Nx, self.Ny)
+        domain = Rectangle(Point(x0, y0), Point(x1, y1))
+        self.mesh = generate_mesh(domain, self.Nx)
 
         try:
             refine = options['refine']
@@ -331,7 +338,7 @@ class Problem(ProblemBase):
 
     def initial_conditions(self, W):
         w0 = InitialConditions(self.epsilon, self.params)
-        w0 = project(w0, W, annotate=True)
+        w0 = project(w0, W, annotate=self.optimize)
 
         return w0
 
