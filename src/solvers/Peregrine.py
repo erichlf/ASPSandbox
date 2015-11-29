@@ -5,8 +5,6 @@ __license__ = "GNU GPL version 3 or any later version"
 from ASP import *
 from ASP import Solver as SolverBase
 
-EPSILON = 1E-15
-
 
 class Solver(SolverBase):
 
@@ -33,7 +31,8 @@ class Solver(SolverBase):
         Xi = FunctionSpace(mesh, 'DG', 1)
         W = MixedFunctionSpace([V, Q, Nu, Xi])
 
-        self.w__ = Function(W, name='w__')
+        self.Nu = Nu  # for graphing the wave object
+        self.w__ = Function(W, name='w__')  # for second derivative
 
         return W
 
@@ -124,7 +123,6 @@ class Solver(SolverBase):
         Rv1, Rv2, z1, z2 = self.strong_residual(problem, w_theta, wt, zeta_t,
                                                 zeta_tt)
         r += (d1 * inner(R1 + z1, Rv1) + d2 * (R2 + z2) * Rv2) * dx
-        # r += Constant(100) * sum(problem.params) * xi * dx
         # streamline diffusion
         # r += d * (inner(grad(u), grad(v)) + inner(grad(eta), grad(chi))) * dx
 
@@ -188,9 +186,13 @@ class Solver(SolverBase):
             self._pDualfile = File(s + '_etaDual.pvd', 'compressed')
             self._HDualfile = File(s + '_HDual.pvd', 'compressed')
             self.meshfile = File(s + '_mesh.xml')
+            self.objfile = File(s + '_Obj.pvd', 'compressed')
+            self.optobjfile = File(s + '_ObjOpt.pvd', 'compressed')
         else:
             if self.eifile is None:  # error indicators
                 self.eifile = File(s + '_ei.pvd', 'compressed')
+                self.objfile = File(s + '_Obj.pvd', 'compressed')
+                self.optobjfile = File(s + '_ObjOpt.pvd', 'compressed')
             self._ufile = File(s + '_u%d.pvd' % n, 'compressed')
             self._pfile = File(s + '_eta%d.pvd' % n, 'compressed')
             self._Hfile = File(s + '_H%d.pvd' % n, 'compressed')

@@ -68,6 +68,7 @@ class InitialConditions(Expression):
                           W4=params[6], dz=params[7])
         self.D = Depth()
         self.epsilon = epsilon
+        self.params = params
 
     def eval(self, values, x):
         D = np.array([0], dtype='d')
@@ -80,6 +81,22 @@ class InitialConditions(Expression):
         values[2] = 0.
         values[3] = z
         values[4] = D + self.epsilon * z
+
+    def deval(self, values, x, derivative_coefficient):
+        dz = np.array([0], dtype='d')
+        self.obj.deval(dz, x, derivative_coefficient)
+
+        values[0] = 0.
+        values[1] = 0.
+        values[2] = 0.
+        values[3] = dz
+        values[4] = self.epsilon * dz
+
+    def dependencies(self):
+        return self.obj.dependencies()
+
+    def copy(self):
+        return self.__class__(self.epsilon, self.params)
 
     def value_shape(self):
         return (5,)
@@ -120,6 +137,15 @@ class Depth(Expression):
             M = 0
             X = 0
         value[0] = hd + M * (x[1] - X)
+
+    def deval(self, value, x, derivative_coefficient):
+        value[0] = 0.
+
+    def dependencies(self):
+        return []
+
+    def copy(self):
+        return self.__class__()
 
     def value_shape(self):
         return ()
@@ -282,7 +308,8 @@ class Problem(ProblemBase):
         # Create mesh
         self.Nx = options['Nx']
         self.Ny = options['Ny']
-        self.mesh = RectangleMesh(Point(x0, y0), Point(x1, y1), self.Nx, self.Ny)
+        self.mesh = RectangleMesh(Point(x0, y0), Point(x1, y1),
+                                  self.Nx, self.Ny)
 
         try:
             refine = options['refine']
@@ -329,9 +356,9 @@ class Problem(ProblemBase):
 
         return mesh
 
-    def initial_conditions(self, W):
+    def initial_conditions(self, W, annotate=False):
         w0 = InitialConditions(self.epsilon, self.params)
-        w0 = project(w0, W, annotate=True)
+        w0 = project(w0, W, annotate=annotate)
 
         return w0
 
@@ -362,6 +389,17 @@ class Problem(ProblemBase):
         '''
             Shape optimization for Peregrine System.
         '''
+        print '%%%%%%%%%%%%%%%%%%% ORIGINAL WAVE OBJECT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+        obj = project(Object(H=self.params[0],
+                             N1=self.params[1], N2=self.params[2],
+                             W1=self.params[3], W2=self.params[4],
+                             W3=self.params[5], W4=self.params[6],
+                             dz=self.params[7]),
+                      solver.Nu)
+        print 'H=%f, N1=%f, N2=%f, W=[%f, %f, %f, %f], dz=%f]' % \
+            (self.params[0], self.params[1], self.params[2], self.params[3],
+             self.params[4], self.params[5], self.params[6], self.params[7])
+
         (eta, zeta) = (w[2], w[3])
 
         # Functionnal to be minimized: L2 norm over a subdomain
@@ -371,15 +409,21 @@ class Problem(ProblemBase):
         # shape parameters
         Jhat = ReducedFunctional(J, [Control(p) for p in self.params])
         opt_params = minimize(Jhat)
-        '''
-        opt_object = project(self.object_init(opt_params), solver.Q)
+        opt_object = project(Object(H=opt_params[0],
+                                    N1=opt_params[1], N2=opt_params[2],
+                                    W1=opt_params[3], W2=opt_params[4],
+                                    W3=opt_params[5], W4=opt_params[6],
+                                    dz=opt_params[7]),
+                             solver.Nu)
         if self.options['plot_solution']:
+            plot(obj, title='Before Optimization.')
             plot(opt_object, title='Optimization result.')
             interactive()
-        else:
-            solver.optfile << opt_object
-        '''
+        if self.options['save_solution']:
+            solver.objfile << obj
+            solver.optobjfile << opt_object
 
+        print '%%%%%%%%%%%%%%%%%%% OPTIMIZED WAVE OBJECT %%%%%%%%%%%%%%%%%%%%%%%%%%%%'
         print 'H=%f, N1=%f, N2=%f, W=[%f, %f, %f, %f], dz=%f]' % \
             (opt_params[0], opt_params[1], opt_params[2], opt_params[3],
              opt_params[4], opt_params[5], opt_params[6], opt_params[7])
