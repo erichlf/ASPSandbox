@@ -24,7 +24,7 @@ class Solver(SolverBase):
         if(self.dg):
             Q = FunctionSpace(mesh, 'DG', 1)
         else:
-            Q = FunctionSpace(mesh, 'CG', 1)
+            Q = FunctionSpace(mesh, 'CG', 2)
         P = FunctionSpace(mesh, 'CG', 1)
         W = MixedFunctionSpace([Q, P])
 
@@ -49,17 +49,17 @@ class Solver(SolverBase):
         if(self.dg):
             flux = self.Flux(problem, W, q, psi, p, chi)
         else:
-            flux = 0 * dx
+            flux = 0
 
         # weak form of the equations
         r = ((1. / k) * (Q - Q_) * p
              + 1. / Re * inner(grad(q), grad(p))
-             + dot(b, grad(q)) * p) * dx # vorticity equation
-        r -= f * p * dx  # forcing function
-        r += flux # flux for dg method
+             + dot(b, grad(q)) * p) * dx  # vorticity equation
+        r -= 1. / Ro * f * p * dx  # forcing function
+        r += flux  # flux for dg method
 
         # streamfunction equation
-        r += (q * chi + Ro * inner(grad(psi), grad(chi)) - y * chi) * dx
+        r += (q * chi - inner(grad(psi), grad(chi)) - 1. / Ro * y * chi) * dx
 
         return r
 

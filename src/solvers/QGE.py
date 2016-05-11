@@ -21,7 +21,7 @@ class Solver(SolverBase):
 
     def function_space(self, mesh):
         # Define function spaces
-        Q = FunctionSpace(mesh, 'CG', 1)
+        Q = FunctionSpace(mesh, 'CG', 2)
         P = FunctionSpace(mesh, 'CG', 1)
         W = MixedFunctionSpace([Q, P])
 
@@ -76,9 +76,6 @@ class Solver(SolverBase):
         r -= d2 * inner(grad(psi), grad(chi)) * dx
 
         return r
-
-    def Jac(self, psi, q):
-        return psi.dx(1) * q.dx(0) - psi.dx(0) * q.dx(1)
 
     def suffix(self, problem):
         '''

@@ -15,6 +15,11 @@ class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
 
+        try:
+            self.potential = options['potential_vorticity']
+        except:
+            self.potential = False
+
         self.Nx = options['Nx']
         self.Ny = options['Ny']
         self.mesh = RectangleMesh(Point(0, -1), Point(1, 1), self.Nx, self.Ny)
@@ -42,13 +47,20 @@ class Problem(ProblemBase):
             self.Ro = 0.0016
 
     def initial_conditions(self, W, annotate=False):
-        w0 = Expression(('0', '0'))
+        if(self.potential):
+            w0 = Expression(('1. / Ro * x[1]', '0'), Ro=self.Ro)
+        else:
+            w0 = Expression(('0', '0'))
         w0 = project(w0, W)
 
         return w0
 
     def boundary_conditions(self, W, t):
-        noslipQ = DirichletBC(W.sub(0), Constant(0.), 'on_boundary')
+        if(self.potential):
+            qBC = Expression('1. / Ro * x[1]', Ro=self.Ro)
+        else:
+            w0 = Expression(('0', '0'))
+        noslipQ = DirichletBC(W.sub(0), qBC, 'on_boundary')
         noslipPsi = DirichletBC(W.sub(1), Constant(0.), 'on_boundary')
 
         bcs = [noslipQ, noslipPsi]
