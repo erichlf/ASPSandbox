@@ -8,6 +8,7 @@ solvers = [
     'SWE',
     'Peregrine',
     'QGE',
+    'QGECGDG',
     'DensityNSE',
     'Heat',
     'ADR',

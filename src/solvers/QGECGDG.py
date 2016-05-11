@@ -1,5 +1,5 @@
 __author__ = "Erich L Foster <efoster@bcamath.org>"
-__date__ = "2013-08-27"
+__date__ = "2016-06-11"
 
 from ASP import *
 from ASP import Solver as SolverBase
@@ -15,36 +15,30 @@ class Solver(SolverBase):
     def __init__(self, options):
         SolverBase.__init__(self, options)
         try:
-            self.stabilize = options['stabilize']
+            self.dg = options['dg']
         except:
-            self.stabilize = True
+            self.dg = True
 
     def function_space(self, mesh):
         # Define function spaces
-        Q = FunctionSpace(mesh, 'CG', 1)
+        if(self.dg):
+            Q = FunctionSpace(mesh, 'DG', 1)
+        else:
+            Q = FunctionSpace(mesh, 'CG', 1)
         P = FunctionSpace(mesh, 'CG', 1)
         W = MixedFunctionSpace([Q, P])
 
         return W
-
-    def strong_residual(self, w, w2):  # Not implemented yet
-        (q, psi) = (w[0], w[1])
-        q2 = w2[0]
-
-        b = as_vector((psi.dx(1), -psi.dx(0)))
-        R1 = dot(b, grad(q2)) - psi.dx(0)
-        R2 = q
-
-        return R1, R2
 
     def weak_residual(self, problem, k, W, w_theta, w, w_, wt, ei_mode=False):
         (q, psi) = (w_theta[0], w_theta[1])
         Q = w[0]
         Q_ = w_[0]
         (p, chi) = (wt[0], wt[1])
-        b = as_vector((psi.dx(1), -psi.dx(0)))
 
-        h = CellSize(W.mesh())  # mesh size
+        b = as_vector((psi.dx(1), - psi.dx(0)))
+
+        y = Expression('x[1]')  # y-coordinate
 
         Re = Constant(problem.Re)  # Reynolds Number
         Ro = Constant(problem.Ro)  # Rossby Number
@@ -52,40 +46,53 @@ class Solver(SolverBase):
         t = problem.t0
         f = problem.F(t)  # forcing and mass source/sink
 
-        d1 = conditional(le(h, 1. / Re), h**2, h)  # stabilization parameter
-        d2 = 0.01 * conditional(le(h, Ro), h**2, h)  # stabilization parameter
-
-        if(not self.stabilize or ei_mode):
-            d1 = Constant(0)
-            d2 = Constant(0)
+        if(self.dg):
+            flux = self.Flux(problem, W, q, psi, p, chi)
+        else:
+            flux = 0 * dx
 
         # weak form of the equations
         r = ((1. / k) * (Q - Q_) * p
              + 1. / Re * inner(grad(q), grad(p))
-             + dot(b, grad(q)) * p
-             - psi.dx(0) * p) * dx  # vorticity equation
+             + dot(b, grad(q)) * p) * dx # vorticity equation
         r -= f * p * dx  # forcing function
-        # streamfunction equation
-        r += (q * chi - Ro * inner(grad(psi), grad(chi))) * dx
+        r += flux # flux for dg method
 
-        # least squares stabilization
-        # R1, R2 = self.strong_residual(w_theta, w_theta)
-        # Rv1, Rv2 = self.strong_residual(wt, w_theta)
-        # r += (d1 * (R1 - f) * Rv1 + d2 * R2 * Rv2) * dx
-        r += d1 * inner(grad(q), grad(p)) * dx
-        r -= d2 * inner(grad(psi), grad(chi)) * dx
+        # streamfunction equation
+        r += (q * chi + Ro * inner(grad(psi), grad(chi)) - y * chi) * dx
 
         return r
 
-    def Jac(self, psi, q):
-        return psi.dx(1) * q.dx(0) - psi.dx(0) * q.dx(1)
+    def Flux(self, problem, W, q, psi, p, chi):
+        Re = Constant(problem.Re)
+        n = FacetNormal(W.mesh())
+        h = CellSize(W.mesh())  # mesh size
+
+        b = as_vector((psi.dx(1), - psi.dx(0)))
+        bn = (dot(b, n) + abs(dot(b, n))) / 2.
+
+        alpha = Constant(5.)
+
+        flux_fac = 1. / Re * (alpha / h('+')) * dot(jump(p, n), jump(q, n)) * dS \
+                   - 1. / Re * dot(avg(grad(p)), jump(q, n)) * dS \
+                   - 1. / Re * dot(jump(p, n), avg(grad(q))) * dS
+
+        flux_vel = dot(jump(p), bn('+') * q('+') - bn('-') * q('-')) * dS \
+                   + dot(p, bn * q) * ds
+
+        return flux_fac + flux_vel
 
     def suffix(self, problem):
         '''
             Obtains the run specific data for file naming, e.g. Nx, k, etc.
         '''
 
-        s = 'Re' + str(problem.Re) + 'Ro' + str(problem.Ro)
+        if(self.dg):
+            s = '-DG-'
+        else:
+            s = '-CG-'
+
+        s += 'Re' + str(problem.Re) + 'Ro' + str(problem.Ro)
 
         s += 'T' + str(problem.T)
         if problem.Nx is not None:
@@ -145,4 +152,4 @@ class Solver(SolverBase):
             self.vizP.plot(psi)
 
     def __str__(self):
-        return 'QGE'
+        return 'QGECGDG'

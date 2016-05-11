@@ -17,7 +17,7 @@ class Problem(ProblemBase):
 
         self.Nx = options['Nx']
         self.Ny = options['Ny']
-        self.mesh = RectangleMesh(0, -1, 1, 1, self.Nx, self.Ny)
+        self.mesh = RectangleMesh(Point(0, -1), Point(1, 1), self.Nx, self.Ny)
 
         # initial time, final time, time-step
         self.t0 = 0.
@@ -41,7 +41,7 @@ class Problem(ProblemBase):
         except:
             self.Ro = 0.0016
 
-    def initial_conditions(self, W):
+    def initial_conditions(self, W, annotate=False):
         w0 = Expression(('0', '0'))
         w0 = project(w0, W)
 

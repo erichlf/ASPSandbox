@@ -42,13 +42,13 @@ class Problem(ProblemBase):
         # Create mesh
         self.Nx = options["Nx"]
         self.Ny = options["Ny"]
-        self.mesh = RectangleMesh(-1, -1, 1, 1, self.Nx, self.Ny)
+        self.mesh = RectangleMesh(Point(-1, -1), Point(1, 1), self.Nx, self.Ny)
 
         self.t0 = 0.
         self.T = options['T']
         self.k = options['k']
 
-    def initial_conditions(self, W):
+    def initial_conditions(self, W, annotate=False):
         w0 = InitialConditions()
         w0 = project(w0, W)
 

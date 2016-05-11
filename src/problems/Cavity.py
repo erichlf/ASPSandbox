@@ -94,7 +94,7 @@ class Problem(ProblemBase):
 
         self.Re = 1. / self.nu
 
-    def initial_conditions(self, W):
+    def initial_conditions(self, W, annotate=False):
         if self.dim == 2:
             w0 = InitialConditions2D()
         else:
