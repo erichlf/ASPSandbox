@@ -64,6 +64,7 @@ class Solver(SolverBase):
         return r
 
     def Flux(self, problem, W, q, psi, p, chi):
+        # FIXME: Our convective velocity is not constant
         Re = Constant(problem.Re)
         n = FacetNormal(W.mesh())
         h = CellSize(W.mesh())  # mesh size

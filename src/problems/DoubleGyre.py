@@ -59,7 +59,7 @@ class Problem(ProblemBase):
         if(self.potential):
             qBC = Expression('1. / Ro * x[1]', Ro=self.Ro)
         else:
-            w0 = Expression(('0', '0'))
+            qBC = Expression('0')
         noslipQ = DirichletBC(W.sub(0), qBC, 'on_boundary')
         noslipPsi = DirichletBC(W.sub(1), Constant(0.), 'on_boundary')
 
