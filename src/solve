@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 __author__ = "Erich L Foster <erichlf@gmail.com>"
-__date__ = "2014-10-16"
+__date__ = "2018-12-26"
 __license__ = "GNU GPL version 3 or any later version"
 #
 #   adapted from ns in nsbench originally developed by
@@ -8,6 +8,7 @@ __license__ = "GNU GPL version 3 or any later version"
 #
 
 import sys
+from argparse import ArgumentParser
 from time import time
 
 from ASP import *
@@ -18,66 +19,40 @@ Default_Solver = 'NSE'
 Default_Problem = 'Cylinder'
 
 
-def usage():  # Print usage
-    print """\
-Usage: solve solver problem (run solver for given problem)
-solve solver (run solver for """ + Default_Problem + """.)
-solve problem (run """ + Default_Solver + """ for problem.)
+def parse_args(args):
+    parser = ArgumentParser(description='Solve the given solver-problem combination')
 
-Options are submitting in the form option=value
+    parser.add_argument('solver', type=str, default=Default_Solver,
+                        help='Available solvers:' +
+                             '{}'.format('\n'.join('  ' + s for s in solvers)))
+    parser.add_argument('problem', type=str, default=Default_Problem,
+                        help='Available problems:' +
+                             '{}'.format('\n'.join('  ' + p for p in problems)))
 
-Available solvers:
-%s
+    args, params = parser.parse_known_args()
 
-Available problems:
-%s
-
-Available options: (option = default value)
-%s
-""" % ('\n'.join('  ' + s for s in solvers),
-       '\n'.join('  ' + p for p in problems),
-       '\n'.join('  ' + key + ' = ' + str(value)
-                 for key, value in OPTIONS.iteritems()))
+    return args, params
 
 
 #   Parse command-line arguments and run solver.
-def main(args):
-    # Extract arguments (note: don't change the order here!)
-    params = [arg for arg in args if "=" in arg]
-    args = [arg for arg in args if "=" not in arg]
-
-    # Decide list of problems and solvers based on command-line arguments
-    if len(args) < 1:
-        usage()
-        return 1
-    elif len(args) == 1 and args[0] in problems:
-        solver_name = Default_Solver
-        problem_name = args[0]
-    elif len(args) == 1 and args[0] in solvers:
-        solver_name = args[0]
-        problem_name = Default_Problem
-    elif len(args) == 2 and args[0] in solvers and args[1] in problems:
-        solver_name, problem_name = args[:2]
-    else:
-        usage()
-        return 1
-
+def main(solver_name, problem_name, params):
     # Get options
     options = OPTIONS.copy()
-    for parameter in params:
-        try:
-            key, value = parameter.split('=', 1)
+    if params is not None:
+        for parameter in params:
             try:
-                options[key] = eval(value)
+                key, value = parameter.split('=', 1)
+                try:
+                    options[key] = eval(value)
+                except:
+                    options[key] = str(value)
             except:
-                options[key] = str(value)
-        except:
-            print 'Warning: Unhandled command-line argument', parameter
+                print('Warning: Unhandled command-line argument', parameter)
 
     # Set debug level
-    set_log_active(options["debug"])
+    set_log_level(options["debug"])
 
-    print 'Solving %s for the %s problem.' % (solver_name, problem_name)
+    print('Solving {} for the {} problem.'.format(solver_name, problem_name))
     # Create problem and solver
     problem = Problem(problem_name, options)
     solver = Solver(solver_name, options)
@@ -91,10 +66,12 @@ def main(args):
 
     sys.stdout.flush()
     sys.stdout.write('\033[K')
-    print 'Solved %s for the %s problem in %g seconds.' % (solver_name,
-                                                           problem_name, wct)
+    print('Solved {} for the {} problem in {:g} seconds.'.format(solver_name,
+                                                                 problem_name,
+                                                                 wct))
 
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    args, params = parse_args(sys.argv[1:])
+    sys.exit(main(args.solver, args.problem, params))

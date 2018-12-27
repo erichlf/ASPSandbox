@@ -1,5 +1,5 @@
 __author__ = "Erich L Foster <erichlf@gmail.com>"
-__date__ = "2013-08-27"
+__date__ = "2018-12-26"
 __license__ = "GNU GPL version 3 or any later version"
 
 # List of solvers
@@ -23,5 +23,5 @@ solvers = [
 
 def Solver(name, options):  # Wrapper for solver classes
     # Return solver instance for given solver name"
-    exec('from %s import Solver as NamedSolver' % name)
+    exec('from .{} import Solver as NamedSolver'.format(name), globals())
     return NamedSolver(options)
