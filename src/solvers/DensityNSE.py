@@ -22,11 +22,10 @@ class Solver(SolverBase):
 
     # Define function spaces
     def function_space(self, mesh):
-        V = VectorFunctionSpace(mesh, 'CG', 1)
-        R = FunctionSpace(mesh, 'CG', 1)
-        Q = FunctionSpace(mesh, 'CG', 1)
-
-        W = MixedFunctionSpace([V, R, Q])
+        V = VectorElement('CG', mesh.ufl_cell(), 1)
+        R = FiniteElement('CG', mesh.ufl_cell(), 1)
+        Q = FiniteElement('CG', mesh.ufl_cell(), 1)
+        W = FunctionSpace(mesh, V * R * Q)
 
         return W
 
@@ -51,7 +50,7 @@ class Solver(SolverBase):
 
         nu = problem.nu  # kinematic viscosity
 
-        h = CellSize(W.mesh())  # mesh size
+        h = W.mesh().hmin()  # mesh size
         # stabilization parameters
         # d1 = conditional(le(h, nu), h**2, h)
         d = (h**(2.) + problem.wb * h**(3./2.))
@@ -147,21 +146,6 @@ class Solver(SolverBase):
                 self._uDualfile << u
                 self._pDualfile << p
                 self._rhoDualfile << rho
-
-    def Plot(self, problem, W, w):
-        u = w.split()[0]
-        rho = w.split()[1]
-        p = w.split()[2]
-
-        if self.vizU is None:
-            # Plot velocity and pressure
-            self.vizU = plot(u, title='Velocity', rescale=True)
-            self.vizP = plot(p, title='Pressure', rescale=True, elevate=0.0)
-            self.vizRho = plot(rho, title='Density', rescale=True, elevate=0.0)
-        else:
-            self.vizU.plot(u)
-            self.vizP.plot(p)
-            self.vizRho.plot(rho)
 
     def __str__(self):
         return 'DensityNSE'

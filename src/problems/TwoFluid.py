@@ -4,6 +4,7 @@ __license__ = "GNU GPL version 3 or any later version"
 
 from ASP import *
 from ASP import Problem as ProblemBase
+from math import tanh
 
 d = 1.
 eta = 0.01
@@ -13,19 +14,18 @@ x0, x1 = -d / 2., d / 2.
 y0, y1 = -2 * d, 2 * d
 
 
-class InitialConditions(Expression):
+class InitialConditions(UserExpression):
 
     def __init__(self, At):
+        UserExpression.__init__(self)
         self.rhoMin = 1.
         self.rhoMax = self.rhoMin * (1. + At) / (1. - At)
 
     def eval(self, values, x):
-        rhoMin = self.rhoMin
-        rhoMax = self.rhoMax
-
         values[0], values[1], values[3] = 0., 0., 0.
-        values[2] = 0.5 * (rhoMin + rhoMax) + 0.5 * (rhoMax - rhoMin) * \
-            tanh((x[1] - 1.5 * d + eta * cos(2 * pi * x[0] / d)) / (0.01 * d))
+        values[2] = 0.5 * (self.rhoMin + self.rhoMax) \
+                    + 0.5 * (self.rhoMax - self.rhoMin) \
+                    * tanh((x[1] - 1.5 * d + eta * cos(2 * pi * x[0] / d)) / (0.01 * d))
 
     def value_shape(self):
         return (4,)
@@ -58,7 +58,7 @@ class Problem(ProblemBase):
 
         # Create mesh
         self.Nx, self.Ny = options['Nx'], options['Ny']
-        self.mesh = RectangleMesh(x0, y0, x1, y1, self.Nx, self.Ny)
+        self.mesh = RectangleMesh(Point(x0, y0), Point(x1, y1), self.Nx, self.Ny)
 
         self.t0, self.T, = 0., options['T']
         try:
@@ -71,7 +71,7 @@ class Problem(ProblemBase):
     def time_step(self, u, mesh):
         return self.CFL * mesh.hmin()/u
 
-    def initial_conditions(self, W):
+    def initial_conditions(self, W, annotate=False):
 
         # artificial viscosity for stabilization
         self.artificial_viscosity(W)
@@ -86,7 +86,7 @@ class Problem(ProblemBase):
 
         bc0 = DirichletBC(V, Constant(1.0), NoslipBoundary())
 
-        h = CellSize(V.mesh())
+        h = V.mesh().hmin()
 
         wb = Function(V)
         wt = TestFunction(V)
@@ -97,14 +97,14 @@ class Problem(ProblemBase):
         self.wb = wb
 
     def boundary_conditions(self, W, t):
+        bc = Expression(('0.0', '0.0'), degree=3)
+        bc = DirichletBC(W.sub(0).sub(0), bc, NoslipBoundary())
 
-        bc1 = DirichletBC(W.sub(0), Constant((0.0, 0.0)), NoslipBoundary())
-
-        return [bc1]
+        return [bc]
 
     def F(self, t):
         # forcing function for the momentum equation
-        return Expression(('0.', '-g'), g=g, t=t)
+        return Expression(('0.', '-g'), g=g, t=t, degree=3)
 
     def functional(self, W, w):
 
