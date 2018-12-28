@@ -23,7 +23,9 @@ Diameter = 2. * radius
 Um = 1.5  # max velocity
 
 
-class InitialConditions2D(Expression):
+class InitialConditions2D(UserExpression):
+    def __init__(self):
+        UserExpression.__init__(self)
 
     def eval(self, values, x):
         values[0:3] = [0., 0., 0.]
@@ -32,7 +34,9 @@ class InitialConditions2D(Expression):
         return (3,)
 
 
-class InitialConditions3D(Expression):
+class InitialConditions3D(UserExpression):
+    def __init__(self):
+        UserExpression.__init__(self)
 
     def eval(self, values, x):
         values[0:4] = [0., 0., 0., 0.]
@@ -166,12 +170,12 @@ class Problem(ProblemBase):
         if self.mesh.topology().dim() == 2:
             self.noSlip = Constant((0, 0))
             if self.varying:
-                self.U = Expression(('4*Um*x[1]*(H - x[1])*sin(pi*t/8)/(H*H)',
-                                     '0.0'), Um=Um, H=ymax, t=self.t0)
+                code = ('4*Um*x[1]*(H - x[1])*sin(pi*t/8)/(H*H)', '0.0')
                 self.T = 8
             else:
-                self.U = Expression(('4*Um*x[1]*(H - x[1])/(H*H)', '0.0'),
-                                    Um=Um, H=ymax, t=self.t0)
+                code = ('4*Um*x[1]*(H - x[1])/(H*H)', '0.0')
+
+            self.U = Expression(code, Um=Um, H=ymax, t=self.t0, degree=3)
             self.Ubar = 4. / 3. * Um * ymax * (H - ymax / 2.) / (H * H)
         else:
             self.noSlip = Constant((0, 0, 0))

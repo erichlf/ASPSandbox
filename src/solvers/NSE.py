@@ -31,9 +31,9 @@ class Solver(SolverBase):
         else:
             self.stabilize = False
 
-        V = VectorFunctionSpace(mesh, 'CG', Pu)
-        Q = FunctionSpace(mesh, 'CG', Pp)
-        W = MixedFunctionSpace([V, Q])
+        V = VectorElement('CG', mesh.ufl_cell(), Pu)
+        Q = FiniteElement('CG', mesh.ufl_cell(), Pp)
+        W = FunctionSpace(mesh, V * Q)
 
         return W
 
@@ -68,7 +68,7 @@ class Solver(SolverBase):
 
         nu = problem.nu
 
-        h = CellSize(W.mesh())
+        h = W.mesh().hmin()
         d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter
 
         if ei_mode or not self.stabilize:  # turn off stabilization in ei_mode
