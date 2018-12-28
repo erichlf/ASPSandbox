@@ -86,7 +86,7 @@ class Problem(ProblemBase):
 
         bc0 = DirichletBC(V, Constant(1.0), NoslipBoundary())
 
-        h = V.mesh().hmin()
+        h = CellDiameter(V.mesh())
 
         wb = Function(V)
         wt = TestFunction(V)

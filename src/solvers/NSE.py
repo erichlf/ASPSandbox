@@ -68,7 +68,7 @@ class Solver(SolverBase):
 
         nu = problem.nu
 
-        h = W.mesh().hmin()
+        h = CellDiameter(W.mesh())
         d1 = conditional(le(h, nu), h**2, h)  # stabilization parameter
 
         if ei_mode or not self.stabilize:  # turn off stabilization in ei_mode

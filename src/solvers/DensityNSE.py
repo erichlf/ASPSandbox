@@ -50,7 +50,7 @@ class Solver(SolverBase):
 
         nu = problem.nu  # kinematic viscosity
 
-        h = W.mesh().hmin()  # mesh size
+        h = CellDiameter(W.mesh())  # mesh size
         # stabilization parameters
         # d1 = conditional(le(h, nu), h**2, h)
         d = (h**(2.) + problem.wb * h**(3./2.))
