@@ -8,7 +8,7 @@ __license__ = "GNU GPL version 3 or any later version"
 #
 
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawTextHelpFormatter
 from time import time
 
 from ASP import *
@@ -18,26 +18,31 @@ from solvers import Solver, solvers
 Default_Solver = 'NSE'
 Default_Problem = 'Cylinder'
 
+options = OPTIONS.copy()
+
 
 def parse_args(args):
-    parser = ArgumentParser(description='Solve the given solver-problem combination')
+    parser = ArgumentParser(description='Solve the given solver-problem combination',
+                            formatter_class=RawTextHelpFormatter)
 
     parser.add_argument('solver', type=str, default=Default_Solver,
-                        help='Available solvers:' +
+                        help='Available solvers:\n' +
                              '{}'.format('\n'.join('  ' + s for s in solvers)))
     parser.add_argument('problem', type=str, default=Default_Problem,
-                        help='Available problems:' +
+                        help='Available problems:\n' +
                              '{}'.format('\n'.join('  ' + p for p in problems)))
+    parser.add_argument('options', nargs='*',
+                        help='Some Available options:\n' + 
+                             '{}'.format('\n'.join('  ' + o for o in options)))
 
-    args, params = parser.parse_known_args()
+    args = parser.parse_args()
 
-    return args, params
+    return args
 
 
 #   Parse command-line arguments and run solver.
 def main(solver_name, problem_name, params):
     # Get options
-    options = OPTIONS.copy()
     if params is not None:
         for parameter in params:
             try:
@@ -48,9 +53,6 @@ def main(solver_name, problem_name, params):
                     options[key] = str(value)
             except:
                 print('Warning: Unhandled command-line argument', parameter)
-
-    # Set debug level
-    set_log_level(options["debug"])
 
     print('Solving {} for the {} problem.'.format(solver_name, problem_name))
     # Create problem and solver
@@ -73,5 +75,5 @@ def main(solver_name, problem_name, params):
     return 0
 
 if __name__ == "__main__":
-    args, params = parse_args(sys.argv[1:])
-    sys.exit(main(args.solver, args.problem, params))
+    args = parse_args(sys.argv[1:])
+    sys.exit(main(args.solver, args.problem, args.options))
